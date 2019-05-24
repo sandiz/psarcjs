@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sandiz/psarcjs.svg?branch=master)](https://travis-ci.org/sandiz/psarcjs) 
+[![Build Status](https://travis-ci.com/sandiz/psarcjs.svg?branch=master)](https://travis-ci.com/sandiz/psarcjs) 
 
 # psarcjs
 node module to read and extract Rocksmith PSARC files
