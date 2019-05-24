@@ -1,0 +1,35 @@
+{
+  "name": "@sandiz/psarcjs",
+  "version": "0.0.1",
+  "description": "node module to read and extract Rocksmith PSARC files",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandiz/psarcjs.git"
+  },
+  "keywords": [
+    "psarc",
+    "psarcjs",
+    "rocksmith",
+    "rocksmith2014"
+  ],
+  "author": "Sandi Chakravarty <sandi.newton@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sandiz/psarcjs/issues"
+  },
+  "homepage": "https://github.com/sandiz/psarcjs#readme",
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "binary-parser": "^1.3.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-fs": "^2.0.0",
+    "mocha": "^6.1.4",
+    "tmp": "^0.1.0"
+  }
+}
