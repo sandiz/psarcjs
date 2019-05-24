@@ -57,7 +57,7 @@ async function openPSARC(psarc) {
 }
 async function getArrangements(psarc, num) {
     const arr = await psarc.getArrangements();
-    expect(arr.length).to.equal(num)
+    expect(Object.keys(arr).length).to.equal(num)
     if (arr.length > 0) {
         expect(arr[0]).to.be.an('object');
     }

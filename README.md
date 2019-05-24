@@ -19,7 +19,7 @@ node module to read and extract Rocksmith PSARC files
     */
     console.log(await psarc.getArrangements());
     /*
-        arrangements: [ { '00498E9999CD470BB7D310575BB85CAB':
+        arrangements: { '00498E9999CD470BB7D310575BB85CAB':
         { ArrangementProperties:
             { bonusArr: 0,
               Metronome: 0,

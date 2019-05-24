@@ -59,7 +59,7 @@ class PSARC {
      * @returns {Object} json object representing an arrangement keyed with persistentID
      */
     async getArrangements() {
-        const arrangements = [];
+        const arrangements = {};
         for (let i = 0; i < this.listing.length; i += 1) {
             const listing = this.listing[i];
             if (listing.endsWith("json")) {
@@ -75,8 +75,8 @@ class PSARC {
                 for (let j = 0; j < keys.length; j += 1) {
                     const key = keys[j];
                     const attr = json.Entries[key].Attributes;
-                    const obj = {}; obj[key] = attr;
-                    arrangements.push(obj);
+                    attr.srcjson = listing;
+                    arrangements[key] = attr;
                 }
             }
         }
@@ -133,15 +133,19 @@ class PSARC {
 module.exports = PSARC;
 
 /*
+handleCmd
 async function handleCmd() {
     const psarc = new PSARC(process.argv[2]);
     await psarc.parse();
     const files = psarc.getFiles();
-    console.log("files:", files);
+    console.log("files:", files.length);
     const arrangements = await psarc.getArrangements();
     //console.log("arrangements:", util.inspect(arrangements, false, null, true));
-    console.log("arrangements:", arrangements.length);
-
+    console.log("arrangements:", Object.keys(arrangements).length);
+    const keys = Object.values(arrangements)
+    for (const key of keys) {
+        console.log(key.srcjson)
+    }
     const outfile = '/tmp/test.xml';
     const idx = files.indexOf('songs/arr/witchcraftsong_lead.xml');
     if (idx !== -1) {
@@ -150,4 +154,5 @@ async function handleCmd() {
     }
 }
 */
+
 
