@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.com/sandiz/psarcjs.svg?branch=master)](https://travis-ci.com/sandiz/psarcjs) 
+[![Build Status](https://travis-ci.com/sandiz/psarcjs.svg?branch=master)](https://travis-ci.com/sandiz/psarcjs)
+[![Coverage Status](https://coveralls.io/repos/github/sandiz/psarcjs/badge.svg?branch=master)](https://coveralls.io/github/sandiz/psarcjs?branch=master)
+<img src="https://img.shields.io/github/license/sandiz/psarcjs.svg" />
 
 # psarcjs
 node module to read and extract Rocksmith PSARC files
