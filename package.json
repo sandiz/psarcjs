@@ -4,12 +4,17 @@
   "description": "node module to read and extract Rocksmith PSARC files",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --reporter spec"
+    "test": "mocha --reporter spec",
+    "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sandiz/psarcjs.git"
   },
+  "files": [
+    "index.js",
+    "parser.js"
+  ],
   "keywords": [
     "psarc",
     "psarcjs",
