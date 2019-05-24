@@ -12,9 +12,9 @@ node module to read and extract Rocksmith PSARC files
     console.log(psarc.getFiles())
     /*
         [ 'gfxassets/album_art/album_butitrainedsong_64.dds',
-        'gfxassets/album_art/album_butitrainedsong_128.dds',
-        'gfxassets/album_art/album_butitrainedsong_256.dds',
-        'flatmodels/rs/rsenumerable_root.flat',
+          'gfxassets/album_art/album_butitrainedsong_128.dds',
+          'gfxassets/album_art/album_butitrainedsong_256.dds',
+          'flatmodels/rs/rsenumerable_root.flat',
         ...
     */
     console.log(await psarc.getArrangements());
