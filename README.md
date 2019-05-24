@@ -1,10 +1,10 @@
 # psarcjs
 node module to read and extract Rocksmith PSARC files
 
-# Installation
+## Installation
     npm install psarcjs
 
-# Usage
+## Usage
 ```JavaScript
     
     const psarc = new PSARC('test/test.psarc');
@@ -29,9 +29,15 @@ node module to read and extract Rocksmith PSARC files
     */
 ```
 
-
-# TODO
+## TODO
 add write support
+
+## Tests
+  `npm test`
+
+## Contributing
+
+In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code.
 
 # Projects using psarcjs
 - [rs-manager](https://github.com/sandiz/rs-manager)
