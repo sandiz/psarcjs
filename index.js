@@ -132,7 +132,7 @@ class PSARC {
 
 module.exports = PSARC;
 
-//handleCmd();
+/*
 async function handleCmd() {
     const psarc = new PSARC(process.argv[2]);
     await psarc.parse();
@@ -149,4 +149,5 @@ async function handleCmd() {
         console.log(idx.toString(), "extracted to", outfile);
     }
 }
+*/
 
