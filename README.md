@@ -5,7 +5,8 @@ node module to read and extract Rocksmith PSARC files
     npm install psarcjs
 
 # Usage
-    ```javascript
+```JavaScript
+    
     const psarc = new PSARC('test/test.psarc');
     await psarc.parse(); /* parse file first before calling member functions */
     console.log(psarc.getFiles())
@@ -26,7 +27,7 @@ node module to read and extract Rocksmith PSARC files
               pathRhythm: 0,
               pathBass: 0,
     */
-    ```
+```
 
 
 # TODO
@@ -41,4 +42,4 @@ add write support
 - [BuongiornoTexas/rsr-tools](https://github.com/BuongiornoTexas/rsrtools/blob/master/rsrtools/files/welder.py) - python module 
 
 # Thanks
-- 0xOL for the original python implementation (pyrocksmith)
+- [0x0L](https://github.com/0x0L) for the original python implementation (pyrocksmith)
