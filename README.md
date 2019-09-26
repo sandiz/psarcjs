@@ -12,7 +12,7 @@ node module to read and extract Rocksmith PSARC files
 
 ## Usage
 ```JavaScript
-    
+    const PSARC = require('psarcjs');
     const psarc = new PSARC('test/test.psarc');
     await psarc.parse(); /* parse file first before calling member functions */
     console.log(psarc.getFiles())
