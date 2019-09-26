@@ -33,6 +33,13 @@ node module to read and extract Rocksmith PSARC files
               pathRhythm: 0,
               pathBass: 0,
     */
+    await psarc.extractFile(
+        psarc.getFiles().indexOf('manifests/songs_dlc_butitrainedsong/butitrainedsong_lead.json'), 
+        '/tmp/lead.json', true);
+    /*
+        ~/P/psarcjs (master=) cat /tmp/lead.json | jq -r '.Entries | keys[] as $k | "\\($k), \\(.[$k] | .Attributes.SongName)"'
+        00498E9999CD470BB7D310575BB85CAB, But It Rained
+    */
 ```
 
 ## TODO
