@@ -1,5 +1,5 @@
 {
-  "name": "psarcjs",
+  "name": "@sandiz/psarcjs",
   "version": "0.1.4",
   "description": "node module to read and extract Rocksmith PSARC files",
   "main": "index.js",
@@ -40,5 +40,8 @@
     "coveralls": "^3.0.3",
     "mocha": "^6.1.4",
     "tmp": "^0.1.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
