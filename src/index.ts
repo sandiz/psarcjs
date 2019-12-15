@@ -1,11 +1,6 @@
-const fs = require('fs')
-const Parser = require('./parser');
-const util = require('util');
-
-const fsAsync = {
-    readFile: util.promisify(fs.readFile),
-    writeFile: util.promisify(fs.writeFile)
-}
+import { BOM, Arrangements } from "./types";
+import { promises } from 'fs';
+import * as Parser from './parser';
 
 class PSARC {
     /**
@@ -18,7 +13,12 @@ class PSARC {
      * console.log(psarc.getFiles());
      * @returns {this}
      */
-    constructor(file) {
+    public psarcFile: string;
+    private psarcRawData: Buffer | null;
+    private BOMEntries: BOM | null;
+    private listing: string[];
+
+    constructor(file: string) {
         this.psarcFile = file;
         this.psarcRawData = null;
         this.BOMEntries = null;
@@ -28,8 +28,8 @@ class PSARC {
      * decrypt a psarc file and parse it, this function must be called first 
      * before calling any other member functions
      */
-    async parse() {
-        this.psarcRawData = await fsAsync.readFile(this.psarcFile);
+    public async parse(): Promise<void> {
+        this.psarcRawData = await promises.readFile(this.psarcFile);
         //console.log("parsing psarc:", this.psarcFile, "size:", (this.psarcRawData.length / (1024 * 1024)).toFixed(2), "mb");
 
         const header = Parser.HEADER.parse(this.psarcRawData);
@@ -41,7 +41,7 @@ class PSARC {
         // console.log(util.inspect(this.BOMEntries, { depth: null }));
 
         const rawlisting = await Parser.readEntry(this.psarcRawData, 0, this.BOMEntries);
-        this.listing = unescape(rawlisting).split("\n");
+        this.listing = unescape(rawlisting.toString()).split("\n");
     }
 
     /**
@@ -49,7 +49,7 @@ class PSARC {
      *
      * @returns {Array} list of all files in the psarc
      */
-    getFiles() {
+    public getFiles(): string[] {
         return this.listing;
     }
 
@@ -58,25 +58,26 @@ class PSARC {
      *
      * @returns {Object} json object representing an arrangement keyed with persistentID
      */
-    async getArrangements() {
-        const arrangements = {};
+    async getArrangements(): Promise<Arrangements> {
+        const arrangements: Arrangements = {};
         for (let i = 0; i < this.listing.length; i += 1) {
             const listing = this.listing[i];
             if (listing.endsWith("json")) {
                 const data = await this.readFile(i);
-                const body = data.toString("utf-8");
-                if (body === "") {
-                    arrangements.push(null);
-                    continue;
-                }
-                const json = JSON.parse(body);
-                const Entries = json.Entries;
-                const keys = Object.keys(Entries);
-                for (let j = 0; j < keys.length; j += 1) {
-                    const key = keys[j];
-                    const attr = json.Entries[key].Attributes;
-                    attr.srcjson = listing;
-                    arrangements[key] = attr;
+                if (data) {
+                    const body = data.toString("utf-8");
+                    if (body === "") {
+                        continue;
+                    }
+                    const json = JSON.parse(body);
+                    const Entries = json.Entries;
+                    const keys = Object.keys(Entries);
+                    for (let j = 0; j < keys.length; j += 1) {
+                        const key = keys[j];
+                        const attr = json.Entries[key].Attributes;
+                        attr.srcjson = listing;
+                        arrangements[key] = attr;
+                    }
                 }
             }
         }
@@ -86,19 +87,19 @@ class PSARC {
     /**
      * extract file from psarc
      *
-     * @param {integer} idx index of the file in file list (see getFiles())
+     * @param {number} idx index of the file in file list (see getFiles())
      * @param {String} outfile path to output file
      * @param {Boolean}  tostring convert data to string before outputting
      * @returns {Boolean} true | false based on success / failure 
      */
-    async extractFile(idx, outfile, tostring = false) {
+    async extractFile(idx: number, outfile: string, tostring = false) {
         if (idx === -1) return false;
         const data = await this.readFile(idx);
         if (data) {
             if (tostring)
-                await fsAsync.writeFile(outfile, data.toString('utf-8'));
+                await promises.writeFile(outfile, data.toString('utf-8'));
             else
-                await fsAsync.writeFile(outfile, data);
+                await promises.writeFile(outfile, data);
             return true;
         }
         return false;
@@ -107,15 +108,17 @@ class PSARC {
     /**
      * read file from psarc
      *
-     * @param {integer} idx index of the file in file list (see getFiles())
+     * @param {number} idx index of the file in file list (see getFiles())
      * @returns {Buffer} file data
      */
-    async readFile(idx) {
+    async readFile(idx: number) {
         if (idx === -1) return null;
-        const data = await Parser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)
-        if (data) {
-            const decrypted = await Parser.Decrypt(this.listing[idx], data);
-            return decrypted;
+        if (this.psarcRawData && this.BOMEntries) {
+            const data = await Parser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)
+            if (data) {
+                const decrypted = await Parser.Decrypt(this.listing[idx], data);
+                return decrypted;
+            }
         }
         return null;
     }

@@ -1,6 +1,7 @@
-const Parser = require("binary-parser").Parser
-const aesjs = require('aes-js');
-const zlib = require('zlib')
+import { Parser } from 'binary-parser';
+import * as aesjs from 'aes-js';
+import * as zlib from 'zlib';
+import { PSARCHEADER, BOM } from './types';
 
 const BLOCK_SIZE = 2 ** 16;
 const ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C"
@@ -8,7 +9,7 @@ const ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42"
 const MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D"
 const WIN_KEY = "CB648DF3D12A16BF71701414E69619EC171CCA5D2A142E3E59DE7ADDA18A3A30"
 
-const unzip = data => new Promise((resolve, reject) => {
+export const unzip = (data: Buffer) => new Promise<Buffer>((resolve, reject) => {
     zlib.unzip(data, {
     }, (err, buffer) => {
         if (!err) {
@@ -19,35 +20,36 @@ const unzip = data => new Promise((resolve, reject) => {
     });
 });
 
-const mod = (x, n) => (x % n + n) % n
+export const mod = (x: number, n: number) => (x % n + n) % n
 
-function pad(buffer, blocksize = 16) {
+export function pad(buffer: Buffer, blocksize = 16) {
     const size = mod((blocksize - buffer.length), blocksize)
     const b = Buffer.alloc(size)
     return Buffer.concat([buffer, b])
 }
 
-function BOMDecrypt(buffer) {
+export function BOMDecrypt(buffer: Buffer) {
     const key = aesjs.utils.hex.toBytes(ARC_KEY)
     const iv = aesjs.utils.hex.toBytes(ARC_IV)
     const aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
     return aescfb.decrypt(buffer)
 }
 
-async function ENTRYDecrypt(data, key) {
+export async function ENTRYDecrypt(data: Buffer, key: string) {
     const iv = new Uint8Array(data.slice(8, 24));
-    key = aesjs.utils.hex.toBytes(key)
+    const ctr = Buffer.from(iv).readUInt32BE(0);
+    const uintAkey = aesjs.utils.hex.toBytes(key)
     const quanta = data.slice(24, data.length - 56)
 
-    const aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(iv));
+    const aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
     const decrypted = aesCtr.decrypt(pad(quanta));
     //const length = new Uint32Array(decrypted.slice(0, 4))
     let payload = decrypted.slice(4, data.length)
-    payload = await unzip(payload)
-    return payload
+    let buf: Buffer = await unzip(Buffer.from(payload))
+    return buf;
 }
 
-async function Decrypt(listing, contents) {
+export async function Decrypt(listing: string, contents: Buffer): Promise<Buffer> {
     let data = contents;
     if (listing.includes("songs/bin/macos")) {
         data = await ENTRYDecrypt(contents, MAC_KEY)
@@ -58,7 +60,7 @@ async function Decrypt(listing, contents) {
     return data
 }
 
-async function readEntry(data, idx, bomentries) {
+export async function readEntry(data: Buffer, idx: number, bomentries: BOM) {
     const singlebom = bomentries.entries[idx];
     let entryoffset = singlebom.offset.readUInt32BE(1)
     const entrylength = singlebom.length.readUInt32BE(1)
@@ -84,7 +86,7 @@ async function readEntry(data, idx, bomentries) {
     return retBuffer
 }
 
-const HEADER = Parser.start()
+export const HEADER: Parser<PSARCHEADER> = new Parser()
     .string("MAGIC", {
         encoding: "ascii",
         zeroTerminated: false,
@@ -105,11 +107,11 @@ const HEADER = Parser.start()
     .uint32("ARCHIVE_FLAGS")
     .buffer("bom", {
         length: function () {
-            return this.header_size - 32;
+            return (this as any).header_size - 32;
         }
     })
 
-const ENTRY = Parser.start()
+export const ENTRY = new Parser()
     .string("md5", {
         encoding: "ascii",
         zeroTerminated: false,
@@ -125,8 +127,8 @@ const ENTRY = Parser.start()
         length: 5
     })
 
-function BOM(entries) {
-    return Parser.start()
+export function BOM(entries: number) {
+    return new Parser()
         .array("entries", {
             type: ENTRY,
             length: entries
@@ -136,15 +138,4 @@ function BOM(entries) {
             //lengthInBytes: 16
             readUntil: "eof"
         })
-}
-
-module.exports = {
-    HEADER,
-    ENTRY,
-    BOM,
-    BOMDecrypt,
-    Decrypt,
-    ENTRYDecrypt,
-    pad,
-    readEntry
 }

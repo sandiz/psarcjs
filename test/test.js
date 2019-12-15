@@ -2,7 +2,7 @@
 
 var tmp = require('tmp');
 var chai = require('chai');
-var PSARC = require('../index');
+var PSARC = require('../dist');
 
 var expect = chai.expect;
 chai.use(require('chai-fs'));
@@ -12,17 +12,17 @@ describe('psarcjs: test.psarc', function () {
     const file = "test/test.psarc";
     const json = "manifests/songs_dlc_butitrainedsong/butitrainedsong_lead.json";
     let psarc = null;
-    it('open psarc file', async function () {
+    it('open psarc file: test.psarc', async function () {
         psarc = await getPSARC(file);
         await openPSARC(psarc);
     });
-    it('get files', async function () {
+    it('get files: expect 18', async function () {
         await getFiles(psarc, 18, json);
     });
-    it('get arrangements', async function () {
+    it('get arrangements: expect 1', async function () {
         await getArrangements(psarc, 1);
     });
-    it('extract file from psarc', async function () {
+    it('extract file from psarc: expect json', async function () {
         await extractFile(psarc, json);
     });
 });
@@ -30,17 +30,17 @@ describe('psarcjs: test2.psarc', function () {
     const file = "test/test2.psarc";
     const json = "manifests/songs_dlc_witchcraftsong/witchcraftsong_lead.json";
     let psarc = null;
-    it('open psarc file', async function () {
+    it('open psarc file: test2.psarc', async function () {
         psarc = await getPSARC(file);
         await openPSARC(psarc);
     });
-    it('get files', async function () {
+    it('get files: expect 24', async function () {
         await getFiles(psarc, 24, json);
     });
-    it('get arrangements', async function () {
+    it('get arrangements: expect 3', async function () {
         await getArrangements(psarc, 3);
     });
-    it('extract file from psarc', async function () {
+    it('extract file from psarc: export json', async function () {
         await extractFile(psarc, json);
     });
 });
