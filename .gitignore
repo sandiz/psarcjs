@@ -1,4 +1,4 @@
-# Logs
+#G Logs
 logs
 *.log
 npm-debug.log*
@@ -59,3 +59,5 @@ typings/
 
 # next.js build output
 .next
+
+test/sng/*.json

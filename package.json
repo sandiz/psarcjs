@@ -2,9 +2,9 @@
   "name": "@sandiz/psarcjs",
   "version": "0.1.5",
   "description": "node module to read and extract Rocksmith PSARC files",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "mocha --reporter spec",
+    "test": "python3 test/sng/generate-sng-json.py && mocha --reporter spec",
     "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "cover": "c8 --reporter=html --reporter=text mocha ./test/test.js",
     "build": "tsc --build"
@@ -14,8 +14,8 @@
     "url": "git+https://github.com/sandiz/psarcjs.git"
   },
   "files": [
-    "index.js",
-    "parser.js"
+    "dist/**",
+    "src/**"
   ],
   "keywords": [
     "psarc",
@@ -42,6 +42,7 @@
     "chai-fs": "^2.0.0",
     "coveralls": "^3.0.9",
     "mocha": "^6.2.2",
+    "mocha-each": "^2.0.1",
     "tmp": "^0.1.0",
     "typescript": "^3.7.3"
   },

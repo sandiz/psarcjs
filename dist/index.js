@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var Parser = require("./parser");
+var SNGParser = require("./sngparser");
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
         this.psarcFile = file;
@@ -59,16 +60,19 @@ var PSARC = /** @class */ (function () {
                         return [4 /*yield*/, fs_1.promises.readFile(this.psarcFile)];
                     case 1:
                         _a.psarcRawData = _b.sent();
+                        if (!this.psarcRawData) return [3 /*break*/, 3];
                         header = Parser.HEADER.parse(this.psarcRawData);
                         paddedbom = Parser.pad(header.bom);
                         decryptedbom = Buffer.from(Parser.BOMDecrypt(paddedbom));
                         slicedbom = decryptedbom.slice(0, header.bom.length);
                         this.BOMEntries = Parser.BOM(header.n_entries).parse(slicedbom);
+                        if (!this.BOMEntries) return [3 /*break*/, 3];
                         return [4 /*yield*/, Parser.readEntry(this.psarcRawData, 0, this.BOMEntries)];
                     case 2:
                         rawlisting = _b.sent();
                         this.listing = unescape(rawlisting.toString()).split("\n");
-                        return [2 /*return*/];
+                        _b.label = 3;
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -200,7 +204,36 @@ var PSARC = /** @class */ (function () {
     };
     return PSARC;
 }());
-module.exports = PSARC;
+var SNG = /** @class */ (function () {
+    function SNG(file) {
+        this.sng = null;
+        this.sngFile = file;
+        this.sngRawData = null;
+    }
+    SNG.prototype.parse = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this;
+                        return [4 /*yield*/, fs_1.promises.readFile(this.sngFile)];
+                    case 1:
+                        _a.sngRawData = _b.sent();
+                        if (this.sngRawData) {
+                            this.sng = SNGParser.SNGDATA.parse(this.sngRawData);
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return SNG;
+}());
+module.exports = {
+    PSARC: PSARC,
+    SNG: SNG,
+};
 /*
 handleCmd
 async function handleCmd() {

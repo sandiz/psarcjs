@@ -1,7 +1,7 @@
 import { Parser } from 'binary-parser';
 import * as aesjs from 'aes-js';
 import * as zlib from 'zlib';
-import { PSARCHEADER, BOM } from './types';
+import { PSARCHEADER, BOM } from './types/types';
 
 const BLOCK_SIZE = 2 ** 16;
 const ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C"

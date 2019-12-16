@@ -1,6 +1,9 @@
-import { BOM, Arrangements } from "./types";
 import { promises } from 'fs';
+import * as util from 'util';
+import { BOM, Arrangements } from "./types/types";
 import * as Parser from './parser';
+import * as SNGParser from './sngparser';
+import { SNGFORMAT } from './types/sng';
 
 class PSARC {
     /**
@@ -32,16 +35,19 @@ class PSARC {
         this.psarcRawData = await promises.readFile(this.psarcFile);
         //console.log("parsing psarc:", this.psarcFile, "size:", (this.psarcRawData.length / (1024 * 1024)).toFixed(2), "mb");
 
-        const header = Parser.HEADER.parse(this.psarcRawData);
-        const paddedbom = Parser.pad(header.bom);
-        const decryptedbom = Buffer.from(Parser.BOMDecrypt(paddedbom));
-        const slicedbom = decryptedbom.slice(0, header.bom.length);
+        if (this.psarcRawData) {
+            const header = Parser.HEADER.parse(this.psarcRawData);
+            const paddedbom = Parser.pad(header.bom);
+            const decryptedbom = Buffer.from(Parser.BOMDecrypt(paddedbom));
+            const slicedbom = decryptedbom.slice(0, header.bom.length);
 
-        this.BOMEntries = Parser.BOM(header.n_entries).parse(slicedbom);
-        // console.log(util.inspect(this.BOMEntries, { depth: null }));
-
-        const rawlisting = await Parser.readEntry(this.psarcRawData, 0, this.BOMEntries);
-        this.listing = unescape(rawlisting.toString()).split("\n");
+            this.BOMEntries = Parser.BOM(header.n_entries).parse(slicedbom);
+            // console.log(util.inspect(this.BOMEntries, { depth: null }));
+            if (this.BOMEntries) {
+                const rawlisting = await Parser.readEntry(this.psarcRawData, 0, this.BOMEntries);
+                this.listing = unescape(rawlisting.toString()).split("\n");
+            }
+        }
     }
 
     /**
@@ -58,7 +64,7 @@ class PSARC {
      *
      * @returns {Object} json object representing an arrangement keyed with persistentID
      */
-    async getArrangements(): Promise<Arrangements> {
+    public async getArrangements(): Promise<Arrangements> {
         const arrangements: Arrangements = {};
         for (let i = 0; i < this.listing.length; i += 1) {
             const listing = this.listing[i];
@@ -92,7 +98,7 @@ class PSARC {
      * @param {Boolean}  tostring convert data to string before outputting
      * @returns {Boolean} true | false based on success / failure 
      */
-    async extractFile(idx: number, outfile: string, tostring = false) {
+    public async extractFile(idx: number, outfile: string, tostring = false) {
         if (idx === -1) return false;
         const data = await this.readFile(idx);
         if (data) {
@@ -111,7 +117,7 @@ class PSARC {
      * @param {number} idx index of the file in file list (see getFiles())
      * @returns {Buffer} file data
      */
-    async readFile(idx: number) {
+    public async readFile(idx: number) {
         if (idx === -1) return null;
         if (this.psarcRawData && this.BOMEntries) {
             const data = await Parser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)
@@ -133,7 +139,27 @@ class PSARC {
     }
 }
 
-module.exports = PSARC;
+class SNG {
+    public sngFile: string;
+    private sngRawData: Buffer | null;
+    private sng: Partial<SNGFORMAT> | null = null;
+    constructor(file: string) {
+        this.sngFile = file;
+        this.sngRawData = null;
+    }
+
+    public async parse(): Promise<void> {
+        this.sngRawData = await promises.readFile(this.sngFile);
+        if (this.sngRawData) {
+            this.sng = SNGParser.SNGDATA.parse(this.sngRawData);
+        }
+    }
+}
+
+module.exports = {
+    PSARC,
+    SNG,
+}
 
 /*
 handleCmd
