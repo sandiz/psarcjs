@@ -23,7 +23,7 @@ jobs:
     - name: run test script
       run: |
         pip3 install --upgrade pip
-        pip3 install rocksmith
+        pip3 install git+https://github.com/0x0L/rocksmith.git
         npm run build
         npm run test
         npm run cover
