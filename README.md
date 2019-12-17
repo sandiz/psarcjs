@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://github/sandiz/psarcjs/"><img src="https://img.shields.io/github/workflow/status/sandiz/psarcjs/Github CI" /></a>
+<a href="https://github/sandiz/psarcjs/"><img src="https://img.shields.io/github/workflow/status/sandiz/psarcjs/Github%20CI" /></a>
 <a href="https://coveralls.io/github/sandiz/psarcjs?branch=master"><img src="https://coveralls.io/repos/github/sandiz/psarcjs/badge.svg?branch=master" /></a>
 <img src="https://img.shields.io/github/license/sandiz/psarcjs.svg" />
 </p>
@@ -12,7 +12,7 @@ node module to read and extract Rocksmith PSARC files
 
 ## Usage
 ```JavaScript
-    const PSARC = require('psarcjs');
+    const { PSARC } = require('psarcjs');
     const psarc = new PSARC('test/test.psarc');
     await psarc.parse(); /* parse file first before calling member functions */
     console.log(psarc.getFiles())
@@ -41,9 +41,75 @@ node module to read and extract Rocksmith PSARC files
         00498E9999CD470BB7D310575BB85CAB, But It Rained
     */
 ```
+```JavaScript
+    const { SNG } = require("psarcjs");
+    const util = require('util');
+
+    async function fn() {
+        const SNGER = new SNG('/path/to/3dooletm_lead.sng');
+        await SNGER.parse();
+        console.log(util.inspect(SNGER.sng, {
+            depth: 2,
+            maxArrayLength: 1,
+            compact: false,
+        }));
+    }
+    fn();
+
+    /*
+        {
+            beats_length: 365,
+            beats: [
+                {
+                  time: 10,
+                  measure: 0,
+                  beat: 0,
+                  phraseIteration: 0,
+                  mask: 3
+                },
+            ... 364 more items
+            ],
+            phrases_length: 9,
+            phrases: [
+              {
+                solo: 0,
+                disparity: 0,
+                ignore: 0,
+                maxDifficulty: 0,
+                phraseIterationLinks: 1,
+                name: 'default'
+              },
+              ... 8 more items
+            ],
+            ...
+            metadata: {
+                maxScores: 100000,
+                maxNotes: 667,
+                maxNotesNoIgnored: 656,
+                pointsPerNote: 149.92503356933594,
+                firstBeatLength: 0.6523332595825195,
+                startTime: 10,
+                capo: -1,
+                lastConversionDateTime: '06-19-17 14:07',
+                part: 1,
+                songLength: 247.39199829101562,
+                tuning_length: 6,
+                tuning: [
+                    0,
+                    ... 5 more items
+                ],
+                firstNoteTime: 12.609000205993652,
+                firstNoteTime2: 12.609000205993652,
+                maxDifficulty: 21
+            }
+    */
+```
 
 ## TODO
-add write support
+- [x] SNG read support
+- [ ] SNG write support
+- [ ] Wav to Wem write support
+- [ ] PSARC write support
 
 ## Tests
   `npm test`
