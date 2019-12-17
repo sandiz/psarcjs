@@ -56,10 +56,13 @@ export interface DEFINITION {
     innerRect: RECT;
 }
 
+export interface SYMBOLARR {
+    item: Array<number>;
+}
 export interface SYMBOLS {
-    header: [Array<number>];
-    texture: TEXTURE;
-    definition: DEFINITION;
+    header: Array<SYMBOLARR>;
+    texture: Array<TEXTURE>;
+    definition: Array<DEFINITION>;
 }
 
 export interface VOCALS {
@@ -185,7 +188,7 @@ export interface NOTES {
     prevIterNote: number;
     parentPrevNote: number;
     slideTo: number;
-    slideInpitchTo: number;
+    slideUnpitchTo: number;
     leftHand: number;
     tap: number;
     pickDirection: number;
@@ -201,7 +204,7 @@ export interface LEVELS {
     difficulty: number;
     anchors: ANCHORS[];
     anchor_extensions: ANCHOREXTENSIONS[];
-    fingerprints: Array<FINGERPRINTS>;
+    fingerprints: [FINGERPRINTS[], FINGERPRINTS[]];
     notes: NOTES[];
     averageNotesPerIter: number[];
     notesInIterCountNoIgnored: number[];

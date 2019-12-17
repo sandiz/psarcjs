@@ -4,11 +4,13 @@ var util = require('util');
 var tmp = require('tmp');
 var chai = require('chai');
 var forEach = require('mocha-each');
+var chaiExclude = require('chai-exclude');
 var promises = require('fs').promises;
 var { PSARC, SNG } = require('../dist');
 
 var expect = chai.expect;
 chai.use(require('chai-fs'));
+chai.use(chaiExclude);
 tmp.setGracefulCleanup();
 
 describe('psarcjs: PSARC: test.psarc', function () {
@@ -62,12 +64,14 @@ async function sngTests() {
                 const file = `test/sng/${f2}`;
                 json = JSON.parse(await promises.readFile(`${file}.json`));
                 SNG = await getSNG(file);
-                /*console.log(util.inspect(SNG.sng.chordNotes, {
+                /*
+                console.log(util.inspect(SNG.sng, {
                     depth: 2,
                     colors: true,
-                    maxArrayLength: 1,
+                    maxArrayLength: 2,
                     compact: false,
-                }));*/
+                }));
+                */
             });
             it('valid sng file', async () => {
                 expect(SNG.sng).to.be.not.null;
@@ -114,6 +118,181 @@ async function sngTests() {
                     expect(le.bends.bendValues).to.be.deep.equal(re.bends.bendValues);
                 }
             });
+            it(`check vocals_length`, async () => {
+                expect(SNG.sng.vocals_length).to.equal(json.vocals.length);
+            });
+            it(`check all vocals`, async () => {
+                for (let i = 0; i < SNG.sng.vocals.length; i += 1) {
+                    const le = SNG.sng.vocals[i];
+                    const re = json.vocals[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+                if (SNG.sng.vocals.length > 0) {
+                    //expect(SNG.sng.symbols.header).to.be.deep.equal(json.symbols.header);
+                    expect(SNG.sng.symbols.texture).to.be.deep.equal(json.symbols.texture);
+                    expect(SNG.sng.symbols.definition).to.be.deep.equal(json.symbols.definition);
+                }
+            });
+            it(`check phrase_iter_length`, async () => {
+                expect(SNG.sng.phrase_iter_length).to.equal(json.phraseIterations.length);
+            });
+            it(`check all phraseIterations`, async () => {
+                for (let i = 0; i < SNG.sng.phraseIterations.length; i += 1) {
+                    const le = SNG.sng.phraseIterations[i];
+                    const re = json.phraseIterations[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check phrase_extra_length`, async () => {
+                expect(SNG.sng.phrase_extra_length).to.equal(json.phraseExtraInfos.length);
+            });
+            it(`check all phraseExtraInfos`, async () => {
+                for (let i = 0; i < SNG.sng.phraseExtraInfos.length; i += 1) {
+                    const le = SNG.sng.phraseExtraInfos[i];
+                    const re = json.phraseExtraInfos[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check new_linked_length`, async () => {
+                expect(SNG.sng.new_linked_length).to.equal(json.newLinkedDiffs.length);
+            });
+            it(`check all newLinkedDiffs`, async () => {
+                for (let i = 0; i < SNG.sng.newLinkedDiffs.length; i += 1) {
+                    const le = SNG.sng.newLinkedDiffs[i];
+                    const re = json.newLinkedDiffs[i];
+                    expect(le.levelBreak).to.be.deep.equal(re.levelBreak);
+
+                    if (le.nld_phrase.nld_phrase_length > 0) {
+                        expect(le.nld_phrase.nld_phrase_length).to.equal(json.newLinkedDiffs.nld_phrase.length)
+                        for (let i = 0; i < SNG.sng.newLinkedDiffs.nld_phrase.length; i += 1) {
+                            const le = SNG.sng.newLinkedDiffs.nld_phrase[i];
+                            const re = json.newLinkedDiffs.nld_phrase[i];
+                            expect(le.levelBreak).to.be.deep.equal(re.levelBreak);
+                        }
+                    }
+                }
+            });
+            it(`check actions_length`, async () => {
+                expect(SNG.sng.actions_length).to.equal(json.actions.length);
+            });
+            it(`check all actions`, async () => {
+                for (let i = 0; i < SNG.sng.actions.length; i += 1) {
+                    const le = SNG.sng.actions[i];
+                    const re = json.actions[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check events_length`, async () => {
+                expect(SNG.sng.events_length).to.equal(json.events.length);
+            });
+            it(`check all events`, async () => {
+                for (let i = 0; i < SNG.sng.events.length; i += 1) {
+                    const le = SNG.sng.events[i];
+                    const re = json.events[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check tone_length`, async () => {
+                expect(SNG.sng.tone_length).to.equal(json.tone.length);
+            });
+            it(`check all tones`, async () => {
+                for (let i = 0; i < SNG.sng.tone.length; i += 1) {
+                    const le = SNG.sng.tone[i];
+                    const re = json.tone[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check dna_length`, async () => {
+                expect(SNG.sng.dna_length).to.equal(json.dna.length);
+            });
+            it(`check all dnas`, async () => {
+                for (let i = 0; i < SNG.sng.dna.length; i += 1) {
+                    const le = SNG.sng.dna[i];
+                    const re = json.dna[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check sections_length`, async () => {
+                expect(SNG.sng.sections_length).to.equal(json.sections.length);
+            });
+            it(`check all sections`, async () => {
+                for (let i = 0; i < SNG.sng.sections.length; i += 1) {
+                    const le = SNG.sng.sections[i];
+                    const re = json.sections[i];
+                    expect(le).to.be.deep.equal(re);
+                }
+            });
+            it(`check levels_length`, async () => {
+                expect(SNG.sng.levels_length).to.equal(json.levels.length);
+            });
+            it(`check all levels`, async () => {
+                for (let i = 0; i < SNG.sng.levels.length; i += 1) {
+                    const le = SNG.sng.levels[i];
+                    const re = json.levels[i];
+                    expect(le.difficulty).to.be.deep.equal(re.difficulty);
+                    expect(le.anchors_length).to.be.deep.equal(re.anchors.length)
+                    for (let j = 0; j < le.anchors.length; j += 1) {
+                        const le2 = le.anchors[i];
+                        const re2 = re.anchors[i];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+                    expect(le.anchor_ext_length).to.be.deep.equal(re.anchor_extensions.length)
+                    for (let j = 0; j < le.anchor_extensions.length; j += 1) {
+                        const le2 = le.anchor_extensions[i];
+                        const re2 = re.anchor_extensions[i];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+                    expect(le.fingerprints.length).to.be.equal(re.fingerprints.length)
+                    for (let j = 0; j < le.fingerprints.length; j += 1) {
+                        const le2 = le.fingerprints[j].I0;
+                        const re2 = re.fingerprints[j];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+                    /* notes */
+                    expect(le.notes_length).to.be.deep.equal(re.notes.length)
+                    for (let j = 0; j < le.notes.length; j += 1) {
+                        const le2 = le.notes[j];
+                        const re2 = re.notes[j];
+                        expect(le2).excluding('bend_length').to.be.deep.equal(re2);
+                        expect(le2.bends).to.be.deep.equal(re2.bends)
+                    }
+
+                    expect(le.anpi).to.be.equal(re.averageNotesPerIter.length)
+                    for (let j = 0; j < le.averageNotesPerIter.length; j += 1) {
+                        const le2 = le.averageNotesPerIter[j];
+                        const re2 = re.averageNotesPerIter[j];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+
+                    expect(le.niicni).to.be.equal(re.notesInIterCountNoIgnored.length)
+                    for (let j = 0; j < le.notesInIterCountNoIgnored.length; j += 1) {
+                        const le2 = le.notesInIterCountNoIgnored[j];
+                        const re2 = re.notesInIterCountNoIgnored[j];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+
+                    expect(le.niicni).to.be.equal(re.notesInIterCountNoIgnored.length)
+                    for (let j = 0; j < le.notesInIterCountNoIgnored.length; j += 1) {
+                        const le2 = le.notesInIterCountNoIgnored[i];
+                        const re2 = re.notesInIterCountNoIgnored[i];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+
+                    expect(le.niic).to.be.equal(re.notesInIterCount.length)
+                    for (let j = 0; j < le.notesInIterCount.length; j += 1) {
+                        const le2 = le.notesInIterCount[i];
+                        const re2 = re.notesInIterCount[i];
+                        expect(le2).to.be.deep.equal(re2);
+                    }
+                }
+            });
+
+
+            it(`check metadata`, async () => {
+                expect(SNG.sng.metadata).excluding('tuning_length').to.be.deep.equal(json.metadata);
+                expect(SNG.sng.metadata.tuning).to.be.deep.equal(json.metadata.tuning);
+            });
+
         });
 }
 async function getSNG(file) {

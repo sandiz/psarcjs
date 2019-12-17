@@ -7,8 +7,5 @@ install:
   - npm install
 
 script:
+  - npm run test
   - npm run cover
-
-# Send coverage data to Coveralls
-after_script:
-  - npm run coverage
