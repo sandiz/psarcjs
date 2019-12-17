@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://travis-ci.com/sandiz/psarcjs/builds/"><img src="https://travis-ci.com/sandiz/psarcjs.svg?branch=master" /></a>
+<a href="https://github/sandiz/psarcjs/"><img src="https://img.shields.io/github/workflow/status/sandiz/psarcjs/Github CI" /></a>
 <a href="https://coveralls.io/github/sandiz/psarcjs?branch=master"><img src="https://coveralls.io/repos/github/sandiz/psarcjs/badge.svg?branch=master" /></a>
 <img src="https://img.shields.io/github/license/sandiz/psarcjs.svg" />
 </p>
