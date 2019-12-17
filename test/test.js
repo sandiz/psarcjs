@@ -286,8 +286,6 @@ async function sngTests() {
                     }
                 }
             });
-
-
             it(`check metadata`, async () => {
                 expect(SNG.sng.metadata).excluding('tuning_length').to.be.deep.equal(json.metadata);
                 expect(SNG.sng.metadata.tuning).to.be.deep.equal(json.metadata.tuning);
