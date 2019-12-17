@@ -6,7 +6,7 @@
   "scripts": {
     "test": "python3 test/sng/generate-sng-json.py && mocha --reporter spec",
     "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
-    "cover": "c8 --reporter=html --reporter=text mocha ./test/test.js",
+    "cover": "c8 --reporter=html --reporter=text mocha --reporter spec",
     "build": "tsc --build"
   },
   "repository": {

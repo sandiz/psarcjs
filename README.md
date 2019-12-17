@@ -8,6 +8,7 @@
 node module to read and extract Rocksmith PSARC files
 
 ## Installation
+    npm install @sandiz/psarcjs or
     npm install psarcjs
 
 ## Usage

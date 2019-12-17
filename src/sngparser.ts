@@ -141,9 +141,7 @@ export const SYMBOLSDATA: Parser<SYMBOLS> = new Parser()
     .uint32("ha_length")
     .array("header", {
         type: HEADERARRAYDATA,
-        length: function () {
-            return (this as any).ha_length;
-        }
+        length: "ha_length"
     })
     .uint32("texture_length")
     .array("texture", {

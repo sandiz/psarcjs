@@ -127,9 +127,7 @@ exports.SYMBOLSDATA = new binary_parser_1.Parser()
     .uint32("ha_length")
     .array("header", {
     type: exports.HEADERARRAYDATA,
-    length: function () {
-        return this.ha_length;
-    }
+    length: "ha_length"
 })
     .uint32("texture_length")
     .array("texture", {

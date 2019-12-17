@@ -13,43 +13,50 @@ chai.use(require('chai-fs'));
 chai.use(chaiExclude);
 tmp.setGracefulCleanup();
 
-describe('psarcjs: PSARC: test.psarc', function () {
-    const file = "test/psarc/test.psarc";
-    const json = "manifests/songs_dlc_butitrainedsong/butitrainedsong_lead.json";
-    let psarc = null;
-    it('open psarc file: test.psarc', async function () {
-        psarc = await getPSARC(file);
-        await openPSARC(psarc);
+async function psarcTests() {
+    describe('psarcjs: PSARC: test.psarc', function () {
+        const file = "test/psarc/test.psarc";
+        const json = "manifests/songs_dlc_butitrainedsong/butitrainedsong_lead.json";
+        let psarc;
+        before(async () => {
+            psarc = await getPSARC(file);
+        })
+        it('open psarc file: test.psarc', async function () {
+            await openPSARC(psarc);
+        });
+        it('get files: expect 18', async function () {
+            await getFiles(psarc, 18, json);
+        });
+        it('get arrangements: expect 1', async function () {
+            await getArrangements(psarc, 1);
+        });
+        it('extract file from psarc: expect json', async function () {
+            await extractFile(psarc, json);
+        });
     });
-    it('get files: expect 18', async function () {
-        await getFiles(psarc, 18, json);
+    describe('psarcjs: PSARC: test2.psarc', function () {
+        const file = "test/psarc/test2.psarc";
+        const json = "manifests/songs_dlc_witchcraftsong/witchcraftsong_lead.json";
+        let psarc;
+        before(async () => {
+            psarc = await getPSARC(file);
+        })
+        it('open psarc file: test2.psarc', async function () {
+            await openPSARC(psarc);
+        });
+        it('get files: expect 24', async function () {
+            await getFiles(psarc, 24, json);
+        });
+        it('get arrangements: expect 3', async function () {
+            await getArrangements(psarc, 3);
+        });
+        it('extract file from psarc: export json', async function () {
+            await extractFile(psarc, json);
+        });
     });
-    it('get arrangements: expect 1', async function () {
-        await getArrangements(psarc, 1);
-    });
-    it('extract file from psarc: expect json', async function () {
-        await extractFile(psarc, json);
-    });
-});
-describe('psarcjs: PSARC: test2.psarc', function () {
-    const file = "test/psarc/test2.psarc";
-    const json = "manifests/songs_dlc_witchcraftsong/witchcraftsong_lead.json";
-    let psarc = null;
-    it('open psarc file: test2.psarc', async function () {
-        psarc = await getPSARC(file);
-        await openPSARC(psarc);
-    });
-    it('get files: expect 24', async function () {
-        await getFiles(psarc, 24, json);
-    });
-    it('get arrangements: expect 3', async function () {
-        await getArrangements(psarc, 3);
-    });
-    it('extract file from psarc: export json', async function () {
-        await extractFile(psarc, json);
-    });
-});
+}
 
+psarcTests();
 const sngs = "test/sng/";
 sngTests();
 
