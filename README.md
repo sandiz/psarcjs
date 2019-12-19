@@ -109,6 +109,7 @@ node module to read and extract Rocksmith PSARC files
 ## TODO
 - [x] SNG read support
 - [ ] SNG write support
+- [ ] DDS write support
 - [ ] Wav to Wem write support
 - [ ] PSARC write support
 
