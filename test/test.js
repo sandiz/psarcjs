@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('util');
+var path = require('path');
 var tmp = require('tmp');
 var chai = require('chai');
 var forEach = require('mocha-each');
@@ -338,7 +339,8 @@ async function extractFile(psarc, file) {
 }
 async function convertToDDS(file) {
     const dds = new DDS(file);
-    return await dds.convert("test");
+    const p = path.parse(file);
+    return await dds.convert(p.name);
 }
 async function ddsTests() {
     const files = await promises.readdir(ddss);
