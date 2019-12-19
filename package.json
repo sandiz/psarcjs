@@ -32,11 +32,7 @@
   "dependencies": {
     "aes-js": "^3.1.2",
     "binary-parser": "^1.5.0",
-    "dxt-js": "0.0.3",
-    "imagemagick-native": "git+https://github.com/sandiz/node-imagemagick-native.git",
-    "is-power-of-two": "^1.0.0",
-    "next-power-of-two": "^1.0.0",
-    "sharp": "^0.23.4"
+    "imagemagick-native": "git+https://github.com/sandiz/node-imagemagick-native.git"
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.0",

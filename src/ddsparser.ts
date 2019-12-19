@@ -2,10 +2,12 @@ import { promises } from 'fs';
 import { Parser } from 'binary-parser';
 import * as dxt from 'dxt-js';
 import * as imagemagick from 'imagemagick-native'
+const path = require('path');
+/*
 const isPo2 = require('is-power-of-two')
 const nextPo2 = require('next-power-of-two')
-const path = require('path');
 const sharp = require('sharp');
+*/
 
 export const HEADER = new Parser()
     .endianess("little")
@@ -60,6 +62,7 @@ export async function convert(image: string, tag: string): Promise<string[]> {
     return outfiles;;
 }
 
+/*
 export async function convert_old(image: string, tag: string): Promise<string[]> {
     let i = await sharp(image)
     const info = await i.metadata()
@@ -78,7 +81,7 @@ export async function convert_old(image: string, tag: string): Promise<string[]>
     header += int32ToFourCC(0x1 | 0x2 | 0x4 | 0x1000)
     header += int32ToFourCC(h)//height
     header += int32ToFourCC(w)//width
-    header += int32ToFourCC(calculatePitch(w * h, 24))//pitch 
+    header += int32ToFourCC(calculatePitch(w * h, 24))//pitch
     header += int32ToFourCC(0)// depth
     header += int32ToFourCC(0)//mipmapCount
     header += int32ToFourCC(0)// unused
@@ -112,28 +115,29 @@ export async function convert_old(image: string, tag: string): Promise<string[]>
     let headerBuffer = Buffer.from(header)
     let flag = 0
     flag = dxt.flags.DXT1;
-    // flag |= dxt.flags.ColourIterativeClusterFit; /*normal compression*/
-    //flag |= dxt.flags.ColourMetricUniform /* color metric */
-    //flag |= dxt.flags.WeightColourByAlpha
+    // flag |= dxt.flags.ColourIterativeClusterFit;
+//flag |= dxt.flags.ColourMetricUniform
+//flag |= dxt.flags.WeightColourByAlpha
 
-    let compressed = dxt.compress(data, w, h, flag)
-    let decompressed = dxt.decompress(compressed, w, h, flag);
-    const bmp = path.dirname(image) + `/album_${tag}.jpg`
-    await sharp(Buffer.from(decompressed), {
-        raw: {
-            width: w,
-            height: h,
-            channels: info.channels,
-        }
-    }).toFile(bmp);
-    let finalBuffer = Buffer.concat([headerBuffer, compressed])
+let compressed = dxt.compress(data, w, h, flag)
+let decompressed = dxt.decompress(compressed, w, h, flag);
+const bmp = path.dirname(image) + `/album_${tag}.jpg`
+await sharp(Buffer.from(decompressed), {
+    raw: {
+        width: w,
+        height: h,
+        channels: info.channels,
+    }
+}).toFile(bmp);
+let finalBuffer = Buffer.concat([headerBuffer, compressed])
 
-    const files = [];
-    const file = path.dirname(image) + `/album_${tag}.dds`
-    await promises.writeFile(file, finalBuffer);
-    files.push(file)
-    return files;
+const files = [];
+const file = path.dirname(image) + `/album_${tag}.dds`
+await promises.writeFile(file, finalBuffer);
+files.push(file)
+return files;
 }
+
 
 function calculatePitch(width: number, bitsPerPixel: number): number {
     //return (width * bitsPerPixel + 7) / 8
@@ -148,3 +152,4 @@ function int32ToFourCC(value: number): string {
         (value >> 24) & 0xff
     )
 }
+*/
