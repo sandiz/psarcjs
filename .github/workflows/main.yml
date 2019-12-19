@@ -22,7 +22,7 @@ jobs:
         python-version: '3.x'
     - name: run test script
       run: |
-        sudo yum install ImageMagick-c++ ImageMagick-c++-devel
+        sudo apt-get install libmagick++-dev
         pip3 install --upgrade pip
         pip3 install git+https://github.com/0x0L/rocksmith.git
         npm install
