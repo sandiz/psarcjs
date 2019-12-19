@@ -46,7 +46,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var binary_parser_1 = require("binary-parser");
 var dxt = __importStar(require("dxt-js"));
-var parser = require("binary-parser");
+var imagemagick = __importStar(require("imagemagick-native"));
 var isPo2 = require('is-power-of-two');
 var nextPo2 = require('next-power-of-two');
 var path = require('path');
@@ -86,6 +86,43 @@ exports.HEADER = new binary_parser_1.Parser()
     .uint32("caps4")
     .uint32("reserved2");
 function convert(image, tag) {
+    return __awaiter(this, void 0, void 0, function () {
+        var res, outfiles, i, r, out, _a, _b, _c, _d, _e, _f;
+        return __generator(this, function (_g) {
+            switch (_g.label) {
+                case 0:
+                    res = [64, 128, 256];
+                    outfiles = [];
+                    i = 0;
+                    _g.label = 1;
+                case 1:
+                    if (!(i < res.length)) return [3 /*break*/, 5];
+                    r = res[i];
+                    out = path.dirname(image) + ("/album_" + tag + "_" + r + ".dds");
+                    _b = (_a = fs_1.promises).writeFile;
+                    _c = [out];
+                    _e = (_d = imagemagick).convert;
+                    _f = {};
+                    return [4 /*yield*/, fs_1.promises.readFile(image)];
+                case 2: return [4 /*yield*/, _b.apply(_a, _c.concat([_e.apply(_d, [(_f.srcData = _g.sent(),
+                                _f.format = 'DDS',
+                                _f.width = r,
+                                _f.height = r,
+                                _f)])]))];
+                case 3:
+                    _g.sent();
+                    outfiles.push(out);
+                    _g.label = 4;
+                case 4:
+                    i += 1;
+                    return [3 /*break*/, 1];
+                case 5: return [2 /*return*/, outfiles];
+            }
+        });
+    });
+}
+exports.convert = convert;
+function convert_old(image, tag) {
     return __awaiter(this, void 0, void 0, function () {
         var i, info, w, h, data, header, pfFlags, headerBuffer, flag, compressed, decompressed, bmp, finalBuffer, files, file;
         return __generator(this, function (_a) {
@@ -171,7 +208,7 @@ function convert(image, tag) {
         });
     });
 }
-exports.convert = convert;
+exports.convert_old = convert_old;
 function calculatePitch(width, bitsPerPixel) {
     //return (width * bitsPerPixel + 7) / 8
     return Math.max(1, ((width + 3) / 4)) * 8;

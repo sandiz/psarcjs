@@ -344,7 +344,7 @@ async function ddsTests() {
     const files = await promises.readdir(ddss);
     const imgs = files.filter(i => i.endsWith(".png") || i.endsWith(".jpg"));
     await forEach(imgs)
-        .describe('psarcjs: DDS: %s', async function (f2) {
+        .describe('psarcjs: DDS: convert %s', async function (f2) {
             let DDS;
             it('dds convert', async () => {
                 const input = `test/dds/${f2}`;
@@ -362,7 +362,7 @@ async function ddsTests() {
                 const input = `test/dds/${f2}`;
                 const dds = new DDS(input);
                 const res = await dds.validate();
-                //console.log(res);
+                console.log(res);
             }).timeout(15000)
         })
 }

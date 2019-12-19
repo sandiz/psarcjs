@@ -1,7 +1,7 @@
 import { promises } from 'fs';
 import { Parser } from 'binary-parser';
 import * as dxt from 'dxt-js';
-const parser = require("binary-parser");
+import * as imagemagick from 'imagemagick-native'
 const isPo2 = require('is-power-of-two')
 const nextPo2 = require('next-power-of-two')
 const path = require('path');
@@ -43,6 +43,24 @@ export const HEADER = new Parser()
     .uint32("reserved2")
 
 export async function convert(image: string, tag: string): Promise<string[]> {
+    const res = [64, 128, 256];
+    const outfiles = []
+    for (let i = 0; i < res.length; i += 1) {
+        const r = res[i];
+        const out = path.dirname(image) + `/album_${tag}_${r}.dds`;
+        await promises.writeFile(out, imagemagick.convert({
+            srcData: await promises.readFile(image),
+            format: 'DDS',
+            width: r,
+            height: r,
+        }));
+        outfiles.push(out);
+    }
+
+    return outfiles;;
+}
+
+export async function convert_old(image: string, tag: string): Promise<string[]> {
     let i = await sharp(image)
     const info = await i.metadata()
     let w = info.width
