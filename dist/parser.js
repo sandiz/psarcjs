@@ -35,10 +35,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var binary_parser_1 = require("binary-parser");
-var aesjs = require("aes-js");
-var zlib = require("zlib");
+var aesjs = __importStar(require("aes-js"));
+var zlib = __importStar(require("zlib"));
 var BLOCK_SIZE = Math.pow(2, 16);
 var ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C";
 var ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42";

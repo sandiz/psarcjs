@@ -5,12 +5,14 @@ var tmp = require('tmp');
 var chai = require('chai');
 var forEach = require('mocha-each');
 var chaiExclude = require('chai-exclude');
+const assertArrays = require('chai-arrays');
 var promises = require('fs').promises;
-var { PSARC, SNG } = require('../dist');
+var { PSARC, SNG, DDS } = require('../dist');
 
 var expect = chai.expect;
 chai.use(require('chai-fs'));
 chai.use(chaiExclude);
+chai.use(assertArrays);
 tmp.setGracefulCleanup();
 
 async function psarcTests() {
@@ -55,11 +57,6 @@ async function psarcTests() {
         });
     });
 }
-
-psarcTests();
-const sngs = "test/sng/";
-sngTests();
-
 async function sngTests() {
     const files = await promises.readdir(sngs);
     const sngfiles = files.filter(i => i.endsWith(".sng"));
@@ -339,3 +336,42 @@ async function extractFile(psarc, file) {
     }
     tmpfile.removeCallback();
 }
+async function convertToDDS(file) {
+    const dds = new DDS(file);
+    return await dds.convert("test");
+}
+async function ddsTests() {
+    const files = await promises.readdir(ddss);
+    const imgs = files.filter(i => i.endsWith(".png") || i.endsWith(".jpg"));
+    await forEach(imgs)
+        .describe('psarcjs: DDS: %s', async function (f2) {
+            let DDS;
+            it('dds convert', async () => {
+                const input = `test/dds/${f2}`;
+                const files = await convertToDDS(input);
+                expect(files).to.be.array()
+            }).timeout(15000);
+        })
+
+
+    const f = await promises.readdir(ddss);
+    const dds = f.filter(i => i.endsWith(".dds"));
+    await forEach(dds)
+        .describe('psarcjs: DDS: parse %s', async function (f2) {
+            it('dds validate', async () => {
+                const input = `test/dds/${f2}`;
+                const dds = new DDS(input);
+                const res = await dds.validate();
+                //console.log(res);
+            }).timeout(15000)
+        })
+}
+
+
+psarcTests();
+
+const sngs = "test/sng/";
+sngTests();
+
+const ddss = "test/dds";
+ddsTests();

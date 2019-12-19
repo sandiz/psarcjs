@@ -3,6 +3,7 @@ import * as util from 'util';
 import { BOM, Arrangements } from "./types/types";
 import * as Parser from './parser';
 import * as SNGParser from './sngparser';
+import * as DDSParser from './ddsparser';
 import { SNGFORMAT } from './types/sng';
 
 class PSARC {
@@ -156,9 +157,30 @@ class SNG {
     }
 }
 
+class DDS {
+    public imageFile: string;
+    public ddsFiles: string[] = [];
+
+    constructor(file: string) {
+        this.imageFile = file;
+    }
+
+    public async convert(tag: string = ""): Promise<string[]> {
+        this.ddsFiles = await DDSParser.convert(this.imageFile, tag);
+        return this.ddsFiles;
+    }
+
+    public async validate(): Promise<object> {
+        const data = await promises.readFile(this.imageFile);
+        return DDSParser.HEADER.parse(data);
+    }
+
+}
+
 module.exports = {
     PSARC,
     SNG,
+    DDS,
 }
 
 /*

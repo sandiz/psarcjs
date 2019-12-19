@@ -1,7 +1,7 @@
 {
   "name": "@sandiz/psarcjs",
   "version": "1.0.0",
-  "description": "node module to read and extract Rocksmith PSARC files",
+  "description": "node.js module to read and extract Rocksmith PSARC files",
   "main": "dist/index.js",
   "scripts": {
     "test": "python3 test/sng/generate-sng-json.py && mocha --reporter spec",
@@ -31,7 +31,11 @@
   "homepage": "https://github.com/sandiz/psarcjs#readme",
   "dependencies": {
     "aes-js": "^3.1.2",
-    "binary-parser": "^1.5.0"
+    "binary-parser": "^1.5.0",
+    "dxt-js": "0.0.3",
+    "is-power-of-two": "^1.0.0",
+    "next-power-of-two": "^1.0.0",
+    "sharp": "^0.23.4"
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.0",
@@ -45,7 +49,8 @@
     "mocha": "^6.2.2",
     "mocha-each": "^2.0.1",
     "tmp": "^0.1.0",
-    "typescript": "^3.7.3"
+    "typescript": "^3.7.3",
+    "chai-arrays": "^2.0.0"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"

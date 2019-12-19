@@ -35,10 +35,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
-var Parser = require("./parser");
-var SNGParser = require("./sngparser");
+var Parser = __importStar(require("./parser"));
+var SNGParser = __importStar(require("./sngparser"));
+var DDSParser = __importStar(require("./ddsparser"));
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
         this.psarcFile = file;
@@ -230,9 +238,46 @@ var SNG = /** @class */ (function () {
     };
     return SNG;
 }());
+var DDS = /** @class */ (function () {
+    function DDS(file) {
+        this.ddsFiles = [];
+        this.imageFile = file;
+    }
+    DDS.prototype.convert = function (tag) {
+        if (tag === void 0) { tag = ""; }
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this;
+                        return [4 /*yield*/, DDSParser.convert(this.imageFile, tag)];
+                    case 1:
+                        _a.ddsFiles = _b.sent();
+                        return [2 /*return*/, this.ddsFiles];
+                }
+            });
+        });
+    };
+    DDS.prototype.validate = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var data;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(this.imageFile)];
+                    case 1:
+                        data = _a.sent();
+                        return [2 /*return*/, DDSParser.HEADER.parse(data)];
+                }
+            });
+        });
+    };
+    return DDS;
+}());
 module.exports = {
     PSARC: PSARC,
     SNG: SNG,
+    DDS: DDS,
 };
 /*
 handleCmd

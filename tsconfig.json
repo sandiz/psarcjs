@@ -3,7 +3,8 @@
         "outDir": "./dist",
         "allowJs": true,
         "target": "es5",
-        "strict": true
+        "strict": true,
+        "esModuleInterop": true,
     },
     "include": [
         "./src/**/*"
