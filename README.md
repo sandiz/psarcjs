@@ -5,7 +5,7 @@
 </p>
 
 # psarcjs
-node module to read and extract Rocksmith PSARC files
+node.js v12 module to read and extract Rocksmith PSARC files
 
 ## Installation
     npm install @sandiz/psarcjs or
