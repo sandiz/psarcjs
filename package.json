@@ -32,7 +32,9 @@
   "dependencies": {
     "aes-js": "^3.1.2",
     "binary-parser": "^1.5.0",
-    "imagemagick-native": "git+https://github.com/sandiz/node-imagemagick-native.git"
+    "imagemagick-native": "git+https://github.com/sandiz/node-imagemagick-native.git",
+    "ogg": "git+https://github.com/sandiz/node-ogg.git",
+    "vorbis": "git+https://github.com/sandiz/node-vorbis.git"
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.0",

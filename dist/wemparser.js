@@ -62,11 +62,6 @@ exports.PACKET = new binary_parser_1.Parser()
         return this.packet_size - 1;
     }
 });
-/* .buffer("packet_data", {
-    length: function () {
-        return (this as any).packet_size;
-    }
-}) */
 exports.SETUPPACKET = new binary_parser_1.Parser()
     .endianess("little")
     .bit8("codebook_count")
