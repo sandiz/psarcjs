@@ -8,7 +8,7 @@ var forEach = require('mocha-each');
 var chaiExclude = require('chai-exclude');
 const assertArrays = require('chai-arrays');
 var promises = require('fs').promises;
-var { PSARC, SNG, DDS } = require('../dist');
+var { PSARC, SNG, DDS, WEM } = require('../dist');
 
 var expect = chai.expect;
 chai.use(require('chai-fs'));
@@ -66,7 +66,7 @@ async function sngTests() {
             let SNG;
             let json;
             before(async () => {
-                const file = `test/sng/${f2}`;
+                const file = `${sngs}/${f2}`;
                 json = JSON.parse(await promises.readFile(`${file}.json`));
                 SNG = await getSNG(file);
                 /*
@@ -349,7 +349,7 @@ async function ddsTests() {
         .describe('psarcjs: DDS: convert %s', async function (f2) {
             let DDS;
             it('dds convert', async () => {
-                const input = `test/dds/${f2}`;
+                const input = `${ddss}/${f2}`;
                 const files = await convertToDDS(input);
                 expect(files).to.be.array()
             }).timeout(15000);
@@ -361,7 +361,7 @@ async function ddsTests() {
     await forEach(dds)
         .describe('psarcjs: DDS: parse %s', async function (f2) {
             it('dds validate', async () => {
-                const input = `test/dds/${f2}`;
+                const input = `${ddss}${f2}`;
                 const dds = new DDS(input);
                 const res = await dds.validate();
                 console.log(res);
@@ -369,11 +369,51 @@ async function ddsTests() {
         })
 }
 
+async function convertToWEM(file) {
+    const p = path.parse(file);
+    return await WEM.convert(file, p.name);
+}
+async function wemTests() {
+    const files = await promises.readdir(wems);
+    const medias = files.filter(i => i.endsWith(".ogg") || i.endsWith(".wav") || i.endsWith(".mp3"));
+    /*
+    await forEach(medias)
+        .describe('psarcjs: WEM: convert %s', async function (f2) {
+            it('wem convert', async () => {
+                const input = `${wems}/${f2}`;
+                const file = await convertToWEM(input);
+                expect(file).to.be.string()
+            }).timeout(15000);
+        })
+    */
 
-psarcTests();
+    const f = await promises.readdir(wems);
+    const wemf = f.filter(i => i.endsWith(".wem"));
+    await forEach(wemf)
+        .describe('psarcjs: WEM: parse %s', async function (f2) {
+            it('wem validate', async () => {
+                const input = `${wems}${f2}`;
+                const res = await WEM.validate(input);
+
+                console.log(util.inspect(res, {
+                    depth: 6,
+                    colors: true,
+                    maxArrayLength: 3,
+                    compact: true,
+                }));
+
+            }).timeout(15000)
+        })
+}
 
 const sngs = "test/sng/";
-sngTests();
+const ddss = "test/dds/";
+const wems = "test/wem/";
+async function fn() {
+    await psarcTests();
+    //await sngTests();
+    //ddsTests();
+    await wemTests();
+}
 
-const ddss = "test/dds";
-ddsTests();
+fn();

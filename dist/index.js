@@ -47,6 +47,7 @@ var fs_1 = require("fs");
 var Parser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var DDSParser = __importStar(require("./ddsparser"));
+var WEMParser = __importStar(require("./wemparser"));
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
         this.psarcFile = file;
@@ -274,30 +275,41 @@ var DDS = /** @class */ (function () {
     };
     return DDS;
 }());
+var WEM = /** @class */ (function () {
+    function WEM() {
+    }
+    WEM.convert = function (file, tag) {
+        if (tag === void 0) { tag = ""; }
+        return __awaiter(this, void 0, void 0, function () {
+            var wemFile;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, WEMParser.convert(file, tag)];
+                    case 1:
+                        wemFile = _a.sent();
+                        return [2 /*return*/, wemFile];
+                }
+            });
+        });
+    };
+    WEM.validate = function (wemFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(wemFile)];
+                    case 1:
+                        data = _a.sent();
+                        return [2 /*return*/, WEMParser.WEMDATA.parse(data)];
+                }
+            });
+        });
+    };
+    return WEM;
+}());
 module.exports = {
     PSARC: PSARC,
     SNG: SNG,
     DDS: DDS,
+    WEM: WEM,
 };
-/*
-handleCmd
-async function handleCmd() {
-    const psarc = new PSARC(process.argv[2]);
-    await psarc.parse();
-    const files = psarc.getFiles();
-    console.log("files:", files.length);
-    const arrangements = await psarc.getArrangements();
-    //console.log("arrangements:", util.inspect(arrangements, false, null, true));
-    console.log("arrangements:", Object.keys(arrangements).length);
-    const keys = Object.values(arrangements)
-    for (const key of keys) {
-        console.log(key.srcjson)
-    }
-    const outfile = '/tmp/test.xml';
-    const idx = files.indexOf('songs/arr/witchcraftsong_lead.xml');
-    if (idx !== -1) {
-        await psarc.extractFile(idx, outfile, true);
-        console.log(idx.toString(), "extracted to", outfile);
-    }
-}
-*/

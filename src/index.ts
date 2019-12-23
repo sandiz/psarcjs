@@ -4,7 +4,8 @@ import { BOM, Arrangements } from "./types/types";
 import * as Parser from './parser';
 import * as SNGParser from './sngparser';
 import * as DDSParser from './ddsparser';
-import { SNGFORMAT } from './types/sng';
+import * as WEMParser from './wemparser';
+import { SNGFORMAT } from './types/sng'
 
 class PSARC {
     /**
@@ -177,33 +178,21 @@ class DDS {
 
 }
 
+class WEM {
+    static async convert(file: string, tag: string = "") {
+        let wemFile = await WEMParser.convert(file, tag);
+        return wemFile;
+    }
+
+    static async validate(wemFile: string) {
+        const data = await promises.readFile(wemFile);
+        return WEMParser.WEMDATA.parse(data);
+    }
+}
+
 module.exports = {
     PSARC,
     SNG,
     DDS,
+    WEM,
 }
-
-/*
-handleCmd
-async function handleCmd() {
-    const psarc = new PSARC(process.argv[2]);
-    await psarc.parse();
-    const files = psarc.getFiles();
-    console.log("files:", files.length);
-    const arrangements = await psarc.getArrangements();
-    //console.log("arrangements:", util.inspect(arrangements, false, null, true));
-    console.log("arrangements:", Object.keys(arrangements).length);
-    const keys = Object.values(arrangements)
-    for (const key of keys) {
-        console.log(key.srcjson)
-    }
-    const outfile = '/tmp/test.xml';
-    const idx = files.indexOf('songs/arr/witchcraftsong_lead.xml');
-    if (idx !== -1) {
-        await psarc.extractFile(idx, outfile, true);
-        console.log(idx.toString(), "extracted to", outfile);
-    }
-}
-*/
-
-
