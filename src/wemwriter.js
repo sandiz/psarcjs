@@ -62,6 +62,7 @@ function addHeader(refHeader) {
 }
 
 function addFormat(refFormat) {
+    var setupPacket = fs.readFileSync("data/setup_packet.bin");
     var format = {
         fmtMagic: 'fmt ',
         fmtSize: 66,//66,
@@ -85,8 +86,8 @@ function addFormat(refFormat) {
         dataMagic: 'data',
         dataSize: refFormat.dataSize, /*TODO */
         unk5: refFormat.unk5, /*TODO */
-        setup_packet_size: refFormat.setup_packet_size,  /*TODO */
-        setup_package_data: refFormat.setup_package_data,   /*TODO */
+        setup_packet_size: setupPacket.length,  /*TODO */
+        setup_package_data: setupPacket,   /*TODO */
         packets: refFormat.packets /*TODO */
     }
     return WEMParser.FORMAT.encode(format)
