@@ -4,8 +4,8 @@ const util = require('util');
 const Parser = require('binary-parser').Parser;
 const WEMParser = require("../dist/wemparser");
 
-const outputFile = "test/wem/1563725178.wem.cut";
-const refWem = "/Users/sandi/Downloads/Amit-Trivedi_Main-Kaun-Hoon-Cover_v1_DD_m/audio/mac/1563725178.wem"
+const outputFile = process.argv[2]
+const refWem = process.argv[3];
 
 function addPackets() {
     const inputFile = "test/wem/output.ogg";
@@ -75,16 +75,16 @@ function addFormat(refFormat) {
         unk1: 0,
         subtype: 3,
         sampleCount: refFormat.sampleCount, /*TODO */
-        modSignal: refFormat.modSignal,
-        unk2: refFormat.unk2,//[0, 0], /*TODO*/
+        modSignal: 217,
+        unk2: refFormat.unk2, /*TODO*/
         setup_packet_offset: refFormat.setup_packet_offset, //1, /*TODO*/
         first_audio_packet_offset: refFormat.first_audio_packet_offset, /*TODO*/
-        unk3: refFormat.unk3, ///[0, 0, 16080],/*TODO*/
-        uid: refFormat.uid,
-        unk4: refFormat.unk4,//[-1461190656, 185128267],
+        unk3: refFormat.unk3,/*TODO*/
+        uid: 1085276160,
+        unk4: refFormat.unk4,
         dataMagic: 'data',
         dataSize: refFormat.dataSize, /*TODO */
-        unk5: refFormat.unk5,//Buffer.from([0x00]), /*TODO */
+        unk5: refFormat.unk5, /*TODO */
         setup_packet_size: refFormat.setup_packet_size,  /*TODO */
         setup_package_data: refFormat.setup_package_data,   /*TODO */
         packets: refFormat.packets /*TODO */
