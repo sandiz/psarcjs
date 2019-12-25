@@ -1,9 +1,9 @@
 import { promises } from 'fs';
 import { Parser } from 'binary-parser';
-import * as dxt from 'dxt-js';
 import * as imagemagick from 'imagemagick-native'
 const path = require('path');
 /*
+//import * as dxt from 'dxt-js';
 const isPo2 = require('is-power-of-two')
 const nextPo2 = require('next-power-of-two')
 const sharp = require('sharp');

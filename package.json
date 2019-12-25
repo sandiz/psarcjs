@@ -7,7 +7,7 @@
     "test": "python3 test/sng/generate-sng-json.py && mocha --reporter spec",
     "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "cover": "c8 --reporter=html --reporter=text mocha --reporter spec",
-    "build": "tsc --build"
+    "build": "rm -rf dist/ && tsc --build --pretty"
   },
   "repository": {
     "type": "git",
@@ -31,10 +31,9 @@
   "homepage": "https://github.com/sandiz/psarcjs#readme",
   "dependencies": {
     "aes-js": "^3.1.2",
-    "binary-parser": "^1.5.0",
-    "imagemagick-native": "git+https://github.com/sandiz/node-imagemagick-native.git",
-    "ogg": "git+https://github.com/sandiz/node-ogg.git",
-    "vorbis": "git+https://github.com/sandiz/node-vorbis.git"
+    "binary-parser": "git+https://github.com/psarcjs-forks/binary-parser.git",
+    "imagemagick-native": "git+https://github.com/psarcjs-forks/node-imagemagick-native.git",
+    "ogg": "git+https://github.com/psarcjs-forks/node-ogg.git"
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.0",

@@ -48,6 +48,7 @@ var binary_parser_1 = require("binary-parser");
 var imagemagick = __importStar(require("imagemagick-native"));
 var path = require('path');
 /*
+//import * as dxt from 'dxt-js';
 const isPo2 = require('is-power-of-two')
 const nextPo2 = require('next-power-of-two')
 const sharp = require('sharp');

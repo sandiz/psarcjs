@@ -398,7 +398,7 @@ async function wemTests() {
                 console.log(util.inspect(res, {
                     depth: 6,
                     colors: true,
-                    maxArrayLength: 3,
+                    maxArrayLength: 10,
                     compact: true,
                 }));
 
@@ -411,9 +411,9 @@ const ddss = "test/dds/";
 const wems = "test/wem/";
 async function fn() {
     await psarcTests();
-    await sngTests();
-    await ddsTests();
-    //await wemTests();
+    //await sngTests();
+    //await ddsTests();
+    await wemTests();
 }
 
 fn();

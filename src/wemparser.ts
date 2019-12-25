@@ -19,13 +19,15 @@ export const DATA = new Parser()
 export const PACKET = new Parser()
     .endianess("little")
     .int16("packet_size")
-    .nest("first", {
+    /*.nest("first", {
         type: new Parser().endianess("little")
             .bit1("mode_number").bit7("remainder")
-    })
+    })*/
+    //.int32("first")
+    //.bit1("mode_number").bit7("remainder")
     .buffer("rest", {
         length: function () {
-            return (this as any).packet_size - 1;
+            return (this as any).packet_size;
         }
     })
 
@@ -37,11 +39,9 @@ export const SETUPPACKET = new Parser()
             return ((this as any).codebook_count * 10) / 8
         },
     })
-//.bit10("codebook_id")
 
 export const FORMAT = new Parser()
     .endianess("little")
-    .namely("format")
     .string("fmtMagic", {
         length: 4,
         assert: 'fmt ',
@@ -58,7 +58,7 @@ export const FORMAT = new Parser()
     .int32("subtype")
     .int32("sampleCount")
     .int32("modSignal", {
-        formatter: v => (v as number).toString(16),
+        //formatter: v => (v as number).toString(16),
     })
     .array("unk2", {
         type: "int32le",
@@ -71,10 +71,9 @@ export const FORMAT = new Parser()
         length: 3,
     })
     .int32("uid")
-    .buffer("unk4", {
-        length: function () {
-            return 8;
-        }
+    .array("unk4", {
+        type: "int32le",
+        length: 2,
     })
     .string("dataMagic", {
         length: 4,
@@ -110,9 +109,6 @@ export const WEMDATA: Parser<any> = new Parser()
     .nest("format", {
         type: FORMAT,
     });
-
-
-
 
 export async function convert(wavFile: string, tag: string): Promise<string> {
     return "";
