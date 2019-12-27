@@ -5,8 +5,10 @@ import * as Parser from './parser';
 import * as SNGParser from './sngparser';
 import * as DDSParser from './ddsparser';
 import * as WEMParser from './wemparser';
+import * as WAAPIHandler from './wemwaapi';
 import { SNGFORMAT } from './types/sng'
 
+export enum Platform { Windows, Mac }
 class PSARC {
     /**
      * Initialise psarc file instance
@@ -190,9 +192,16 @@ class WEM {
     }
 }
 
+class WAAPI {
+    static async convert(file: string, tag: string, platform: Platform): Promise<string> {
+        return await WAAPIHandler.Convert(file, tag, platform);
+    }
+}
+
 module.exports = {
     PSARC,
     SNG,
     DDS,
     WEM,
+    WAAPI,
 }

@@ -48,6 +48,12 @@ var Parser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var DDSParser = __importStar(require("./ddsparser"));
 var WEMParser = __importStar(require("./wemparser"));
+var WAAPIHandler = __importStar(require("./wemwaapi"));
+var Platform;
+(function (Platform) {
+    Platform[Platform["Windows"] = 0] = "Windows";
+    Platform[Platform["Mac"] = 1] = "Mac";
+})(Platform = exports.Platform || (exports.Platform = {}));
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
         this.psarcFile = file;
@@ -307,9 +313,25 @@ var WEM = /** @class */ (function () {
     };
     return WEM;
 }());
+var WAAPI = /** @class */ (function () {
+    function WAAPI() {
+    }
+    WAAPI.convert = function (file, tag, platform) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, WAAPIHandler.Convert(file, tag, platform)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    return WAAPI;
+}());
 module.exports = {
     PSARC: PSARC,
     SNG: SNG,
     DDS: DDS,
     WEM: WEM,
+    WAAPI: WAAPI,
 };

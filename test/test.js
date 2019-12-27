@@ -8,7 +8,7 @@ var forEach = require('mocha-each');
 var chaiExclude = require('chai-exclude');
 const assertArrays = require('chai-arrays');
 var promises = require('fs').promises;
-var { PSARC, SNG, DDS, WEM } = require('../dist');
+var { PSARC, SNG, DDS, WEM, WAAPI } = require('../dist');
 
 var expect = chai.expect;
 chai.use(require('chai-fs'));
@@ -405,6 +405,34 @@ async function wemTests() {
             }).timeout(15000)
         })
 }
+async function waapiTests() {
+    describe("waapi tests", () => {
+        it("waapi convert/parse macos", async () => {
+            const f = await WAAPI.convert("/Users/sandi/Downloads/output.wav", "testTag", 1);
+            console.log("Generated wem file", f);
+
+            const res = await WEM.validate(f);
+            console.log(util.inspect(res, {
+                depth: 4,
+                colors: true,
+                maxArrayLength: 3,
+                compact: true,
+            }));
+        }).timeout(45000);
+        it("waapi convert/parse windows", async () => {
+            const f = await WAAPI.convert("/Users/sandi/Downloads/output.wav", "testTag", 0);
+            console.log("Generated wem file", f);
+
+            const res = await WEM.validate(f);
+            console.log(util.inspect(res, {
+                depth: 4,
+                colors: true,
+                maxArrayLength: 3,
+                compact: true,
+            }));
+        }).timeout(45000);
+    }).timeout(45000);
+}
 
 const sngs = "test/sng/";
 const ddss = "test/dds/";
@@ -414,6 +442,7 @@ async function fn() {
     await sngTests();
     await ddsTests();
     //await wemTests();
+    await waapiTests();
 }
 
 fn();

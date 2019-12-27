@@ -105,12 +105,46 @@ node.js v12 module to read and extract Rocksmith PSARC files
             }
     */
 ```
+```JavaScript
+    const { WAAPI } = require("psarcjs");
+    const util = require('util');
 
+    async function fn() {
+        /* WAAPI requires WWise to be installed and WWise Authoring API must be enabled (on by default) */
+        /* more info here: https://www.audiokinetic.com/library/edge/?source=SDK&id=waapi_prepare.html */
+        const f = await WAAPI.convert("/Users/sandi/Downloads/output.wav", "testTag", 1);
+        console.log("Generated wem file", f);
+    }
+    fn();
+    
+    /*
+    Found Wwise v2018.1.10!
+    Project loaded Z:\var\folders\7s\d4104tx11fj3lyfk59687qzh0000gn\T\tmp-psarcjs
+    Object created psarcjs-inputWav {169101CB-3ABF-4824-AE2E-525211365D23}
+    Imported audio [ '{33A03605-A4EB-4B7C-9E2B-022AB5A8E183}' ]
+    Waiting for conversion to finish...
+    {
+        platforms: [ '{FFF5CF3A-DF33-464D-ACB0-30013B91348C}' ],
+        command: 'ConvertAllPlatform',
+        objects: [
+            {
+                id: '{33A03605-A4EB-4B7C-9E2B-022AB5A8E183}',
+                name: 'input',
+                type: 'MusicTrack'
+            }
+        ]
+    }
+    Found wems in /var/folders/7s/d4104tx11fj3lyfk59687qzh0000gn/T/tmp-psarcjs/.cache/Windows/SFX [ 'output_CB1F3167.wem' ]
+    Existing project closed!
+    Disconnected!
+    Generated wem file /var/folders/7s/d4104tx11fj3lyfk59687qzh0000gn/T/tmp-psarcjs/.cache/Windows/SFX/Song_testTag.wem
+    */
+```
 ## TODO
 - [x] SNG read support
 - [x] DDS write support
+- [x] Wem write support (requires WWise to be installed)
 - [ ] SNG write support
-- [ ] Wav to Wem write support
 - [ ] PSARC write support
 
 ## Tests
