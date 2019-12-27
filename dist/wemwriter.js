@@ -4,8 +4,8 @@ var fs = require('fs');
 var util = require('util');
 var Parser = require('binary-parser').Parser;
 var WEMParser = require("../dist/wemparser");
-var outputFile = "test/wem/1563725178.wem.cut";
-var refWem = "/Users/sandi/Downloads/Amit-Trivedi_Main-Kaun-Hoon-Cover_v1_DD_m/audio/mac/1563725178.wem";
+var outputFile = process.argv[2];
+var refWem = process.argv[3];
 function addPackets() {
     var inputFile = "test/wem/output.ogg";
     var od = new ogg.Decoder();
@@ -44,38 +44,39 @@ function addPackets() {
 var outputBuffer = null;
 function addHeader(refHeader) {
     var header = {
-        magic: refHeader.magic,
+        magic: "RIFF",
         fileSize: refHeader.fileSize,
-        riffType: refHeader.riffType,
+        riffType: "WAVE"
     };
     return WEMParser.HEADER.encode(header);
 }
 function addFormat(refFormat) {
+    var setupPacket = fs.readFileSync("data/setup_packet.bin");
     var format = {
-        fmtMagic: refFormat.fmtMagic,
-        fmtSize: refFormat.fmtSize,
-        formatTag: refFormat.formatTag,
+        fmtMagic: 'fmt ',
+        fmtSize: 66,
+        formatTag: -1,
         channels: refFormat.channels,
         sampleRate: refFormat.sampleRate,
         avgBPS: refFormat.avgBPS,
         sampleFrameSize: refFormat.sampleFrameSize,
         bitsPerSample: refFormat.bitsPerSample,
-        fmtSizeMinus0x12: refFormat.fmtSizeMinus0x12,
-        unk1: refFormat.unk1,
-        subtype: refFormat.subtype,
+        fmtSizeMinus0x12: 48,
+        unk1: 0,
+        subtype: 3,
         sampleCount: refFormat.sampleCount,
-        modSignal: refFormat.modSignal,
+        modSignal: 217,
         unk2: refFormat.unk2,
         setup_packet_offset: refFormat.setup_packet_offset,
         first_audio_packet_offset: refFormat.first_audio_packet_offset,
         unk3: refFormat.unk3,
-        uid: refFormat.uid,
+        uid: 1085276160,
         unk4: refFormat.unk4,
-        dataMagic: refFormat.dataMagic,
+        dataMagic: 'data',
         dataSize: refFormat.dataSize,
         unk5: refFormat.unk5,
-        setup_packet_size: refFormat.setup_packet_size,
-        setup_package_data: refFormat.setup_package_data,
+        setup_packet_size: setupPacket.length,
+        setup_package_data: setupPacket,
         packets: refFormat.packets /*TODO */
     };
     return WEMParser.FORMAT.encode(format);

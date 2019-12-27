@@ -103,9 +103,13 @@ exports.FORMAT = new binary_parser_1.Parser()
     length: 3,
 })
     .int32("uid")
+    .uint8("bs_0")
+    .uint8("bs_1")
+    .uint8("bs_2")
+    .uint8("bs_3")
     .array("unk4", {
     type: "int32le",
-    length: 2,
+    length: 1,
 })
     .string("dataMagic", {
     length: 4,

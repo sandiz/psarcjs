@@ -82,6 +82,10 @@ function addFormat(refFormat) {
         first_audio_packet_offset: refFormat.first_audio_packet_offset, /*TODO*/
         unk3: refFormat.unk3,/*TODO*/
         uid: 1085276160,
+        bs_0: 0,
+        bs_1: 0,
+        bs_2: 0, /* TODO */
+        bs_3: 0, /* TODO */
         unk4: refFormat.unk4,
         dataMagic: 'data',
         dataSize: refFormat.dataSize, /*TODO */
