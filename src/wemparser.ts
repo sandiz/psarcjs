@@ -19,15 +19,15 @@ export const DATA = new Parser()
 export const PACKET = new Parser()
     .endianess("little")
     .int16("packet_size")
-    /*.nest("first", {
+    .nest("first", {
         type: new Parser().endianess("little")
             .bit1("mode_number").bit7("remainder")
-    })*/
+    })
     //.int32("first")
     //.bit1("mode_number").bit7("remainder")
     .buffer("rest", {
         length: function () {
-            return (this as any).packet_size;
+            return (this as any).packet_size - 1;
         }
     })
 

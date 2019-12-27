@@ -53,15 +53,15 @@ exports.DATA = new binary_parser_1.Parser()
 exports.PACKET = new binary_parser_1.Parser()
     .endianess("little")
     .int16("packet_size")
-    /*.nest("first", {
-        type: new Parser().endianess("little")
-            .bit1("mode_number").bit7("remainder")
-    })*/
+    .nest("first", {
+    type: new binary_parser_1.Parser().endianess("little")
+        .bit1("mode_number").bit7("remainder")
+})
     //.int32("first")
     //.bit1("mode_number").bit7("remainder")
     .buffer("rest", {
     length: function () {
-        return this.packet_size;
+        return this.packet_size - 1;
     }
 });
 exports.SETUPPACKET = new binary_parser_1.Parser()
