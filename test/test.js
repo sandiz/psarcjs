@@ -442,7 +442,6 @@ async function fn() {
     await sngTests();
     await ddsTests();
     //await wemTests();
-    console.log(process.env);
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
     }
