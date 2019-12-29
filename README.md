@@ -140,10 +140,43 @@ node.js v12 module to read and extract Rocksmith PSARC files
     Generated wem file /var/folders/7s/d4104tx11fj3lyfk59687qzh0000gn/T/tmp-psarcjs/.cache/Windows/SFX/Song_testTag.wem
     */
 ```
+```JavaScript
+    const { BNK } = require("psarcjs");
+    async function fn() {
+        /* generate bnk and copy input wem to bnk-ready wem */
+        const filesInfo: BNKReturn = await BNK.generate("/path/to/wem", "dlcName", true, "/tmp/");
+        console.log(filesInfo);
+
+         /* generate preview bnk but dont copy input wem */
+        const filesInfo: BNKReturn = await BNK.generate("/path/to/wem", "dlcName", false, "/tmp/", true);
+        console.log(filesInfo);
+    }
+    /*
+    {
+        input: '/path/to/wem',
+        wem: '/tmp/1727797837.wem',
+        bnk: '/tmp/Song_dlcName.bnk',
+        fileID: 1727797837,
+        soundbankID: 1040702684,
+        soundID: 1885556048
+    }
+    {
+        input: '/path/to/wem',
+        wem: '/path/to/wem',
+        bnk: '/tmp/Song_dlcName_Preview.bnk',
+        fileID: 1799613382,
+        soundbankID: 311679683,
+        soundID: 230666728
+    }
+    */
+    fn();
+```
+
 ## TODO
 - [x] SNG read support
 - [x] DDS write support
-- [x] Wem write support (requires WWise to be installed)
+- [x] WEM write support (requires WWise to be installed)
+- [x] BNK writer support
 - [ ] SNG write support
 - [ ] PSARC write support
 

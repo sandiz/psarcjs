@@ -377,19 +377,6 @@ async function convertToWEM(file) {
     return await WEM.convert(file, p.name);
 }
 async function wemTests() {
-    const files = await promises.readdir(wems);
-    const medias = files.filter(i => i.endsWith(".ogg") || i.endsWith(".wav") || i.endsWith(".mp3"));
-    /*
-    await forEach(medias)
-        .describe('psarcjs: WEM: convert %s', async function (f2) {
-            it('wem convert', async () => {
-                const input = `${wems}/${f2}`;
-                const file = await convertToWEM(input);
-                expect(file).to.be.string()
-            }).timeout(15000);
-        })
-    */
-
     const f = await promises.readdir(wems);
     const wemf = f.filter(i => i.endsWith(".wem"));
     await forEach(wemf)
@@ -401,11 +388,25 @@ async function wemTests() {
                 console.log(util.inspect(res, {
                     depth: 6,
                     colors: true,
-                    maxArrayLength: 10,
+                    maxArrayLength: 3,
                     compact: true,
                 }));
-
             }).timeout(15000)
+            it('bnk generate', async () => {
+                const input = `${wems}${f2}`;
+                const files = await BNK.generate(input, "psarcjsTest", false, "/tmp/");
+                console.log(files);
+            });
+            it('bnk replace', async () => {
+                const input = `${wems}${f2}`;
+                const files = await BNK.generate(input, "psarcjsTest", true, "/tmp/");
+                console.log(files);
+            });
+            it('bnk preview', async () => {
+                const input = `${wems}${f2}`;
+                const files = await BNK.generate(input, "psarcjsTest", false, "/tmp/", true);
+                console.log(files);
+            });
         })
 }
 async function waapiTests() {
@@ -421,6 +422,8 @@ async function waapiTests() {
                 maxArrayLength: 3,
                 compact: true,
             }));
+            const bnk = await BNK.generate(f, "testTag", true, "/tmp/");
+            console.log(bnk);
         }).timeout(45000);
         it("waapi convert/parse windows", async () => {
             const f = await WAAPI.convert("/Users/sandi/Downloads/output.wav", "testTag", 0);
@@ -433,6 +436,8 @@ async function waapiTests() {
                 maxArrayLength: 3,
                 compact: true,
             }));
+            const bnk = await BNK.generate(f, "testTag", true, "/tmp/");
+            console.log(bnk);
         }).timeout(45000);
     }).timeout(45000);
 }
@@ -464,7 +469,7 @@ async function bnkTests() {
                 console.log(util.inspect(res, {
                     depth: 6,
                     colors: true,
-                    maxArrayLength: 10,
+                    maxArrayLength: 3,
                     compact: true,
                 }));
 
@@ -484,7 +489,7 @@ async function fn() {
     await bnkTests();
     await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
-        //await waapiTests();
+        await waapiTests();
     }
 }
 

@@ -332,6 +332,17 @@ var BNK = /** @class */ (function () {
             });
         });
     };
+    BNK.generate = function (wemFile, tag, copyWem, dir, preview) {
+        if (preview === void 0) { preview = false; }
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, BNKParser.generate(dir, wemFile, tag, copyWem, preview)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
     return BNK;
 }());
 var WAAPI = /** @class */ (function () {
