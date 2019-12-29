@@ -8,7 +8,10 @@ var forEach = require('mocha-each');
 var chaiExclude = require('chai-exclude');
 const assertArrays = require('chai-arrays');
 var promises = require('fs').promises;
-var { PSARC, SNG, DDS, WEM, WAAPI } = require('../dist');
+var {
+    PSARC, SNG, DDS,
+    WEM, WAAPI, GENERIC, BNK
+} = require('../dist');
 
 var expect = chai.expect;
 chai.use(require('chai-fs'));
@@ -434,16 +437,54 @@ async function waapiTests() {
     }).timeout(45000);
 }
 
+async function genericTests() {
+    describe("generic tests", async () => {
+        it("generate toolkit.version", async () => {
+            const f = await GENERIC.generateToolkit("/tmp/", "sandi", "comment 1", 1, "psarcjs-test", "0.0.1");
+            const data = await promises.readFile(f);
+            console.log(data.toString());
+        })
+        it("generate appid", async () => {
+            const f = await GENERIC.generateAppid("/tmp/");
+            const data = await promises.readFile(f);
+            console.log(data.toString());
+        })
+    });
+}
+
+async function bnkTests() {
+    const f = await promises.readdir(bnks);
+    const bnkf = f.filter(i => i.endsWith(".bnk"));
+    await forEach(bnkf)
+        .describe('psarcjs: BNK: parse %s', async function (f2) {
+            it('bnk validate', async () => {
+                const input = `${bnks}${f2}`;
+                const res = await BNK.validate(input);
+
+                console.log(util.inspect(res, {
+                    depth: 6,
+                    colors: true,
+                    maxArrayLength: 10,
+                    compact: true,
+                }));
+
+            }).timeout(15000)
+        })
+}
+
 const sngs = "test/sng/";
 const ddss = "test/dds/";
 const wems = "test/wem/";
+const bnks = "test/bnk/";
 async function fn() {
+    await genericTests();
     await psarcTests();
     await sngTests();
     await ddsTests();
-    //await wemTests();
+    await bnkTests();
+    await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
-        await waapiTests();
+        //await waapiTests();
     }
 }
 

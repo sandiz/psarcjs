@@ -1,12 +1,16 @@
 import { promises } from 'fs';
-import * as util from 'util';
+//import * as util from 'util';
 import { BOM, Arrangements } from "./types/types";
 import * as Parser from './parser';
 import * as SNGParser from './sngparser';
 import * as DDSParser from './ddsparser';
 import * as WEMParser from './wemparser';
+import * as BNKParser from './bnkparser';
 import * as WAAPIHandler from './wemwaapi';
 import { SNGFORMAT } from './types/sng'
+import { join } from 'path';
+
+const pkgInfo = require("../package.json");
 
 export enum Platform { Windows, Mac }
 class PSARC {
@@ -192,9 +196,37 @@ class WEM {
     }
 }
 
+
+class BNK {
+    static async validate(bnkFile: string) {
+        const data = await promises.readFile(bnkFile);
+        return BNKParser.BNKDATA.parse(data);
+    }
+}
+
 class WAAPI {
     static async convert(file: string, tag: string, platform: Platform): Promise<string> {
         return await WAAPIHandler.Convert(file, tag, platform);
+    }
+}
+
+class GENERIC {
+    static async generateToolkit(dir: string, author: string,
+        comment: string, v2: string, tkName: string, tkVersion: string) {
+        const f = join(dir, "toolkit.version");
+        const data = `Package Author: ${author}\n` +
+            `Package Version: ${v2}\n` +
+            `Package Comment: ${comment}\n` +
+            `Toolkit: ${tkName} v${tkVersion} (psarcjs v${pkgInfo.version})\n\n`
+        await promises.writeFile(f, data);
+        return f;
+    }
+
+    static async generateAppid(dir: string) {
+        const appid = "248750";
+        const f = join(dir, "appid.appid")
+        await promises.writeFile(f, appid);
+        return f;
     }
 }
 
@@ -204,4 +236,6 @@ module.exports = {
     DDS,
     WEM,
     WAAPI,
+    GENERIC,
+    BNK,
 }

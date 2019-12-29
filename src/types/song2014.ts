@@ -1,3 +1,4 @@
+/* Song2014 XML Format */
 export interface Tuning {
     string0: number;
     string1: number;

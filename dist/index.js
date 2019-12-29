@@ -48,7 +48,10 @@ var Parser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var DDSParser = __importStar(require("./ddsparser"));
 var WEMParser = __importStar(require("./wemparser"));
+var BNKParser = __importStar(require("./bnkparser"));
 var WAAPIHandler = __importStar(require("./wemwaapi"));
+var path_1 = require("path");
+var pkgInfo = require("../package.json");
 var Platform;
 (function (Platform) {
     Platform[Platform["Windows"] = 0] = "Windows";
@@ -313,6 +316,24 @@ var WEM = /** @class */ (function () {
     };
     return WEM;
 }());
+var BNK = /** @class */ (function () {
+    function BNK() {
+    }
+    BNK.validate = function (bnkFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(bnkFile)];
+                    case 1:
+                        data = _a.sent();
+                        return [2 /*return*/, BNKParser.BNKDATA.parse(data)];
+                }
+            });
+        });
+    };
+    return BNK;
+}());
 var WAAPI = /** @class */ (function () {
     function WAAPI() {
     }
@@ -328,10 +349,52 @@ var WAAPI = /** @class */ (function () {
     };
     return WAAPI;
 }());
+var GENERIC = /** @class */ (function () {
+    function GENERIC() {
+    }
+    GENERIC.generateToolkit = function (dir, author, comment, v2, tkName, tkVersion) {
+        return __awaiter(this, void 0, void 0, function () {
+            var f, data;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        f = path_1.join(dir, "toolkit.version");
+                        data = "Package Author: " + author + "\n" +
+                            ("Package Version: " + v2 + "\n") +
+                            ("Package Comment: " + comment + "\n") +
+                            ("Toolkit: " + tkName + " v" + tkVersion + " (psarcjs v" + pkgInfo.version + ")\n\n");
+                        return [4 /*yield*/, fs_1.promises.writeFile(f, data)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, f];
+                }
+            });
+        });
+    };
+    GENERIC.generateAppid = function (dir) {
+        return __awaiter(this, void 0, void 0, function () {
+            var appid, f;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        appid = "248750";
+                        f = path_1.join(dir, "appid.appid");
+                        return [4 /*yield*/, fs_1.promises.writeFile(f, appid)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, f];
+                }
+            });
+        });
+    };
+    return GENERIC;
+}());
 module.exports = {
     PSARC: PSARC,
     SNG: SNG,
     DDS: DDS,
     WEM: WEM,
     WAAPI: WAAPI,
+    GENERIC: GENERIC,
+    BNK: BNK,
 };
