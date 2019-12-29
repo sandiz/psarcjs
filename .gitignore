@@ -61,5 +61,4 @@ typings/
 .next
 
 test/sng/*.json
-dist/
 test/dds/*.dds
