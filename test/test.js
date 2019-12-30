@@ -514,7 +514,7 @@ async function fn() {
     await bnkTests();
     await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
-        //await waapiTests();
+        await waapiTests();
     }
 }
 
