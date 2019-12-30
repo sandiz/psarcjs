@@ -1,4 +1,6 @@
 import { promises } from 'fs';
+import * as xml2js from 'xml2js';
+
 //import * as util from 'util';
 import * as Parser from './parser';
 import * as SNGParser from './sngparser';
@@ -10,7 +12,7 @@ import { SNGFORMAT } from './types/sng'
 import { join } from 'path';
 import { generate } from './aggregategraphwriter';
 
-import { BOM, Arrangements, ArrangementDetails, Platform } from "./types/common";
+import { BOM, Arrangements, ArrangementDetails, Platform, Arrangement } from "./types/common";
 
 const pkgInfo = require("../package.json");
 
@@ -237,8 +239,85 @@ class GENERIC {
     static async generateAggregateGraph(dir: string, tag: string, arrDetails: ArrangementDetails, platform: Platform) {
         return await generate(dir, tag, arrDetails, platform);
     }
-}
 
+    static async generateXBlock(arrs: Arrangement[], tag: string, dir: string) {
+        const f = join(dir, `${tag}.xblock`);
+        const ptypes = [
+            "Header", "Manifest", "SngAsset",
+            "AlbumArtSmall", "AlbumArtMedium", "AlbumArtLarge",
+            "LyricArt", "ShowLightsXMLAsset", "SoundBank", "PreviewSoundBank"
+        ];
+        const ptypePrefix = [
+            "urn:database:hsan-db:", "urn:database:json-db:", "urn:application:musicgame-song:", "urn:image:dds:",
+            "urn:image:dds:", "urn:image:dds:", "", "urn:application:xml:",
+            "urn:audio:wwise-sound-bank:", "urn:audio:wwise-sound-bank:"
+        ]
+        const getValue = (item: string, index: number, tag: string, arr: Arrangement) => {
+            switch (item) {
+                case "Header":
+                    return `${ptypePrefix[index]}songs_dlc_${tag}`;
+                case "SngAsset":
+                case "Manifest":
+                    return `${ptypePrefix[index]}${tag}_${arr.arrangementType}`;
+                case "AlbumArtSmall":
+                    return `${ptypePrefix[index]}album_${tag}_64`;
+                case "AlbumArtMedium":
+                    return `${ptypePrefix[index]}album_${tag}_128`;
+                case "AlbumArtLarge":
+                    return `${ptypePrefix[index]}album_${tag}_256`;
+                case "ShowLightsXMLAsset":
+                    return `${ptypePrefix[index]}${tag}_showlights`;
+                case "SoundBank":
+                    return `${ptypePrefix[index]}song_${tag}`;
+                case "PreviewSoundBank":
+                    return `${ptypePrefix[index]}song_${tag}_preview`;
+                default:
+                    return "";
+            }
+        }
+        const property = (arr: Arrangement) => ptypes.map((item, index) => {
+            return {
+                $: {
+                    name: item
+                },
+                set: {
+                    $: {
+                        value: getValue(item, index, tag, arr)
+                    }
+                }
+            }
+
+        });
+        const entities = arrs.map(item => {
+            return {
+                $: {
+                    id: item.persistentID,
+                    modelName: "RSEnumerable_Song",
+                    name: `${tag}_${toTitleCase(item.arrangementType)}`,
+                    iterations: 0,
+                },
+                properties: {
+                    property: property(item),
+                }
+            }
+        });
+        const xblock = {
+            game: {
+                entitySet: {
+                    entity: entities,
+                }
+            }
+        }
+
+        const builder = new xml2js.Builder();
+        const xml = builder.buildObject(xblock);
+        await promises.writeFile(f, xml);
+        return f;
+    }
+}
+const toTitleCase = function (str: string) {
+    return str.replace(/\w\S*/g, function (txt: string) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
+}
 module.exports = {
     PSARC,
     SNG,

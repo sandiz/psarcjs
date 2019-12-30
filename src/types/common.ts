@@ -27,10 +27,16 @@ export enum Platform { Windows, Mac }
 
 export type Arrangements = { [persistentID: string]: object };
 
-export enum Arrangment { LEAD = "lead", RHYTHM = "rhythm", BASS = "bass", VOCALS = "vocals" }
+export enum ArrangmentType { LEAD = "lead", RHYTHM = "rhythm", BASS = "bass", VOCALS = "vocals" }
 export interface ArrangementDetails {
-    [Arrangment.LEAD]: number;
-    [Arrangment.RHYTHM]: number;
-    [Arrangment.BASS]: number;
-    [Arrangment.VOCALS]: number;
+    [ArrangmentType.LEAD]: number;
+    [ArrangmentType.RHYTHM]: number;
+    [ArrangmentType.BASS]: number;
+    [ArrangmentType.VOCALS]: number;
+}
+
+/* represents an arrangment in psarc */
+export interface Arrangement {
+    persistentID: string;
+    arrangementType: ArrangmentType;
 }

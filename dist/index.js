@@ -44,6 +44,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
+var xml2js = __importStar(require("xml2js"));
 //import * as util from 'util';
 var Parser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
@@ -405,8 +406,93 @@ var GENERIC = /** @class */ (function () {
             });
         });
     };
+    GENERIC.generateXBlock = function (arrs, tag, dir) {
+        return __awaiter(this, void 0, void 0, function () {
+            var f, ptypes, ptypePrefix, getValue, property, entities, xblock, builder, xml;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        f = path_1.join(dir, tag + ".xblock");
+                        ptypes = [
+                            "Header", "Manifest", "SngAsset",
+                            "AlbumArtSmall", "AlbumArtMedium", "AlbumArtLarge",
+                            "LyricArt", "ShowLightsXMLAsset", "SoundBank", "PreviewSoundBank"
+                        ];
+                        ptypePrefix = [
+                            "urn:database:hsan-db:", "urn:database:json-db:", "urn:application:musicgame-song:", "urn:image:dds:",
+                            "urn:image:dds:", "urn:image:dds:", "", "urn:application:xml:",
+                            "urn:audio:wwise-sound-bank:", "urn:audio:wwise-sound-bank:"
+                        ];
+                        getValue = function (item, index, tag, arr) {
+                            switch (item) {
+                                case "Header":
+                                    return ptypePrefix[index] + "songs_dlc_" + tag;
+                                case "SngAsset":
+                                case "Manifest":
+                                    return "" + ptypePrefix[index] + tag + "_" + arr.arrangementType;
+                                case "AlbumArtSmall":
+                                    return ptypePrefix[index] + "album_" + tag + "_64";
+                                case "AlbumArtMedium":
+                                    return ptypePrefix[index] + "album_" + tag + "_128";
+                                case "AlbumArtLarge":
+                                    return ptypePrefix[index] + "album_" + tag + "_256";
+                                case "ShowLightsXMLAsset":
+                                    return "" + ptypePrefix[index] + tag + "_showlights";
+                                case "SoundBank":
+                                    return ptypePrefix[index] + "song_" + tag;
+                                case "PreviewSoundBank":
+                                    return ptypePrefix[index] + "song_" + tag + "_preview";
+                                default:
+                                    return "";
+                            }
+                        };
+                        property = function (arr) { return ptypes.map(function (item, index) {
+                            return {
+                                $: {
+                                    name: item
+                                },
+                                set: {
+                                    $: {
+                                        value: getValue(item, index, tag, arr)
+                                    }
+                                }
+                            };
+                        }); };
+                        entities = arrs.map(function (item) {
+                            return {
+                                $: {
+                                    id: item.persistentID,
+                                    modelName: "RSEnumerable_Song",
+                                    name: tag + "_" + toTitleCase(item.arrangementType),
+                                    iterations: 0,
+                                },
+                                properties: {
+                                    property: property(item),
+                                }
+                            };
+                        });
+                        xblock = {
+                            game: {
+                                entitySet: {
+                                    entity: entities,
+                                }
+                            }
+                        };
+                        builder = new xml2js.Builder();
+                        xml = builder.buildObject(xblock);
+                        return [4 /*yield*/, fs_1.promises.writeFile(f, xml)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, f];
+                }
+            });
+        });
+    };
     return GENERIC;
 }());
+var toTitleCase = function (str) {
+    return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
+};
 module.exports = {
     PSARC: PSARC,
     SNG: SNG,

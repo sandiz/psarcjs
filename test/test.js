@@ -19,6 +19,12 @@ chai.use(chaiExclude);
 chai.use(assertArrays);
 tmp.setGracefulCleanup();
 
+const getUuid = (a = '') => (
+    a
+        /* eslint-disable no-bitwise */
+        ? ((Number(a) ^ Math.random() * 16) >> Number(a) / 4).toString(16)
+        : (`${1e7}-${1e3}-${4e3}-${8e3}-${1e11}`).replace(/[018]/g, getUuid)
+);
 async function psarcTests() {
     describe('psarcjs: PSARC: test.psarc', function () {
         const file = "test/psarc/test.psarc";
@@ -478,6 +484,15 @@ async function genericTests() {
             const data = await promises.readFile(f);
             expect(data).to.be.of.length.greaterThan(0);
             //console.log(data.toString());
+        })
+        it("generate xblock", async () => {
+
+            const f = await GENERIC.generateXBlock([
+                { persistentID: getUuid().toLowerCase().replace(/-/g, ""), arrangementType: "bass" },
+                { persistentID: getUuid().toLowerCase().replace(/-/g, ""), arrangementType: "vocals" },
+            ], "psarcjsTest", "/tmp/");
+            const data = await promises.readFile(f);
+            expect(data).to.be.of.length.greaterThan(0);
         })
     });
 }

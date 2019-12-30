@@ -5,10 +5,10 @@ var Platform;
     Platform[Platform["Windows"] = 0] = "Windows";
     Platform[Platform["Mac"] = 1] = "Mac";
 })(Platform = exports.Platform || (exports.Platform = {}));
-var Arrangment;
-(function (Arrangment) {
-    Arrangment["LEAD"] = "lead";
-    Arrangment["RHYTHM"] = "rhythm";
-    Arrangment["BASS"] = "bass";
-    Arrangment["VOCALS"] = "vocals";
-})(Arrangment = exports.Arrangment || (exports.Arrangment = {}));
+var ArrangmentType;
+(function (ArrangmentType) {
+    ArrangmentType["LEAD"] = "lead";
+    ArrangmentType["RHYTHM"] = "rhythm";
+    ArrangmentType["BASS"] = "bass";
+    ArrangmentType["VOCALS"] = "vocals";
+})(ArrangmentType = exports.ArrangmentType || (exports.ArrangmentType = {}));

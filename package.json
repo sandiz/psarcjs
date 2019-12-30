@@ -37,7 +37,8 @@
     "imagemagick-native": "git+https://github.com/psarcjs-forks/node-imagemagick-native.git",
     "ogg": "git+https://github.com/psarcjs-forks/node-ogg.git",
     "waapi": "^2017.2.0",
-    "waapi-client": "^2017.2.1"
+    "waapi-client": "^2017.2.1",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.0",
@@ -45,6 +46,7 @@
     "@types/fs-extra": "^8.0.1",
     "@types/imagemagick-native": "^1.7.29",
     "@types/node": "^12.12.17",
+    "@types/xml2js": "^0.4.5",
     "c8": "^5.0.4",
     "chai": "^4.2.0",
     "chai-arrays": "^2.0.0",
