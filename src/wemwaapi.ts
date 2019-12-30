@@ -4,7 +4,7 @@ import { join, resolve } from 'path';
 import { copy, remove } from 'fs-extra';
 import { tmpdir } from 'os';
 import { promises } from 'fs';
-import { Platform } from './index';
+import { Platform } from './types/common';
 
 const globby = require('globby');
 

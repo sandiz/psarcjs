@@ -1,3 +1,4 @@
+
 export interface PSARCHEADER {
     MAGIC: string[4],
     VERSION: number,
@@ -22,4 +23,14 @@ export interface BOM {
     zlength: number[],
 }
 
+export enum Platform { Windows, Mac }
+
 export type Arrangements = { [persistentID: string]: object };
+
+export enum Arrangment { LEAD = "lead", RHYTHM = "rhythm", BASS = "bass", VOCALS = "vocals" }
+export interface ArrangementDetails {
+    [Arrangment.LEAD]: number;
+    [Arrangment.RHYTHM]: number;
+    [Arrangment.BASS]: number;
+    [Arrangment.VOCALS]: number;
+}

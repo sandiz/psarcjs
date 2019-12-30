@@ -49,7 +49,7 @@ var path_1 = require("path");
 var fs_extra_1 = require("fs-extra");
 var os_1 = require("os");
 var fs_1 = require("fs");
-var index_1 = require("./index");
+var common_1 = require("./types/common");
 var globby = require('globby');
 var connection = null;
 var subscription = null;
@@ -216,7 +216,7 @@ function Convert(file, tag, platform) {
                 case 13:
                     d = _a.sent();
                     console.log(d);
-                    wemPath = path_1.join(tmp, ".cache", platform === index_1.Platform.Windows ? "Windows" : "Mac", "SFX");
+                    wemPath = path_1.join(tmp, ".cache", platform === common_1.Platform.Windows ? "Windows" : "Mac", "SFX");
                     return [4 /*yield*/, globby("*.wem", {
                             cwd: wemPath,
                         })];

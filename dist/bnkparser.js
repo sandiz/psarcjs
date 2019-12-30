@@ -441,6 +441,7 @@ function getRandomInt() {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
+exports.getRandomInt = getRandomInt;
 function hashString(str) {
     var bytes = Buffer.from(str.toLowerCase());
     var hash = 2166136261;

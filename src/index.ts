@@ -1,6 +1,5 @@
 import { promises } from 'fs';
 //import * as util from 'util';
-import { BOM, Arrangements } from "./types/types";
 import * as Parser from './parser';
 import * as SNGParser from './sngparser';
 import * as DDSParser from './ddsparser';
@@ -9,10 +8,12 @@ import * as BNKParser from './bnkparser';
 import * as WAAPIHandler from './wemwaapi';
 import { SNGFORMAT } from './types/sng'
 import { join } from 'path';
+import { generate } from './aggregategraphwriter';
+
+import { BOM, Arrangements, ArrangementDetails, Platform } from "./types/common";
 
 const pkgInfo = require("../package.json");
 
-export enum Platform { Windows, Mac }
 class PSARC {
     /**
      * Initialise psarc file instance
@@ -231,6 +232,10 @@ class GENERIC {
         const f = join(dir, "appid.appid")
         await promises.writeFile(f, appid);
         return f;
+    }
+
+    static async generateAggregateGraph(dir: string, tag: string, arrDetails: ArrangementDetails, platform: Platform) {
+        return await generate(dir, tag, arrDetails, platform);
     }
 }
 

@@ -44,6 +44,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
+//import * as util from 'util';
 var Parser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var DDSParser = __importStar(require("./ddsparser"));
@@ -51,12 +52,8 @@ var WEMParser = __importStar(require("./wemparser"));
 var BNKParser = __importStar(require("./bnkparser"));
 var WAAPIHandler = __importStar(require("./wemwaapi"));
 var path_1 = require("path");
+var aggregategraphwriter_1 = require("./aggregategraphwriter");
 var pkgInfo = require("../package.json");
-var Platform;
-(function (Platform) {
-    Platform[Platform["Windows"] = 0] = "Windows";
-    Platform[Platform["Mac"] = 1] = "Mac";
-})(Platform = exports.Platform || (exports.Platform = {}));
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
         this.psarcFile = file;
@@ -394,6 +391,16 @@ var GENERIC = /** @class */ (function () {
                     case 1:
                         _a.sent();
                         return [2 /*return*/, f];
+                }
+            });
+        });
+    };
+    GENERIC.generateAggregateGraph = function (dir, tag, arrDetails, platform) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, aggregategraphwriter_1.generate(dir, tag, arrDetails, platform)];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });

@@ -452,7 +452,32 @@ async function genericTests() {
         it("generate appid", async () => {
             const f = await GENERIC.generateAppid("/tmp/");
             const data = await promises.readFile(f);
-            console.log(data.toString());
+            expect(data).to.be.of.length.greaterThan(0);
+            //console.log(data.toString());
+        })
+        it("generate aggregategraph.nt macos", async () => {
+            const details = {
+                "lead": 1,
+                "rhythm": 2,
+                "bass": 1,
+                "vocals": 1,
+            }
+            const f = await GENERIC.generateAggregateGraph("/tmp", "psarcjsTest", details, 0);
+            const data = await promises.readFile(f);
+            expect(data).to.be.of.length.greaterThan(0);
+            //console.log(data.toString());
+        })
+        it("generate aggregategraph.nt windows", async () => {
+            const details = {
+                "lead": 1,
+                "rhythm": 2,
+                "bass": 1,
+                "vocals": 1,
+            }
+            const f = await GENERIC.generateAggregateGraph("/tmp", "psarcjsTest", details, 1);
+            const data = await promises.readFile(f);
+            expect(data).to.be.of.length.greaterThan(0);
+            //console.log(data.toString());
         })
     });
 }
@@ -489,7 +514,7 @@ async function fn() {
     await bnkTests();
     await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
-        await waapiTests();
+        //await waapiTests();
     }
 }
 

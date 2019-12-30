@@ -411,7 +411,7 @@ function getHeader(soundbankID: number) {
     //const o = (HEADER as any).encode(obj);
     return obj;
 }
-function getRandomInt() {
+export function getRandomInt() {
     let min = 0;
     let max = 2147483647;
     min = Math.ceil(min);
