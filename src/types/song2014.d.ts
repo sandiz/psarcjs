@@ -1,4 +1,9 @@
 /* Song2014 XML Format */
+import {
+    SongEbeat, SongNote, SongPhrase,
+    SongTone, SongSection, SongEvent,
+    SongPhraseProperty, SongChordTemplate, SongLinkedDiff,
+} from '../song2014'
 export interface Tuning {
     string0: number;
     string1: number;
@@ -17,14 +22,6 @@ export interface SongArrangementProperties {
     routeMask: number;
 }
 
-export interface SongPhrase {
-    disparity: number;
-    ignore: number;
-    maxDifficulty: number;
-    name: string;
-    solo: number;
-}
-
 export interface SongNld_Phrase {
     id: number;
 }
@@ -36,65 +33,8 @@ export interface SongNewLinkedDiff {
     nld_phrase: SongNld_Phrase[];
 }
 
-export interface SongLinkedDiff {
-    parentId: number;
-    childId: string;
-}
-
-export interface SongPhraseProperty {
-    phraseId: number;
-    redundant: number;
-    levelJump: number;
-    empty: number;
-    difficulty: number;
-}
-
-export interface SongChordTemplate {
-    displayName: string;
-    chordName: string;
-    fret0: number;
-    fret1: number;
-    fret2: number;
-    fret3: number;
-    fret4: number;
-    fret5: number;
-    finger0: number;
-    finger1: number;
-    finger2: number;
-    finger3: number;
-    finger4: number;
-    finger5: number;
-}
-
 export interface SongFretHandMuteTemplate {
 
-}
-
-export interface SongControl {
-    time: number;
-    code: string;
-}
-
-export interface SongEbeat {
-    time: number;
-    measure?: number;
-}
-
-export interface SongSection {
-    name: string;
-    number: number;
-    startTime: number;
-}
-
-export interface SongEvent {
-    time: number;
-    code: string;
-}
-
-export interface SongTone {
-    time: number;
-    id: number;
-    name: string;
 }
 
 export interface SongHandShape {
@@ -105,41 +45,6 @@ export interface SongHandShape {
 
 export interface SongAnchor {
     width: number;
-}
-
-export interface BendValue {
-    time: number;
-    step: number;
-    unk5: number;
-}
-
-export interface SongNote {
-    time: number;
-    string: number;
-    fret: number;
-    linkNext?: number;
-    accent?: number;
-    bend?: number;
-    hammerOn?: number;
-    harmonic?: number;
-    hopo?: number;
-    ignore?: number;
-    leftHand?: number;
-    mute?: number;
-    palmMute?: number;
-    pluck?: number;
-    pullOff?: number;
-    slap?: number;
-    slideTo?: number;
-    sustain?: number;
-    tremolo?: number;
-    harmonicPinch?: number;
-    pickDirection?: number;
-    rightHand?: number;
-    slideUnpitchTo?: number;
-    tap?: number;
-    vibrato?: number;
-    bendValues?: BendValue[];
 }
 
 export interface SongChord {
@@ -192,8 +97,7 @@ export interface Song2014 {
     part: number;
     offset: number;
     centOffset: number;
-    songLegnth: number;
-    songNameSort: number;
+    songLength: number;
     startBeat: number;
     averageTempo: number;
     tuning: Tuning;
@@ -203,7 +107,6 @@ export interface Song2014 {
     albumName: string;
     albumNameSort: string;
     albumYear: string;
-    albumArt: string;
     crowdSpeed: string;
     arrangementProperties: SongArrangementProperties;
     lastConversionDateTime: string;
@@ -223,7 +126,7 @@ export interface Song2014 {
     tones: SongTone[];
     sections: SongSection[];
     events: SongEvent[];
-    controls: SongControl[];
+    controls: SongPhraseProperty[];
     transcriptionTrack: TranscriptionTrack;
     levels: SongLevel[];
 }

@@ -76,6 +76,7 @@ var BNKParser = __importStar(require("./bnkparser"));
 var WAAPIHandler = __importStar(require("./wemwaapi"));
 var path_1 = require("path");
 var aggregategraphwriter_1 = require("./aggregategraphwriter");
+var song2014_1 = require("./song2014");
 var pkgInfo = require("../package.json");
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
@@ -516,24 +517,59 @@ var SONGXML = /** @class */ (function () {
     function SONGXML(song) {
         this.song = song;
     }
-    SONGXML.beatsToEbeats = function (beats) {
-        return beats.map(function (item) {
-            var _a = item.split(" "), time = _a[0], beat = _a[1];
-            var timef = parseFloat(time);
-            var beati = parseInt(beat);
-            if (beati === 1)
-                return { time: timef, measure: beati };
-            else
-                return { time: timef };
-        });
-    };
-    SONGXML.notesToSongNotes = function (noteData) {
-        return noteData.notes.map(function (item) {
-            return {
-                time: item.startTime,
-                string: item.string,
-                fret: item.fret,
-            };
+    SONGXML.fromXML = function (xmlFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, parsed, song, ret;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(xmlFile)];
+                    case 1:
+                        data = _a.sent();
+                        return [4 /*yield*/, xml2js.parseStringPromise(data)];
+                    case 2:
+                        parsed = _a.sent();
+                        song = parsed.song;
+                        ret = {
+                            version: song.$.version,
+                            title: song2014_1.getS(song.title),
+                            arrangement: song2014_1.getS(song.arrangement),
+                            part: song2014_1.getI(song.part),
+                            offset: song2014_1.getF(song.offset),
+                            centOffset: song2014_1.getF(song.centOffset),
+                            songLength: song2014_1.getF(song.songLength),
+                            startBeat: song2014_1.getF(song.startBeat),
+                            averageTempo: song2014_1.getF(song.averageTempo),
+                            tuning: objectMap(song.tuning[0].$, function (item) { return parseInt(item, 10); }),
+                            capo: song2014_1.getI(song.capo),
+                            artistName: song2014_1.getS(song.artistName),
+                            artistNameSort: song2014_1.getS(song.artistNameSort),
+                            albumName: song2014_1.getS(song.albumName),
+                            albumNameSort: song2014_1.getS(song.albumNameSort),
+                            albumYear: song2014_1.getS(song.albumYear),
+                            crowdSpeed: song2014_1.getS(song.crowdSpeed),
+                            lastConversionDateTime: song2014_1.getS(song.lastConversionDateTime),
+                            arrangementProperties: objectMap(song.arrangementProperties[0].$, function (item) { return parseInt(item, 10); }),
+                            phrases: song2014_1.SongPhrase.fromXML(song.phrases),
+                            //phraseIterations: SongPhraseIterations[];
+                            //newLinkedDiffs: SongNewLinkedDiff[];
+                            linkedDiffs: song2014_1.SongLinkedDiff.fromXML(song.linkedDiffs),
+                            phraseProperties: song2014_1.SongPhraseProperty.fromXML(song.phraseProperties),
+                            chordTemplates: song2014_1.SongChordTemplate.fromXML(song.chordTemplates),
+                            fretHandMuteTemplates: [],
+                            ebeats: song2014_1.SongEbeat.fromXML(song.ebeats),
+                            tonebase: song2014_1.getS(song.tonebase),
+                            tonea: song2014_1.getS(song.tonea),
+                            toneb: song2014_1.getS(song.toneb),
+                            tonec: song2014_1.getS(song.tonec),
+                            toned: song2014_1.getS(song.toned),
+                            tones: song2014_1.SongTone.fromXML(song.tones),
+                            sections: song2014_1.SongSection.fromXML(song.sections),
+                            events: song2014_1.SongEvent.fromXML(song.events),
+                            controls: song2014_1.SongPhraseProperty.fromXML(song.controls),
+                        };
+                        return [2 /*return*/, ret];
+                }
+            });
         });
     };
     SONGXML.prototype.xmlize = function () {
@@ -591,7 +627,7 @@ var SONGXML = /** @class */ (function () {
             });
         });
     };
-    SONGXML.prototype.generateSNG = function () {
+    SONGXML.prototype.generateSNG = function (dir, tag) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/];
@@ -603,6 +639,12 @@ var SONGXML = /** @class */ (function () {
 var toTitleCase = function (str) {
     return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 };
+var objectMap = function (object, mapFn) {
+    return Object.keys(object).reduce(function (result, key) {
+        result[key] = mapFn(object[key]);
+        return result;
+    }, {});
+};
 module.exports = {
     PSARC: PSARC,
     SNG: SNG,
@@ -612,4 +654,6 @@ module.exports = {
     GENERIC: GENERIC,
     BNK: BNK,
     SONGXML: SONGXML,
+    SongEbeat: song2014_1.SongEbeat,
+    SongNote: song2014_1.SongNote,
 };

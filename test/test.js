@@ -11,7 +11,7 @@ var promises = require('fs').promises;
 var {
     PSARC, SNG, DDS,
     WEM, WAAPI, GENERIC, BNK,
-    SONGXML,
+    SONGXML, SongEbeat, SongNote,
 } = require('../dist');
 
 var expect = chai.expect;
@@ -567,14 +567,14 @@ async function songxmlTests() {
                 phraseProperties: [],
                 chordTemplates: [],
                 fretHandMuteTemplates: [],
-                ebeats: SONGXML.beatsToEbeats(beats),
+                ebeats: SongEbeat.fromBeatData(beats),
                 tonebase: "default",
                 tonea: "default",
                 sections: [],
                 events: [],
                 transcriptionTrack: {
                     difficulty: -1,
-                    notes: SONGXML.notesToSongNotes(notes),
+                    notes: SongNote.fromNoteData(notes),
                     chords: [],
                     fretHandMutes: [],
                     anchors: [],
@@ -589,15 +589,40 @@ async function songxmlTests() {
             });
             const data = await promises.readFile(f);
             expect(data).to.be.of.length.greaterThan(0);
-            console.log(data.toString());
+            //console.log(data.toString());
+        })
+        it("generate sng from Song2014", async () => {
+
         })
     })
+    const f = await promises.readdir(xmls);
+    const xmlf = f.filter(i => i.endsWith(".xml")
+        && !i.includes("vocals")
+        && !i.includes("showlights")
+    );
+    await forEach(xmlf)
+        .describe("songxml: parse %s", async (xml) => {
+            it("create Song2014 from xml", async () => {
+                const parsedXml = await SONGXML.fromXML(`${xmls}/${xml}`);
+
+                console.log(util.inspect(parsedXml, {
+                    depth: 2,
+                    colors: true,
+                    maxArrayLength: 2,
+                    compact: false,
+                }));
+
+            })
+        })
+
+
 }
 
 const sngs = "test/sng/";
 const ddss = "test/dds/";
 const wems = "test/wem/";
 const bnks = "test/bnk/";
+const xmls = "test/xml/";
 async function fn() {
     await songxmlTests();
     /*

@@ -16,7 +16,18 @@ import {
     BOM, Arrangements, ArrangementDetails,
     Platform, Arrangement, ToolkitInfo,
 } from "./types/common";
-import { Song2014, SongEbeat, NoteData, SongNote } from './types/song2014';
+import {
+    Song2014,
+    Tuning, SongArrangementProperties,
+} from './types/song2014';
+
+import {
+    SongEbeat, SongNote, SongPhrase,
+    getI, getF, getS, SongTone,
+    SongSection, SongEvent, SongPhraseProperty,
+    SongChordTemplate,
+    SongLinkedDiff,
+} from './song2014';
 
 const pkgInfo = require("../package.json");
 
@@ -328,24 +339,52 @@ class SONGXML {
         this.song = song;
     }
 
-    static beatsToEbeats(beats: string[]): SongEbeat[] {
-        return beats.map(item => {
-            const [time, beat] = item.split(" ");
-            let timef = parseFloat(time);
-            let beati = parseInt(beat);
-            if (beati === 1) return { time: timef, measure: beati }
-            else return { time: timef };
-        });
-    }
+    static async fromXML(xmlFile: string) {
+        const data = await promises.readFile(xmlFile);
+        const parsed = await xml2js.parseStringPromise(data);
+        const song = parsed.song;
 
-    static notesToSongNotes(noteData: NoteData): SongNote[] {
-        return noteData.notes.map(item => {
-            return {
-                time: item.startTime,
-                string: item.string,
-                fret: item.fret,
-            }
-        })
+        const ret: Partial<Song2014> = {
+            version: song.$.version,
+            title: getS(song.title),
+            arrangement: getS(song.arrangement),
+            part: getI(song.part),
+            offset: getF(song.offset),
+            centOffset: getF(song.centOffset),
+            songLength: getF(song.songLength),
+            startBeat: getF(song.startBeat),
+            averageTempo: getF(song.averageTempo),
+            tuning: objectMap(song.tuning[0].$, (item: string) => parseInt(item, 10)) as Tuning,
+            capo: getI(song.capo),
+            artistName: getS(song.artistName),
+            artistNameSort: getS(song.artistNameSort),
+            albumName: getS(song.albumName),
+            albumNameSort: getS(song.albumNameSort),
+            albumYear: getS(song.albumYear),
+            crowdSpeed: getS(song.crowdSpeed),
+            lastConversionDateTime: getS(song.lastConversionDateTime),
+            arrangementProperties: objectMap(song.arrangementProperties[0].$, (item: string) => parseInt(item, 10)) as SongArrangementProperties,
+            phrases: SongPhrase.fromXML(song.phrases),
+            //phraseIterations: SongPhraseIterations[];
+            //newLinkedDiffs: SongNewLinkedDiff[];
+            linkedDiffs: SongLinkedDiff.fromXML(song.linkedDiffs),
+            phraseProperties: SongPhraseProperty.fromXML(song.phraseProperties),
+            chordTemplates: SongChordTemplate.fromXML(song.chordTemplates),
+            fretHandMuteTemplates: [],
+            ebeats: SongEbeat.fromXML(song.ebeats),
+            tonebase: getS(song.tonebase),
+            tonea: getS(song.tonea),
+            toneb: getS(song.toneb),
+            tonec: getS(song.tonec),
+            toned: getS(song.toned),
+            tones: SongTone.fromXML(song.tones),
+            sections: SongSection.fromXML(song.sections),
+            events: SongEvent.fromXML(song.events),
+            controls: SongPhraseProperty.fromXML(song.controls),
+            //transcriptionTrack: TranscriptionTrack;
+            //levels: SongLevel[];
+        }
+        return ret;
     }
 
     xmlize() {
@@ -401,7 +440,7 @@ class SONGXML {
         return file;
     }
 
-    async generateSNG() {
+    async generateSNG(dir: string, tag: string) {
 
     }
 }
@@ -410,6 +449,14 @@ class SONGXML {
 const toTitleCase = function (str: string) {
     return str.replace(/\w\S*/g, function (txt: string) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 }
+const objectMap = (object: { [key: string]: any }, mapFn: (item: any) => void) => {
+    return Object.keys(object).reduce(function (result: { [key: string]: any }, key: string) {
+        result[key] = mapFn(object[key])
+        return result
+    }, {})
+}
+
+
 module.exports = {
     PSARC,
     SNG,
@@ -419,4 +466,6 @@ module.exports = {
     GENERIC,
     BNK,
     SONGXML,
+    SongEbeat,
+    SongNote,
 }
