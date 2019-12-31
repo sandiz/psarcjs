@@ -16,10 +16,6 @@ import {
     BOM, Arrangements, ArrangementDetails,
     Platform, Arrangement, ToolkitInfo,
 } from "./types/common";
-import {
-    Song2014,
-    Tuning, SongArrangementProperties,
-} from './types/song2014';
 
 import {
     SongEbeat, SongNote, SongPhrase,
@@ -27,6 +23,10 @@ import {
     SongSection, SongEvent, SongPhraseProperty,
     SongChordTemplate,
     SongLinkedDiff,
+    SongNewLinkedDiff,
+    SongPhraseIteration,
+    ISong2014, Tuning, SongArrangementProperties,
+    TranscriptionTrack, SongLevel,
 } from './song2014';
 
 const pkgInfo = require("../package.json");
@@ -332,19 +332,19 @@ class GENERIC {
 }
 
 
-class SONGXML {
-    song: Song2014;
+class Song2014 {
+    song: ISong2014;
 
-    constructor(song: Song2014) {
+    constructor(song: ISong2014) {
         this.song = song;
     }
 
-    static async fromXML(xmlFile: string) {
+    static async fromXML(xmlFile: string): Promise<Song2014> {
         const data = await promises.readFile(xmlFile);
         const parsed = await xml2js.parseStringPromise(data);
         const song = parsed.song;
 
-        const ret: Partial<Song2014> = {
+        const ret: ISong2014 = {
             version: song.$.version,
             title: getS(song.title),
             arrangement: getS(song.arrangement),
@@ -365,8 +365,8 @@ class SONGXML {
             lastConversionDateTime: getS(song.lastConversionDateTime),
             arrangementProperties: objectMap(song.arrangementProperties[0].$, (item: string) => parseInt(item, 10)) as SongArrangementProperties,
             phrases: SongPhrase.fromXML(song.phrases),
-            //phraseIterations: SongPhraseIterations[];
-            //newLinkedDiffs: SongNewLinkedDiff[];
+            phraseIterations: SongPhraseIteration.fromXML(song.phraseIterations),
+            newLinkedDiffs: SongNewLinkedDiff.fromXML(song.newLinkedDiffs),
             linkedDiffs: SongLinkedDiff.fromXML(song.linkedDiffs),
             phraseProperties: SongPhraseProperty.fromXML(song.phraseProperties),
             chordTemplates: SongChordTemplate.fromXML(song.chordTemplates),
@@ -381,10 +381,10 @@ class SONGXML {
             sections: SongSection.fromXML(song.sections),
             events: SongEvent.fromXML(song.events),
             controls: SongPhraseProperty.fromXML(song.controls),
-            //transcriptionTrack: TranscriptionTrack;
-            //levels: SongLevel[];
+            transcriptionTrack: TranscriptionTrack.fromXML(song.transcriptionTrack),
+            levels: SongLevel.fromXML(song.levels),
         }
-        return ret;
+        return new Song2014(ret);
     }
 
     xmlize() {
@@ -425,7 +425,7 @@ class SONGXML {
         };
     }
 
-    async  generateXML(dir: string, tag: string, tk: ToolkitInfo) {
+    async generateXML(dir: string, tag: string, tk: ToolkitInfo) {
         const builder = new xml2js.Builder();
         const xml = builder.buildObject({
             song: {
@@ -465,7 +465,7 @@ module.exports = {
     WAAPI,
     GENERIC,
     BNK,
-    SONGXML,
+    Song2014,
     SongEbeat,
     SongNote,
 }

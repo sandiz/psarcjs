@@ -513,11 +513,11 @@ var GENERIC = /** @class */ (function () {
     };
     return GENERIC;
 }());
-var SONGXML = /** @class */ (function () {
-    function SONGXML(song) {
+var Song2014 = /** @class */ (function () {
+    function Song2014(song) {
         this.song = song;
     }
-    SONGXML.fromXML = function (xmlFile) {
+    Song2014.fromXML = function (xmlFile) {
         return __awaiter(this, void 0, void 0, function () {
             var data, parsed, song, ret;
             return __generator(this, function (_a) {
@@ -550,8 +550,8 @@ var SONGXML = /** @class */ (function () {
                             lastConversionDateTime: song2014_1.getS(song.lastConversionDateTime),
                             arrangementProperties: objectMap(song.arrangementProperties[0].$, function (item) { return parseInt(item, 10); }),
                             phrases: song2014_1.SongPhrase.fromXML(song.phrases),
-                            //phraseIterations: SongPhraseIterations[];
-                            //newLinkedDiffs: SongNewLinkedDiff[];
+                            phraseIterations: song2014_1.SongPhraseIteration.fromXML(song.phraseIterations),
+                            newLinkedDiffs: song2014_1.SongNewLinkedDiff.fromXML(song.newLinkedDiffs),
                             linkedDiffs: song2014_1.SongLinkedDiff.fromXML(song.linkedDiffs),
                             phraseProperties: song2014_1.SongPhraseProperty.fromXML(song.phraseProperties),
                             chordTemplates: song2014_1.SongChordTemplate.fromXML(song.chordTemplates),
@@ -566,13 +566,15 @@ var SONGXML = /** @class */ (function () {
                             sections: song2014_1.SongSection.fromXML(song.sections),
                             events: song2014_1.SongEvent.fromXML(song.events),
                             controls: song2014_1.SongPhraseProperty.fromXML(song.controls),
+                            transcriptionTrack: song2014_1.TranscriptionTrack.fromXML(song.transcriptionTrack),
+                            levels: song2014_1.SongLevel.fromXML(song.levels),
                         };
-                        return [2 /*return*/, ret];
+                        return [2 /*return*/, new Song2014(ret)];
                 }
             });
         });
     };
-    SONGXML.prototype.xmlize = function () {
+    Song2014.prototype.xmlize = function () {
         var _a = this.song, version = _a.version, rest = __rest(_a, ["version"]);
         rest.tuning = { $: __assign({}, rest.tuning) };
         rest.arrangementProperties = { $: __assign({}, rest.arrangementProperties) };
@@ -607,7 +609,7 @@ var SONGXML = /** @class */ (function () {
         };
         return __assign({}, rest);
     };
-    SONGXML.prototype.generateXML = function (dir, tag, tk) {
+    Song2014.prototype.generateXML = function (dir, tag, tk) {
         return __awaiter(this, void 0, void 0, function () {
             var builder, xml, fileName, file;
             return __generator(this, function (_a) {
@@ -627,14 +629,14 @@ var SONGXML = /** @class */ (function () {
             });
         });
     };
-    SONGXML.prototype.generateSNG = function (dir, tag) {
+    Song2014.prototype.generateSNG = function (dir, tag) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/];
             });
         });
     };
-    return SONGXML;
+    return Song2014;
 }());
 var toTitleCase = function (str) {
     return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
@@ -653,7 +655,7 @@ module.exports = {
     WAAPI: WAAPI,
     GENERIC: GENERIC,
     BNK: BNK,
-    SONGXML: SONGXML,
+    Song2014: Song2014,
     SongEbeat: song2014_1.SongEbeat,
     SongNote: song2014_1.SongNote,
 };

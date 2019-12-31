@@ -1,5 +1,4 @@
 
-import { NoteData } from './types/song2014'
 export class SongEbeat {
     time: number = 0;
     measure?: number;
@@ -141,6 +140,28 @@ export class SongNote {
             }
         })
     }
+
+    static fromXML(xmlData: object[], chordNote = false): SongNote[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = chordNote ? (item as any).chordNote : (item as any).note;
+
+        if (!list) return [];
+
+        const notes: SongNote[] = list.map((item: object): SongNote => {
+            const iany = (item as any);
+            let { time, sustain, ...rest } = iany.$;
+            time = parseFloat(time);
+            sustain = parseFloat(sustain);
+            rest = objectMap(rest, item => parseInt(item, 10));
+            return {
+                time,
+                sustain,
+                ...rest,
+            }
+        })
+        return notes;
+    }
 }
 
 export class SongEvent {
@@ -221,7 +242,7 @@ export class SongPhraseProperty {
     static fromXML(xmlData: object[]): SongPhraseProperty[] {
         if (!xmlData) return [];
         const item = xmlData[0];
-        const list = (item as any).control;
+        const list = (item as any).phraseProperty;
 
         if (!list) return [];
 
@@ -246,7 +267,7 @@ export class SongLinkedDiff {
     static fromXML(xmlData: object[]): SongLinkedDiff[] {
         if (!xmlData) return [];
         const item = xmlData[0];
-        const list = (item as any).control;
+        const list = (item as any).linkedDiff;
 
         if (!list) return [];
 
@@ -261,10 +282,325 @@ export class SongLinkedDiff {
     }
 }
 
+export class SongNld_Phrase {
+    id: number = 0;
+
+    static fromXML(xmlData: object[]): SongNld_Phrase[] {
+        if (!xmlData) return [];
+        const item = xmlData;
+        const list = (item as any);
+
+        if (!list) return [];
+
+        const songnld_phrase: SongNld_Phrase[] = list.map((item: object): SongNld_Phrase => {
+            const iany = (item as any);
+            return {
+                id: iany.$.id ? parseInt(iany.$.id) : 0,
+            }
+        })
+        return songnld_phrase;
+    }
+}
+
+export class SongNewLinkedDiff {
+    phraseCount: number = 0;
+    ratio: string = '';
+    levelBreak: number = 0;
+    nld_phrase: SongNld_Phrase[] = [];
+
+    static fromXML(xmlData: object[]): SongNewLinkedDiff[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).newLinkedDiff;
+
+        if (!list) return [];
+
+        const songNewLinkedDiff: SongNewLinkedDiff[] = list.map((item: object): SongNewLinkedDiff => {
+            const iany = (item as any);
+            return {
+                phraseCount: iany.$.phraseCount ? parseInt(iany.$.phraseCount) : 0,
+                ratio: iany.$.ratio ? iany.$.ratio : '',
+                levelBreak: iany.$.levelBreak ? parseInt(iany.$.levelBreak) : 0,
+                nld_phrase: SongNld_Phrase.fromXML(iany.nld_phrase)
+            }
+        })
+        return songNewLinkedDiff;
+    }
+}
+
+export class HeroLevel {
+    difficulty: number = 0;
+    hero: number = 0;
+
+    static fromXML(xmlData: object[]): HeroLevel[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).heroLevel;
+
+        if (!list) return [];
+
+        const heroLevel: HeroLevel[] = list.map((item: object): HeroLevel => {
+            const iany = (item as any);
+            return {
+                difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty, 10) : 0,
+                hero: iany.$.hero ? parseInt(iany.$.hero, 10) : 0,
+            }
+        })
+        return heroLevel;
+    }
+}
+
+export class SongPhraseIteration {
+    time: number = 0;
+    phraseId: number = 0;
+    variation: string = '';
+    heroLevels: HeroLevel[] = [];
+
+    static fromXML(xmlData: object[]): SongPhraseIteration[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).phraseIteration;
+
+        if (!list) return [];
+
+        const phraseIteration: SongPhraseIteration[] = list.map((item: object): SongPhraseIteration => {
+            const iany = (item as any);
+            return {
+                time: iany.$.time ? parseFloat(iany.$.time) : 0,
+                phraseId: iany.$.phraseId ? parseInt(iany.$.phraseId, 10) : 0,
+                variation: iany.$.variation ? iany.$.variation : '',
+                heroLevels: HeroLevel.fromXML(iany.heroLevels)
+            }
+        })
+        return phraseIteration;
+    }
+}
+
 export interface BendValue {
     time: number;
     step: number;
     unk5: number;
+}
+
+export interface Tuning {
+    string0: number;
+    string1: number;
+    string2: number;
+    string3: number;
+    string4: number;
+    string5: number;
+}
+
+export interface SongArrangementProperties {
+    bonusArr: number;
+    Metronome: number;
+    pathLead: number;
+    pathRhythm: number;
+    pathBass: number;
+    routeMask: number;
+}
+
+
+export interface SongFretHandMuteTemplate {
+
+}
+
+export class SongHandShape {
+    chordId: number = 0;
+    startTime: number = 0;
+    endTime: number = 0;
+
+    static fromXML(xmlData: object[]): SongHandShape[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).handShape;
+
+        if (!list) return [];
+
+        const handShapes: SongHandShape[] = list.map((item: object): SongHandShape => {
+            const iany = (item as any);
+            let { chordId, startTime, endTime } = iany.$;
+            chordId = parseInt(chordId);
+            startTime = parseFloat(startTime);
+            endTime = parseFloat(endTime);
+            return {
+                chordId,
+                endTime,
+                startTime,
+            }
+        })
+        return handShapes;
+    }
+}
+
+export class SongAnchor {
+    time: number = 0;
+    fret: number = 0;
+    width: number = 0;
+
+    static fromXML(xmlData: object[]): SongAnchor[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).anchor;
+
+        if (!list) return [];
+
+        const anchors: SongAnchor[] = list.map((item: object): SongAnchor => {
+            const iany = (item as any);
+            let { time, fret, width } = iany.$;
+            time = parseFloat(time);
+            fret = parseInt(fret);
+            width = parseFloat(width);
+            return {
+                time,
+                fret,
+                width,
+            }
+        })
+        return anchors;
+    }
+}
+
+export class SongChord {
+    time: number = 0;
+    linkNext: number = 0;
+    accent: number = 0;
+    chordId: number = 0;
+    fretHandMute: number = 0;
+    highDensity: number = 0;
+    ignore: number = 0;
+    palmMute: number = 0;
+    hopo: number = 0;
+    strum: number = 0;
+    chordNote: SongNote[] = [];
+
+    static fromXML(xmlData: object[]): SongChord[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).chord;
+
+        if (!list) return [];
+
+        const chords: SongChord[] = list.map((item: object): SongChord => {
+            const iany = (item as any);
+            let { time, strum, ...rest } = iany.$;
+            time = parseFloat(time);
+            rest = objectMap(rest, item => parseInt(item, 10));
+            return {
+                time,
+                strum,
+                ...rest,
+                chordNote: SongNote.fromXML([iany], true),
+            }
+        })
+        return chords;
+    }
+}
+
+export class TranscriptionTrack {
+    difficulty: number = 0;
+    notes: SongNote[] = [];
+    chords: SongChord[] = [];
+    anchors: SongAnchor[] = [];
+    handShapes: SongHandShape[] = [];
+    fretHandMutes: SongFretHandMuteTemplate[] = [];
+
+    static fromXML(xmlData: object[]): TranscriptionTrack {
+        const item = (xmlData[0] as any);
+        const iany = (item as any);
+
+        const transcriptionTrack: TranscriptionTrack = {
+            difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty) : 0,
+            notes: SongNote.fromXML(iany.notes),
+            chords: SongChord.fromXML(iany.chords),
+            anchors: SongAnchor.fromXML(iany.anchors),
+            handShapes: SongHandShape.fromXML(iany.handShapes),
+            fretHandMutes: [],
+        }
+        return transcriptionTrack;
+    }
+}
+
+export class SongLevel {
+    difficulty: number = 0;
+    notes: SongNote[] = [];
+    chords: SongChord[] = [];
+    anchors: SongAnchor[] = [];
+    handShapes: SongHandShape[] = [];
+
+    static fromXML(xmlData: object[]): SongLevel[] {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).level;
+
+        if (!list) return [];
+
+        const chords: SongLevel[] = list.map((item: object): Partial<SongLevel> => {
+            const iany = (item as any);
+            return {
+                difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty, 10) : 0,
+                notes: SongNote.fromXML(iany.notes),
+                chords: SongChord.fromXML(iany.chords),
+                anchors: SongAnchor.fromXML(iany.anchors),
+                handShapes: SongHandShape.fromXML(iany.handShapes),
+            }
+        })
+        return chords;
+    }
+}
+
+export interface ISong2014 {
+    version: string;
+    title: string;
+    arrangement: string;
+    part: number;
+    offset: number;
+    centOffset: number;
+    songLength: number;
+    startBeat: number;
+    averageTempo: number;
+    tuning: Tuning;
+    capo: number;
+    artistName: string;
+    artistNameSort: string;
+    albumName: string;
+    albumNameSort: string;
+    albumYear: string;
+    crowdSpeed: string;
+    arrangementProperties: SongArrangementProperties;
+    lastConversionDateTime: string;
+    phrases: SongPhrase[];
+    phraseIterations: SongPhraseIteration[];
+    newLinkedDiffs: SongNewLinkedDiff[];
+    linkedDiffs: SongLinkedDiff[];
+    phraseProperties: SongPhraseProperty[];
+    chordTemplates: SongChordTemplate[];
+    fretHandMuteTemplates: SongFretHandMuteTemplate[];
+    ebeats: SongEbeat[];
+    tonebase: string;
+    tonea: string;
+    toneb: string;
+    tonec: string;
+    toned: string;
+    tones: SongTone[];
+    sections: SongSection[];
+    events: SongEvent[];
+    controls: SongPhraseProperty[];
+    transcriptionTrack: TranscriptionTrack;
+    levels: SongLevel[];
+}
+
+export interface NoteData {
+    version: string;
+    notes: NoteTime[];
+}
+
+export interface NoteTime {
+    string: number;
+    fret: number;
+    type: number;
+    startTime: number;
+    endTime: number;
 }
 
 export const getI = (item: string[]): number =>
@@ -273,3 +609,9 @@ export const getF = (item: string[]): number =>
     item && item.length > 0 ? parseFloat(item[0]) : 0;
 export const getS = (item: string[]): string =>
     item && item.length > 0 ? item[0].toString() : '';
+const objectMap = (object: { [key: string]: any }, mapFn: (item: any) => void) => {
+    return Object.keys(object).reduce(function (result: { [key: string]: any }, key: string) {
+        result[key] = mapFn(object[key])
+        return result
+    }, {})
+}

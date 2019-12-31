@@ -1,4 +1,26 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var SongEbeat = /** @class */ (function () {
     function SongEbeat() {
@@ -131,6 +153,25 @@ var SongNote = /** @class */ (function () {
             };
         });
     };
+    SongNote.fromXML = function (xmlData, chordNote) {
+        if (chordNote === void 0) { chordNote = false; }
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = chordNote ? item.chordNote : item.note;
+        if (!list)
+            return [];
+        var notes = list.map(function (item) {
+            var iany = item;
+            var _a = iany.$, time = _a.time, sustain = _a.sustain, rest = __rest(_a, ["time", "sustain"]);
+            time = parseFloat(time);
+            sustain = parseFloat(sustain);
+            rest = objectMap(rest, function (item) { return parseInt(item, 10); });
+            return __assign({ time: time,
+                sustain: sustain }, rest);
+        });
+        return notes;
+    };
     return SongNote;
 }());
 exports.SongNote = SongNote;
@@ -218,7 +259,7 @@ var SongPhraseProperty = /** @class */ (function () {
         if (!xmlData)
             return [];
         var item = xmlData[0];
-        var list = item.control;
+        var list = item.phraseProperty;
         if (!list)
             return [];
         var phraseProperty = list.map(function (item) {
@@ -245,7 +286,7 @@ var SongLinkedDiff = /** @class */ (function () {
         if (!xmlData)
             return [];
         var item = xmlData[0];
-        var list = item.control;
+        var list = item.linkedDiff;
         if (!list)
             return [];
         var songLinkedDiff = list.map(function (item) {
@@ -260,6 +301,257 @@ var SongLinkedDiff = /** @class */ (function () {
     return SongLinkedDiff;
 }());
 exports.SongLinkedDiff = SongLinkedDiff;
+var SongNld_Phrase = /** @class */ (function () {
+    function SongNld_Phrase() {
+        this.id = 0;
+    }
+    SongNld_Phrase.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData;
+        var list = item;
+        if (!list)
+            return [];
+        var songnld_phrase = list.map(function (item) {
+            var iany = item;
+            return {
+                id: iany.$.id ? parseInt(iany.$.id) : 0,
+            };
+        });
+        return songnld_phrase;
+    };
+    return SongNld_Phrase;
+}());
+exports.SongNld_Phrase = SongNld_Phrase;
+var SongNewLinkedDiff = /** @class */ (function () {
+    function SongNewLinkedDiff() {
+        this.phraseCount = 0;
+        this.ratio = '';
+        this.levelBreak = 0;
+        this.nld_phrase = [];
+    }
+    SongNewLinkedDiff.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.newLinkedDiff;
+        if (!list)
+            return [];
+        var songNewLinkedDiff = list.map(function (item) {
+            var iany = item;
+            return {
+                phraseCount: iany.$.phraseCount ? parseInt(iany.$.phraseCount) : 0,
+                ratio: iany.$.ratio ? iany.$.ratio : '',
+                levelBreak: iany.$.levelBreak ? parseInt(iany.$.levelBreak) : 0,
+                nld_phrase: SongNld_Phrase.fromXML(iany.nld_phrase)
+            };
+        });
+        return songNewLinkedDiff;
+    };
+    return SongNewLinkedDiff;
+}());
+exports.SongNewLinkedDiff = SongNewLinkedDiff;
+var HeroLevel = /** @class */ (function () {
+    function HeroLevel() {
+        this.difficulty = 0;
+        this.hero = 0;
+    }
+    HeroLevel.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.heroLevel;
+        if (!list)
+            return [];
+        var heroLevel = list.map(function (item) {
+            var iany = item;
+            return {
+                difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty, 10) : 0,
+                hero: iany.$.hero ? parseInt(iany.$.hero, 10) : 0,
+            };
+        });
+        return heroLevel;
+    };
+    return HeroLevel;
+}());
+exports.HeroLevel = HeroLevel;
+var SongPhraseIteration = /** @class */ (function () {
+    function SongPhraseIteration() {
+        this.time = 0;
+        this.phraseId = 0;
+        this.variation = '';
+        this.heroLevels = [];
+    }
+    SongPhraseIteration.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.phraseIteration;
+        if (!list)
+            return [];
+        var phraseIteration = list.map(function (item) {
+            var iany = item;
+            return {
+                time: iany.$.time ? parseFloat(iany.$.time) : 0,
+                phraseId: iany.$.phraseId ? parseInt(iany.$.phraseId, 10) : 0,
+                variation: iany.$.variation ? iany.$.variation : '',
+                heroLevels: HeroLevel.fromXML(iany.heroLevels)
+            };
+        });
+        return phraseIteration;
+    };
+    return SongPhraseIteration;
+}());
+exports.SongPhraseIteration = SongPhraseIteration;
+var SongHandShape = /** @class */ (function () {
+    function SongHandShape() {
+        this.chordId = 0;
+        this.startTime = 0;
+        this.endTime = 0;
+    }
+    SongHandShape.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.handShape;
+        if (!list)
+            return [];
+        var handShapes = list.map(function (item) {
+            var iany = item;
+            var _a = iany.$, chordId = _a.chordId, startTime = _a.startTime, endTime = _a.endTime;
+            chordId = parseInt(chordId);
+            startTime = parseFloat(startTime);
+            endTime = parseFloat(endTime);
+            return {
+                chordId: chordId,
+                endTime: endTime,
+                startTime: startTime,
+            };
+        });
+        return handShapes;
+    };
+    return SongHandShape;
+}());
+exports.SongHandShape = SongHandShape;
+var SongAnchor = /** @class */ (function () {
+    function SongAnchor() {
+        this.time = 0;
+        this.fret = 0;
+        this.width = 0;
+    }
+    SongAnchor.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.anchor;
+        if (!list)
+            return [];
+        var anchors = list.map(function (item) {
+            var iany = item;
+            var _a = iany.$, time = _a.time, fret = _a.fret, width = _a.width;
+            time = parseFloat(time);
+            fret = parseInt(fret);
+            width = parseFloat(width);
+            return {
+                time: time,
+                fret: fret,
+                width: width,
+            };
+        });
+        return anchors;
+    };
+    return SongAnchor;
+}());
+exports.SongAnchor = SongAnchor;
+var SongChord = /** @class */ (function () {
+    function SongChord() {
+        this.time = 0;
+        this.linkNext = 0;
+        this.accent = 0;
+        this.chordId = 0;
+        this.fretHandMute = 0;
+        this.highDensity = 0;
+        this.ignore = 0;
+        this.palmMute = 0;
+        this.hopo = 0;
+        this.strum = 0;
+        this.chordNote = [];
+    }
+    SongChord.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.chord;
+        if (!list)
+            return [];
+        var chords = list.map(function (item) {
+            var iany = item;
+            var _a = iany.$, time = _a.time, strum = _a.strum, rest = __rest(_a, ["time", "strum"]);
+            time = parseFloat(time);
+            rest = objectMap(rest, function (item) { return parseInt(item, 10); });
+            return __assign(__assign({ time: time,
+                strum: strum }, rest), { chordNote: SongNote.fromXML([iany], true) });
+        });
+        return chords;
+    };
+    return SongChord;
+}());
+exports.SongChord = SongChord;
+var TranscriptionTrack = /** @class */ (function () {
+    function TranscriptionTrack() {
+        this.difficulty = 0;
+        this.notes = [];
+        this.chords = [];
+        this.anchors = [];
+        this.handShapes = [];
+        this.fretHandMutes = [];
+    }
+    TranscriptionTrack.fromXML = function (xmlData) {
+        var item = xmlData[0];
+        var iany = item;
+        var transcriptionTrack = {
+            difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty) : 0,
+            notes: SongNote.fromXML(iany.notes),
+            chords: SongChord.fromXML(iany.chords),
+            anchors: SongAnchor.fromXML(iany.anchors),
+            handShapes: SongHandShape.fromXML(iany.handShapes),
+            fretHandMutes: [],
+        };
+        return transcriptionTrack;
+    };
+    return TranscriptionTrack;
+}());
+exports.TranscriptionTrack = TranscriptionTrack;
+var SongLevel = /** @class */ (function () {
+    function SongLevel() {
+        this.difficulty = 0;
+        this.notes = [];
+        this.chords = [];
+        this.anchors = [];
+        this.handShapes = [];
+    }
+    SongLevel.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.level;
+        if (!list)
+            return [];
+        var chords = list.map(function (item) {
+            var iany = item;
+            return {
+                difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty, 10) : 0,
+                notes: SongNote.fromXML(iany.notes),
+                chords: SongChord.fromXML(iany.chords),
+                anchors: SongAnchor.fromXML(iany.anchors),
+                handShapes: SongHandShape.fromXML(iany.handShapes),
+            };
+        });
+        return chords;
+    };
+    return SongLevel;
+}());
+exports.SongLevel = SongLevel;
 exports.getI = function (item) {
     return item && item.length > 0 ? parseInt(item[0], 10) : 0;
 };
@@ -268,4 +560,10 @@ exports.getF = function (item) {
 };
 exports.getS = function (item) {
     return item && item.length > 0 ? item[0].toString() : '';
+};
+var objectMap = function (object, mapFn) {
+    return Object.keys(object).reduce(function (result, key) {
+        result[key] = mapFn(object[key]);
+        return result;
+    }, {});
 };

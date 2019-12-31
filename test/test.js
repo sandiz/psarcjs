@@ -11,7 +11,7 @@ var promises = require('fs').promises;
 var {
     PSARC, SNG, DDS,
     WEM, WAAPI, GENERIC, BNK,
-    SONGXML, SongEbeat, SongNote,
+    Song2014, SongEbeat, SongNote,
 } = require('../dist');
 
 var expect = chai.expect;
@@ -519,7 +519,7 @@ async function bnkTests() {
 }
 
 async function songxmlTests() {
-    describe("songxml tests", async () => {
+    describe("Song2014 tests", async () => {
         it("generate xml from Song2014", async () => {
             var date = new Date(Date.now());
             const beats = await (await promises.readFile('data/song2014/beats')).toString().split("\n");
@@ -582,7 +582,7 @@ async function songxmlTests() {
                 },
                 levels: [],
             }
-            var s = new SONGXML(song2014);
+            var s = new Song2014(song2014);
             const f = await s.generateXML("/tmp/", "psarcJSTest", {
                 name: "psarcjsTest",
                 version: "0.0.1"
@@ -601,17 +601,17 @@ async function songxmlTests() {
         && !i.includes("showlights")
     );
     await forEach(xmlf)
-        .describe("songxml: parse %s", async (xml) => {
+        .describe("Song2014: parse %s", async (xml) => {
             it("create Song2014 from xml", async () => {
-                const parsedXml = await SONGXML.fromXML(`${xmls}/${xml}`);
-
-                console.log(util.inspect(parsedXml, {
-                    depth: 2,
+                const parsedXml = await Song2014.fromXML(`${xmls}/${xml}`);
+                expect(parsedXml).to.be.an("object");
+                //await promises.writeFile("/tmp/parsedXML.json", JSON.stringify(parsedXml));
+                /*console.log(util.inspect(parsedXml, {
+                    depth: 6,
                     colors: true,
                     maxArrayLength: 2,
                     compact: false,
-                }));
-
+                }));*/
             })
         })
 
