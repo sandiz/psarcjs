@@ -10,7 +10,8 @@ const assertArrays = require('chai-arrays');
 var promises = require('fs').promises;
 var {
     PSARC, SNG, DDS,
-    WEM, WAAPI, GENERIC, BNK
+    WEM, WAAPI, GENERIC, BNK,
+    SONGXML,
 } = require('../dist');
 
 var expect = chai.expect;
@@ -451,7 +452,7 @@ async function waapiTests() {
 async function genericTests() {
     describe("generic tests", async () => {
         it("generate toolkit.version", async () => {
-            const f = await GENERIC.generateToolkit("/tmp/", "sandi", "comment 1", 1, "psarcjs-test", "0.0.1");
+            const f = await GENERIC.generateToolkit("/tmp/", "sandi", "comment 1", 1, { name: "psarcjs-test", version: "0.0.1" });
             const data = await promises.readFile(f);
             console.log(data.toString());
         })
@@ -517,11 +518,89 @@ async function bnkTests() {
         })
 }
 
+async function songxmlTests() {
+    describe("songxml tests", async () => {
+        it("generate xml from Song2014", async () => {
+            var date = new Date(Date.now());
+            const beats = await (await promises.readFile('data/song2014/beats')).toString().split("\n");
+            const tempo = parseFloat(await promises.readFile('data/song2014/tempo'));
+            const notes = JSON.parse(await promises.readFile('data/song2014/notes.json'));
+            const md = JSON.parse(await promises.readFile('data/song2014/metadata.json'));
+            const song2014 = {
+                version: 2,
+                arrangement: "bass",
+                title: md.song,
+                part: 1,
+                offset: 0,
+                centOffset: 0,
+                songLength: 120,
+                lastConversionDateTime: `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`,
+                startBeat: beats[0].split(" ")[0],
+                averageTempo: tempo.toFixed(3),
+                tuning: {
+                    string0: 0,
+                    string1: 0,
+                    string2: 0,
+                    string3: 0,
+                    string4: 0,
+                    string5: 0,
+                },
+                capo: 0,
+                artistName: md.artist,
+                artistNameSort: md.artist,
+                albumName: md.album,
+                albumYear: md.year,
+                crowdSpeed: 1,
+                arrangementProperties: {
+                    represent: 1, bonusArr: 0, standardTuning: 1, nonStandardChords: 0,
+                    barreChords: 0, powerChords: 0, dropDPower: 0, openChords: 0,
+                    fingerPicking: 0, pickDirection: 0, doubleStops: 0, palmMutes: 0,
+                    harmonics: 0, pinchHarmonics: 0, hopo: 0, tremolo: 0, slides: 0,
+                    unpitchedSlides: 0, bends: 0, tapping: 0, vibrato: 0, fretHandMutes: 0,
+                    slapPop: 0, twoFingerPicking: 0, fifthsAndOctaves: 0, syncopation: 0,
+                    bassPick: 0, sustain: 1, pathLead: 0, pathRhythm: 0, pathBass: 1,
+                },
+                phrases: [],
+                phraseIterations: [],
+                newLinkedDiffs: [],
+                linkedDiffs: [],
+                phraseProperties: [],
+                chordTemplates: [],
+                fretHandMuteTemplates: [],
+                ebeats: SONGXML.beatsToEbeats(beats),
+                tonebase: "default",
+                tonea: "default",
+                sections: [],
+                events: [],
+                transcriptionTrack: {
+                    difficulty: -1,
+                    notes: SONGXML.notesToSongNotes(notes),
+                    chords: [],
+                    fretHandMutes: [],
+                    anchors: [],
+                    handShapes: [],
+                },
+                levels: [],
+            }
+            var s = new SONGXML(song2014);
+            const f = await s.generateXML("/tmp/", "psarcJSTest", {
+                name: "psarcjsTest",
+                version: "0.0.1"
+            });
+            const data = await promises.readFile(f);
+            expect(data).to.be.of.length.greaterThan(0);
+            console.log(data.toString());
+        })
+    })
+}
+
 const sngs = "test/sng/";
 const ddss = "test/dds/";
 const wems = "test/wem/";
 const bnks = "test/bnk/";
 async function fn() {
+    await songxmlTests();
+    /*
     await genericTests();
     await psarcTests();
     await sngTests();
@@ -530,7 +609,7 @@ async function fn() {
     await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
-    }
+    }*/
 }
 
 fn();

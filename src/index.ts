@@ -8,11 +8,15 @@ import * as DDSParser from './ddsparser';
 import * as WEMParser from './wemparser';
 import * as BNKParser from './bnkparser';
 import * as WAAPIHandler from './wemwaapi';
-import { SNGFORMAT } from './types/sng'
+import { SNGFORMAT } from './types/sng';
 import { join } from 'path';
 import { generate } from './aggregategraphwriter';
 
-import { BOM, Arrangements, ArrangementDetails, Platform, Arrangement } from "./types/common";
+import {
+    BOM, Arrangements, ArrangementDetails,
+    Platform, Arrangement, ToolkitInfo,
+} from "./types/common";
+import { Song2014, SongEbeat, NoteData, SongNote } from './types/song2014';
 
 const pkgInfo = require("../package.json");
 
@@ -219,12 +223,12 @@ class WAAPI {
 
 class GENERIC {
     static async generateToolkit(dir: string, author: string,
-        comment: string, v2: string, tkName: string, tkVersion: string) {
+        comment: string, v2: string, tk: ToolkitInfo) {
         const f = join(dir, "toolkit.version");
         const data = `Package Author: ${author}\n` +
             `Package Version: ${v2}\n` +
             `Package Comment: ${comment}\n` +
-            `Toolkit: ${tkName} v${tkVersion} (psarcjs v${pkgInfo.version})\n\n`
+            `Toolkit: ${tk.name} v${tk.version} (psarcjs v${pkgInfo.version})\n\n`
         await promises.writeFile(f, data);
         return f;
     }
@@ -315,6 +319,94 @@ class GENERIC {
         return f;
     }
 }
+
+
+class SONGXML {
+    song: Song2014;
+
+    constructor(song: Song2014) {
+        this.song = song;
+    }
+
+    static beatsToEbeats(beats: string[]): SongEbeat[] {
+        return beats.map(item => {
+            const [time, beat] = item.split(" ");
+            let timef = parseFloat(time);
+            let beati = parseInt(beat);
+            if (beati === 1) return { time: timef, measure: beati }
+            else return { time: timef };
+        });
+    }
+
+    static notesToSongNotes(noteData: NoteData): SongNote[] {
+        return noteData.notes.map(item => {
+            return {
+                time: item.startTime,
+                string: item.string,
+                fret: item.fret,
+            }
+        })
+    }
+
+    xmlize() {
+        const { version, ...rest } = this.song;
+        rest.tuning = { $: { ...rest.tuning } } as any;
+        rest.arrangementProperties = { $: { ...rest.arrangementProperties } } as any;
+
+        const _d = (obj: any[], child: string) => {
+            return {
+                $: { count: obj.length },
+                [child]: obj.map(item => {
+                    return { $: { ...item } }
+                })
+            }
+        }
+        rest.ebeats = _d(rest.ebeats, "ebeat") as any;
+        rest.phrases = _d(rest.phrases, "phrase") as any;
+        rest.phraseIterations = _d(rest.phraseIterations, "phraseIteration") as any;
+        rest.newLinkedDiffs = _d(rest.newLinkedDiffs, "newLinkedDiff") as any;
+        rest.linkedDiffs = _d(rest.linkedDiffs, "linkedDiff") as any;
+        rest.phraseProperties = _d(rest.phraseProperties, "phraseProperty") as any;
+        rest.chordTemplates = _d(rest.chordTemplates, "chordTemplate") as any;
+        rest.fretHandMuteTemplates = _d(rest.fretHandMuteTemplates, "fretHandMuteTemplate") as any;
+        rest.sections = _d(rest.sections, "section") as any;
+        rest.events = _d(rest.events, "event") as any;
+        rest.levels = _d(rest.levels, "level") as any;
+        rest.transcriptionTrack = {
+            $: { difficulty: rest.transcriptionTrack.difficulty },
+            notes: _d(rest.transcriptionTrack.notes, "note"),
+            chords: _d(rest.transcriptionTrack.chords, "chord"),
+            fretHandMutes: _d(rest.transcriptionTrack.fretHandMutes, "fretHandMute"),
+            anchors: _d(rest.transcriptionTrack.anchors, "anchor"),
+            handShapes: _d(rest.transcriptionTrack.handShapes, "handShape"),
+        } as any;
+
+        return {
+            ...rest,
+        };
+    }
+
+    async  generateXML(dir: string, tag: string, tk: ToolkitInfo) {
+        const builder = new xml2js.Builder();
+        const xml = builder.buildObject({
+            song: {
+                $: { version: this.song.version },
+                $comments: [`${tk.name} v${tk.version} (psarcjs v${pkgInfo.version})`],
+                ...this.xmlize(),
+            }
+        });
+        const fileName = `${tag}_${this.song.arrangement}.xml`
+        const file = join(dir, fileName);
+        await promises.writeFile(file, xml);
+        return file;
+    }
+
+    async generateSNG() {
+
+    }
+}
+
+
 const toTitleCase = function (str: string) {
     return str.replace(/\w\S*/g, function (txt: string) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 }
@@ -326,4 +418,5 @@ module.exports = {
     WAAPI,
     GENERIC,
     BNK,
+    SONGXML,
 }

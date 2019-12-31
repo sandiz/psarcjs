@@ -38,7 +38,7 @@
     "ogg": "git+https://github.com/psarcjs-forks/node-ogg.git",
     "waapi": "^2017.2.0",
     "waapi-client": "^2017.2.1",
-    "xml2js": "^0.4.23"
+    "xml2js": "git+https://github.com/psarcjs-forks/node-xml2js.git"
   },
   "devDependencies": {
     "@types/aes-js": "^3.1.0",

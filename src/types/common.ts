@@ -23,6 +23,11 @@ export interface BOM {
     zlength: number[],
 }
 
+export interface ToolkitInfo {
+    name: string;
+    version: string;
+}
+
 export enum Platform { Windows, Mac }
 
 export type Arrangements = { [persistentID: string]: object };

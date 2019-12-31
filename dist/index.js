@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,6 +45,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
 };
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
@@ -361,7 +383,7 @@ var WAAPI = /** @class */ (function () {
 var GENERIC = /** @class */ (function () {
     function GENERIC() {
     }
-    GENERIC.generateToolkit = function (dir, author, comment, v2, tkName, tkVersion) {
+    GENERIC.generateToolkit = function (dir, author, comment, v2, tk) {
         return __awaiter(this, void 0, void 0, function () {
             var f, data;
             return __generator(this, function (_a) {
@@ -371,7 +393,7 @@ var GENERIC = /** @class */ (function () {
                         data = "Package Author: " + author + "\n" +
                             ("Package Version: " + v2 + "\n") +
                             ("Package Comment: " + comment + "\n") +
-                            ("Toolkit: " + tkName + " v" + tkVersion + " (psarcjs v" + pkgInfo.version + ")\n\n");
+                            ("Toolkit: " + tk.name + " v" + tk.version + " (psarcjs v" + pkgInfo.version + ")\n\n");
                         return [4 /*yield*/, fs_1.promises.writeFile(f, data)];
                     case 1:
                         _a.sent();
@@ -490,6 +512,94 @@ var GENERIC = /** @class */ (function () {
     };
     return GENERIC;
 }());
+var SONGXML = /** @class */ (function () {
+    function SONGXML(song) {
+        this.song = song;
+    }
+    SONGXML.beatsToEbeats = function (beats) {
+        return beats.map(function (item) {
+            var _a = item.split(" "), time = _a[0], beat = _a[1];
+            var timef = parseFloat(time);
+            var beati = parseInt(beat);
+            if (beati === 1)
+                return { time: timef, measure: beati };
+            else
+                return { time: timef };
+        });
+    };
+    SONGXML.notesToSongNotes = function (noteData) {
+        return noteData.notes.map(function (item) {
+            return {
+                time: item.startTime,
+                string: item.string,
+                fret: item.fret,
+            };
+        });
+    };
+    SONGXML.prototype.xmlize = function () {
+        var _a = this.song, version = _a.version, rest = __rest(_a, ["version"]);
+        rest.tuning = { $: __assign({}, rest.tuning) };
+        rest.arrangementProperties = { $: __assign({}, rest.arrangementProperties) };
+        var _d = function (obj, child) {
+            var _a;
+            return _a = {
+                    $: { count: obj.length }
+                },
+                _a[child] = obj.map(function (item) {
+                    return { $: __assign({}, item) };
+                }),
+                _a;
+        };
+        rest.ebeats = _d(rest.ebeats, "ebeat");
+        rest.phrases = _d(rest.phrases, "phrase");
+        rest.phraseIterations = _d(rest.phraseIterations, "phraseIteration");
+        rest.newLinkedDiffs = _d(rest.newLinkedDiffs, "newLinkedDiff");
+        rest.linkedDiffs = _d(rest.linkedDiffs, "linkedDiff");
+        rest.phraseProperties = _d(rest.phraseProperties, "phraseProperty");
+        rest.chordTemplates = _d(rest.chordTemplates, "chordTemplate");
+        rest.fretHandMuteTemplates = _d(rest.fretHandMuteTemplates, "fretHandMuteTemplate");
+        rest.sections = _d(rest.sections, "section");
+        rest.events = _d(rest.events, "event");
+        rest.levels = _d(rest.levels, "level");
+        rest.transcriptionTrack = {
+            $: { difficulty: rest.transcriptionTrack.difficulty },
+            notes: _d(rest.transcriptionTrack.notes, "note"),
+            chords: _d(rest.transcriptionTrack.chords, "chord"),
+            fretHandMutes: _d(rest.transcriptionTrack.fretHandMutes, "fretHandMute"),
+            anchors: _d(rest.transcriptionTrack.anchors, "anchor"),
+            handShapes: _d(rest.transcriptionTrack.handShapes, "handShape"),
+        };
+        return __assign({}, rest);
+    };
+    SONGXML.prototype.generateXML = function (dir, tag, tk) {
+        return __awaiter(this, void 0, void 0, function () {
+            var builder, xml, fileName, file;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        builder = new xml2js.Builder();
+                        xml = builder.buildObject({
+                            song: __assign({ $: { version: this.song.version }, $comments: [tk.name + " v" + tk.version + " (psarcjs v" + pkgInfo.version + ")"] }, this.xmlize())
+                        });
+                        fileName = tag + "_" + this.song.arrangement + ".xml";
+                        file = path_1.join(dir, fileName);
+                        return [4 /*yield*/, fs_1.promises.writeFile(file, xml)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, file];
+                }
+            });
+        });
+    };
+    SONGXML.prototype.generateSNG = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
+    return SONGXML;
+}());
 var toTitleCase = function (str) {
     return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 };
@@ -501,4 +611,5 @@ module.exports = {
     WAAPI: WAAPI,
     GENERIC: GENERIC,
     BNK: BNK,
+    SONGXML: SONGXML,
 };

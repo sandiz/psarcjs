@@ -36,6 +36,11 @@ export interface SongNewLinkedDiff {
     nld_phrase: SongNld_Phrase[];
 }
 
+export interface SongLinkedDiff {
+    parentId: number;
+    childId: string;
+}
+
 export interface SongPhraseProperty {
     phraseId: number;
     redundant: number;
@@ -72,7 +77,7 @@ export interface SongControl {
 
 export interface SongEbeat {
     time: number;
-    measure: number;
+    measure?: number;
 }
 
 export interface SongSection {
@@ -110,31 +115,31 @@ export interface BendValue {
 
 export interface SongNote {
     time: number;
-    linkNext: number;
-    accent: number;
-    bend: number;
-    fret: number;
-    hammerOn: number;
-    harmonic: number;
-    hopo: number;
-    ignore: number;
-    leftHand: number;
-    mute: number;
-    palmMute: number;
-    pluck: number;
-    pullOff: number;
-    slap: number;
-    slideTo: number;
     string: number;
-    sustain: number;
-    tremolo: number;
-    harmonicPinch: number;
-    pickDirection: number;
-    rightHand: number;
-    slideUnpitchTo: number;
-    tap: number;
-    vibrato: number;
-    bendValues: BendValue[];
+    fret: number;
+    linkNext?: number;
+    accent?: number;
+    bend?: number;
+    hammerOn?: number;
+    harmonic?: number;
+    hopo?: number;
+    ignore?: number;
+    leftHand?: number;
+    mute?: number;
+    palmMute?: number;
+    pluck?: number;
+    pullOff?: number;
+    slap?: number;
+    slideTo?: number;
+    sustain?: number;
+    tremolo?: number;
+    harmonicPinch?: number;
+    pickDirection?: number;
+    rightHand?: number;
+    slideUnpitchTo?: number;
+    tap?: number;
+    vibrato?: number;
+    bendValues?: BendValue[];
 }
 
 export interface SongChord {
@@ -168,6 +173,18 @@ export interface SongLevel {
     handShapes: SongHandShape[];
 }
 
+export interface HeroLevel {
+    difficulty: number;
+    hero: number;
+}
+
+export interface SongPhraseIterations {
+    time: number;
+    phraseId: number;
+    variation: string;
+    HeroLevels: HeroLevel[];
+}
+
 export interface Song2014 {
     version: string;
     title: string;
@@ -191,7 +208,9 @@ export interface Song2014 {
     arrangementProperties: SongArrangementProperties;
     lastConversionDateTime: string;
     phrases: SongPhrase[];
+    phraseIterations: SongPhraseIterations[];
     newLinkedDiffs: SongNewLinkedDiff[];
+    linkedDiffs: SongLinkedDiff[];
     phraseProperties: SongPhraseProperty[];
     chordTemplates: SongChordTemplate[];
     fretHandMuteTemplates: SongFretHandMuteTemplate[];
@@ -207,4 +226,17 @@ export interface Song2014 {
     controls: SongControl[];
     transcriptionTrack: TranscriptionTrack;
     levels: SongLevel[];
+}
+
+export interface NoteData {
+    version: string;
+    notes: NoteTime[];
+}
+
+export interface NoteTime {
+    string: number;
+    fret: number;
+    type: number;
+    startTime: number;
+    endTime: number;
 }
