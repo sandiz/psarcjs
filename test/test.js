@@ -528,7 +528,7 @@ async function song2014Tests() {
             const notes = JSON.parse(await promises.readFile('data/song2014/notes.json'));
             const md = JSON.parse(await promises.readFile('data/song2014/metadata.json'));
             song2014 = {
-                version: 2,
+                version: "2",
                 arrangement: "bass",
                 title: md.song,
                 part: 1,
@@ -536,8 +536,8 @@ async function song2014Tests() {
                 centOffset: 0,
                 songLength: 120,
                 lastConversionDateTime: `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`,
-                startBeat: beats[0].split(" ")[0],
-                averageTempo: tempo.toFixed(3),
+                startBeat: parseFloat(beats[0].split(" ")[0]),
+                averageTempo: parseFloat(tempo.toFixed(3)),
                 tuning: {
                     string0: 0,
                     string1: 0,
@@ -550,8 +550,9 @@ async function song2014Tests() {
                 artistName: md.artist,
                 artistNameSort: md.artist,
                 albumName: md.album,
+                albumNameSort: "",
                 albumYear: md.year,
-                crowdSpeed: 1,
+                crowdSpeed: "1",
                 arrangementProperties: {
                     represent: 1, bonusArr: 0, standardTuning: 1, nonStandardChords: 0,
                     barreChords: 0, powerChords: 0, dropDPower: 0, openChords: 0,
@@ -571,8 +572,13 @@ async function song2014Tests() {
                 ebeats: SongEbeat.fromBeatData(beats),
                 tonebase: "default",
                 tonea: "default",
+                toneb: "",
+                tonec: "",
+                toned: "",
+                tones: [],
                 sections: [],
                 events: [],
+                controls: [],
                 transcriptionTrack: {
                     difficulty: -1,
                     notes: SongNote.fromNoteData(notes),
@@ -603,8 +609,8 @@ async function song2014Tests() {
                 name: "psarcjsTest",
                 version: "0.0.1"
             });
-            const data = await promises.readFile(f);
-            expect(data).to.be.of.length.greaterThan(0);
+            const parsed = await Song2014.fromXML(f);
+            expect(parsed).to.be.deep.equal(s);
             //console.log(data.toString());
             //TODO validate xml
         })
@@ -641,6 +647,7 @@ const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
     await song2014Tests();
+    /*
     await genericTests();
     await psarcTests();
     await sngTests();
@@ -649,7 +656,7 @@ async function fn() {
     await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
-    }
+    }*/
 }
 
 fn();

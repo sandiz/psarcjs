@@ -4,11 +4,15 @@ export class SongEbeat {
     measure?: number;
 
     static fromBeatData(beats: string[]): SongEbeat[] {
+        let idx = 0;
         return beats.map(item => {
             const [time, beat] = item.split(" ");
             let timef = parseFloat(time);
             let beati = parseInt(beat);
-            if (beati === 1) return { time: timef, measure: beati }
+            if (beati === 1) {
+                idx++;
+                return { time: timef, measure: idx }
+            }
             else return { time: timef };
         });
     }
@@ -22,10 +26,13 @@ export class SongEbeat {
 
         const controls: SongEbeat[] = list.map((item: object): SongEbeat => {
             const iany = (item as any);
-            return {
+            const main = {
                 time: parseFloat(iany.$.time),
-                measure: iany.$.measure ? parseInt(iany.$.measure) : 0,
             }
+            Object.assign(main,
+                iany.$.measure && { measure: parseInt(iany.$.measure) },
+            )
+            return main;
         })
         return controls;
     }
@@ -152,13 +159,15 @@ export class SongNote {
             const iany = (item as any);
             let { time, sustain, ...rest } = iany.$;
             time = parseFloat(time);
-            sustain = parseFloat(sustain);
             rest = objectMap(rest, item => parseInt(item, 10));
-            return {
+            const main = {
                 time,
-                sustain,
                 ...rest,
             }
+            Object.assign(main,
+                sustain && { sustain: parseFloat(sustain) },
+            )
+            return main;
         })
         return notes;
     }

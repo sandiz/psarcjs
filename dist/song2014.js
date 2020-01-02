@@ -27,12 +27,15 @@ var SongEbeat = /** @class */ (function () {
         this.time = 0;
     }
     SongEbeat.fromBeatData = function (beats) {
+        var idx = 0;
         return beats.map(function (item) {
             var _a = item.split(" "), time = _a[0], beat = _a[1];
             var timef = parseFloat(time);
             var beati = parseInt(beat);
-            if (beati === 1)
-                return { time: timef, measure: beati };
+            if (beati === 1) {
+                idx++;
+                return { time: timef, measure: idx };
+            }
             else
                 return { time: timef };
         });
@@ -46,10 +49,11 @@ var SongEbeat = /** @class */ (function () {
             return [];
         var controls = list.map(function (item) {
             var iany = item;
-            return {
+            var main = {
                 time: parseFloat(iany.$.time),
-                measure: iany.$.measure ? parseInt(iany.$.measure) : 0,
             };
+            Object.assign(main, iany.$.measure && { measure: parseInt(iany.$.measure) });
+            return main;
         });
         return controls;
     };
@@ -142,6 +146,7 @@ var SongNote = /** @class */ (function () {
         this.time = 0;
         this.string = 0;
         this.fret = 0;
+        this.sustain = 0;
         this.bendValues = [];
     }
     SongNote.fromNoteData = function (noteData) {
@@ -165,10 +170,10 @@ var SongNote = /** @class */ (function () {
             var iany = item;
             var _a = iany.$, time = _a.time, sustain = _a.sustain, rest = __rest(_a, ["time", "sustain"]);
             time = parseFloat(time);
-            sustain = parseFloat(sustain);
             rest = objectMap(rest, function (item) { return parseInt(item, 10); });
-            return __assign({ time: time,
-                sustain: sustain }, rest);
+            var main = __assign({ time: time }, rest);
+            Object.assign(main, sustain && { sustain: parseFloat(sustain) });
+            return main;
         });
         return notes;
     };
