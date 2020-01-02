@@ -518,15 +518,16 @@ async function bnkTests() {
         })
 }
 
-async function songxmlTests() {
+async function song2014Tests() {
     describe("Song2014 tests", async () => {
-        it("generate xml from Song2014", async () => {
-            var date = new Date(Date.now());
+        let song2014 = {};
+        before(async () => {
+            const date = new Date(Date.now());
             const beats = await (await promises.readFile('data/song2014/beats')).toString().split("\n");
             const tempo = parseFloat(await promises.readFile('data/song2014/tempo'));
             const notes = JSON.parse(await promises.readFile('data/song2014/notes.json'));
             const md = JSON.parse(await promises.readFile('data/song2014/metadata.json'));
-            const song2014 = {
+            song2014 = {
                 version: 2,
                 arrangement: "bass",
                 title: md.song,
@@ -580,8 +581,23 @@ async function songxmlTests() {
                     anchors: [],
                     handShapes: [],
                 },
-                levels: [],
+                levels: [{
+                    difficulty: 16,
+                    notes: SongNote.fromNoteData(notes),
+                    chords: [],
+                    anchors: [],
+                    handShapes: [],
+                },
+                {
+                    difficulty: 17,
+                    notes: SongNote.fromNoteData(notes),
+                    chords: [],
+                    anchors: [],
+                    handShapes: [],
+                }],
             }
+        })
+        it("generate xml from Song2014", async () => {
             var s = new Song2014(song2014);
             const f = await s.generateXML("/tmp/", "psarcJSTest", {
                 name: "psarcjsTest",
@@ -590,6 +606,7 @@ async function songxmlTests() {
             const data = await promises.readFile(f);
             expect(data).to.be.of.length.greaterThan(0);
             //console.log(data.toString());
+            //TODO validate xml
         })
         it("generate sng from Song2014", async () => {
 
@@ -605,6 +622,7 @@ async function songxmlTests() {
             it("create Song2014 from xml", async () => {
                 const parsedXml = await Song2014.fromXML(`${xmls}/${xml}`);
                 expect(parsedXml).to.be.an("object");
+                //verify sng
                 //await promises.writeFile("/tmp/parsedXML.json", JSON.stringify(parsedXml));
                 /*console.log(util.inspect(parsedXml, {
                     depth: 6,
@@ -614,8 +632,6 @@ async function songxmlTests() {
                 }));*/
             })
         })
-
-
 }
 
 const sngs = "test/sng/";
@@ -624,8 +640,7 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
-    await songxmlTests();
-    /*
+    await song2014Tests();
     await genericTests();
     await psarcTests();
     await sngTests();
@@ -634,7 +649,7 @@ async function fn() {
     await wemTests();
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
-    }*/
+    }
 }
 
 fn();

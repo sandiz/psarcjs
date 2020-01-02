@@ -537,7 +537,7 @@ var SongLevel = /** @class */ (function () {
         var list = item.level;
         if (!list)
             return [];
-        var chords = list.map(function (item) {
+        var levels = list.map(function (item) {
             var iany = item;
             return {
                 difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty, 10) : 0,
@@ -547,7 +547,7 @@ var SongLevel = /** @class */ (function () {
                 handShapes: SongHandShape.fromXML(iany.handShapes),
             };
         });
-        return chords;
+        return levels;
     };
     return SongLevel;
 }());

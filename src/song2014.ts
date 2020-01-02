@@ -535,7 +535,7 @@ export class SongLevel {
 
         if (!list) return [];
 
-        const chords: SongLevel[] = list.map((item: object): Partial<SongLevel> => {
+        const levels: SongLevel[] = list.map((item: object): SongLevel => {
             const iany = (item as any);
             return {
                 difficulty: iany.$.difficulty ? parseInt(iany.$.difficulty, 10) : 0,
@@ -545,7 +545,7 @@ export class SongLevel {
                 handShapes: SongHandShape.fromXML(iany.handShapes),
             }
         })
-        return chords;
+        return levels;
     }
 }
 

@@ -410,7 +410,6 @@ class Song2014 {
         rest.fretHandMuteTemplates = _d(rest.fretHandMuteTemplates, "fretHandMuteTemplate") as any;
         rest.sections = _d(rest.sections, "section") as any;
         rest.events = _d(rest.events, "event") as any;
-        rest.levels = _d(rest.levels, "level") as any;
         rest.transcriptionTrack = {
             $: { difficulty: rest.transcriptionTrack.difficulty },
             notes: _d(rest.transcriptionTrack.notes, "note"),
@@ -418,6 +417,18 @@ class Song2014 {
             fretHandMutes: _d(rest.transcriptionTrack.fretHandMutes, "fretHandMute"),
             anchors: _d(rest.transcriptionTrack.anchors, "anchor"),
             handShapes: _d(rest.transcriptionTrack.handShapes, "handShape"),
+        } as any;
+        rest.levels = {
+            $: { count: rest.levels.length },
+            level: rest.levels.map(item => {
+                return {
+                    $: { difficulty: item.difficulty },
+                    notes: _d(item.notes, "note"),
+                    chords: _d(item.chords, "chord"),
+                    anchors: _d(item.anchors, "anchor"),
+                    handShapes: _d(item.handShapes, "handShape"),
+                }
+            })
         } as any;
 
         return {

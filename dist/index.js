@@ -598,7 +598,6 @@ var Song2014 = /** @class */ (function () {
         rest.fretHandMuteTemplates = _d(rest.fretHandMuteTemplates, "fretHandMuteTemplate");
         rest.sections = _d(rest.sections, "section");
         rest.events = _d(rest.events, "event");
-        rest.levels = _d(rest.levels, "level");
         rest.transcriptionTrack = {
             $: { difficulty: rest.transcriptionTrack.difficulty },
             notes: _d(rest.transcriptionTrack.notes, "note"),
@@ -606,6 +605,18 @@ var Song2014 = /** @class */ (function () {
             fretHandMutes: _d(rest.transcriptionTrack.fretHandMutes, "fretHandMute"),
             anchors: _d(rest.transcriptionTrack.anchors, "anchor"),
             handShapes: _d(rest.transcriptionTrack.handShapes, "handShape"),
+        };
+        rest.levels = {
+            $: { count: rest.levels.length },
+            level: rest.levels.map(function (item) {
+                return {
+                    $: { difficulty: item.difficulty },
+                    notes: _d(item.notes, "note"),
+                    chords: _d(item.chords, "chord"),
+                    anchors: _d(item.anchors, "anchor"),
+                    handShapes: _d(item.handShapes, "handShape"),
+                };
+            })
         };
         return __assign({}, rest);
     };
