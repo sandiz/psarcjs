@@ -13,7 +13,7 @@ exports.PHRASEDATA = new binary_parser_1.Parser()
     .int8("solo")
     .int8("disparity")
     .int8("ignore")
-    .skip(1)
+    .int8("padding")
     .uint32("maxDifficulty")
     .uint32("phraseIterationLinks")
     .string("name", {
@@ -142,8 +142,8 @@ exports.SYMBOLSDATA = new binary_parser_1.Parser()
 exports.PHRASEITERATIONSDATA = new binary_parser_1.Parser()
     .endianess("little")
     .uint32("phraseId")
-    .floatle("time")
-    .floatle("endTime")
+    .floatle("startTime")
+    .floatle("nextPhraseTime")
     .array("difficulty", {
     type: "uint32le",
     length: 3
@@ -222,7 +222,7 @@ exports.NOTESDATA = new binary_parser_1.Parser()
     .int8("pluck")
     .int16le("vibrato")
     .floatle("sustain")
-    .floatle("bend_time")
+    .floatle("maxBend")
     .uint32("bend_length")
     .array("bends", {
     type: exports.BENDDATA,
@@ -296,8 +296,8 @@ exports.LEVELSDATA = new binary_parser_1.Parser()
 exports.METADATADATA = new binary_parser_1.Parser()
     .endianess("little")
     .doublele("maxScores")
-    .doublele("maxNotes")
-    .doublele("maxNotesNoIgnored")
+    .doublele("maxNotesAndChords")
+    .doublele("maxNotesAndChords_Real")
     .doublele("pointsPerNote")
     .floatle("firstBeatLength")
     .floatle("startTime")
@@ -309,7 +309,7 @@ exports.METADATADATA = new binary_parser_1.Parser()
 })
     .int16le("part")
     .floatle("songLength")
-    .uint32("tuning_length")
+    .uint32("tuningLength")
     .array("tuning", {
     type: "int16le",
     length: "tuning_length"

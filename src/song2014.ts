@@ -172,7 +172,6 @@ export class SongNote {
         return notes;
     }
 }
-
 export class SongEvent {
     time: number = 0;
     code: string = "";
@@ -407,6 +406,33 @@ export interface SongArrangementProperties {
     pathRhythm: number;
     pathBass: number;
     routeMask: number;
+    represent: number;
+    standardTuning: number;
+    nonStandardChords: number
+    barreChords: number;
+    powerChords: number;
+    dropDPower: number;
+    openChords: number;
+    fingerPicking: number;
+    pickDirection: number;
+    doubleStops: number;
+    palmMutes: number;
+    harmonics: number;
+    pinchHarmonics: number;
+    hopo: number;
+    tremolo: number;
+    slides: number;
+    unpitchedSlides: number;
+    bends: number;
+    tapping: number;
+    vibrato: number;
+    fretHandMutes: number;
+    slapPop: number;
+    twoFingerPicking: number;
+    fifthsAndOctaves: number;
+    syncopation: number;
+    bassPick: number;
+    sustain: number;
 }
 
 

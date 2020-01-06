@@ -146,7 +146,6 @@ var SongNote = /** @class */ (function () {
         this.time = 0;
         this.string = 0;
         this.fret = 0;
-        this.sustain = 0;
         this.bendValues = [];
     }
     SongNote.fromNoteData = function (noteData) {

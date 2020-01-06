@@ -17,7 +17,7 @@ export const PHRASEDATA: Parser<PHRASES> = new Parser()
     .int8("solo")
     .int8("disparity")
     .int8("ignore")
-    .skip(1)
+    .int8("padding")
     .uint32("maxDifficulty")
     .uint32("phraseIterationLinks")
     .string("name", {
@@ -157,8 +157,8 @@ export const SYMBOLSDATA: Parser<SYMBOLS> = new Parser()
 export const PHRASEITERATIONSDATA: Parser<PHRASEITERATIONS> = new Parser()
     .endianess("little")
     .uint32("phraseId")
-    .floatle("time")
-    .floatle("endTime")
+    .floatle("startTime")
+    .floatle("nextPhraseTime")
     .array("difficulty", {
         type: "uint32le",
         length: 3
@@ -240,7 +240,7 @@ export const NOTESDATA: Parser<NOTES> = new Parser()
     .int8("pluck")
     .int16le("vibrato")
     .floatle("sustain")
-    .floatle("bend_time")
+    .floatle("maxBend")
     .uint32("bend_length")
     .array("bends", {
         type: BENDDATA,
@@ -319,8 +319,8 @@ export const LEVELSDATA: Parser<Partial<LEVELS>> = new Parser()
 export const METADATADATA: Parser<METADATA> = new Parser()
     .endianess("little")
     .doublele("maxScores")
-    .doublele("maxNotes")
-    .doublele("maxNotesNoIgnored")
+    .doublele("maxNotesAndChords")
+    .doublele("maxNotesAndChords_Real")
     .doublele("pointsPerNote")
     .floatle("firstBeatLength")
     .floatle("startTime")
@@ -332,7 +332,7 @@ export const METADATADATA: Parser<METADATA> = new Parser()
     })
     .int16le("part")
     .floatle("songLength")
-    .uint32("tuning_length")
+    .uint32("tuningLength")
     .array("tuning", {
         type: "int16le",
         length: "tuning_length"

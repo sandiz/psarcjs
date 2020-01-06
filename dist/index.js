@@ -74,6 +74,7 @@ var DDSParser = __importStar(require("./ddsparser"));
 var WEMParser = __importStar(require("./wemparser"));
 var BNKParser = __importStar(require("./bnkparser"));
 var WAAPIHandler = __importStar(require("./wemwaapi"));
+var SNGTypes = __importStar(require("./types/sng"));
 var path_1 = require("path");
 var aggregategraphwriter_1 = require("./aggregategraphwriter");
 var song2014_1 = require("./song2014");
@@ -243,6 +244,7 @@ var PSARC = /** @class */ (function () {
     };
     return PSARC;
 }());
+exports.PSARC = PSARC;
 var SNG = /** @class */ (function () {
     function SNG(file) {
         this.sng = null;
@@ -269,6 +271,7 @@ var SNG = /** @class */ (function () {
     };
     return SNG;
 }());
+exports.SNG = SNG;
 var DDS = /** @class */ (function () {
     function DDS(file) {
         this.ddsFiles = [];
@@ -305,6 +308,7 @@ var DDS = /** @class */ (function () {
     };
     return DDS;
 }());
+exports.DDS = DDS;
 var WEM = /** @class */ (function () {
     function WEM() {
     }
@@ -337,6 +341,7 @@ var WEM = /** @class */ (function () {
     };
     return WEM;
 }());
+exports.WEM = WEM;
 var BNK = /** @class */ (function () {
     function BNK() {
     }
@@ -366,6 +371,7 @@ var BNK = /** @class */ (function () {
     };
     return BNK;
 }());
+exports.BNK = BNK;
 var WAAPI = /** @class */ (function () {
     function WAAPI() {
     }
@@ -381,6 +387,7 @@ var WAAPI = /** @class */ (function () {
     };
     return WAAPI;
 }());
+exports.WAAPI = WAAPI;
 var GENERIC = /** @class */ (function () {
     function GENERIC() {
     }
@@ -513,6 +520,7 @@ var GENERIC = /** @class */ (function () {
     };
     return GENERIC;
 }());
+exports.GENERIC = GENERIC;
 var Song2014 = /** @class */ (function () {
     function Song2014(song) {
         this.song = song;
@@ -642,13 +650,70 @@ var Song2014 = /** @class */ (function () {
     };
     Song2014.prototype.generateSNG = function (dir, tag) {
         return __awaiter(this, void 0, void 0, function () {
+            var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, sngFormat, _validate;
             return __generator(this, function (_a) {
-                return [2 /*return*/];
+                fileName = tag + "_" + this.song.arrangement + ".sng";
+                toneObj = {
+                    tonebase: this.song.tonebase, tonea: this.song.tonea,
+                    toneb: this.song.toneb, tonec: this.song.tonec, toned: this.song.toned,
+                };
+                dnas = SNGTypes.DNA.fromDNA(this.song.events);
+                chordTemplates = SNGTypes.CHORDTEMPLATES.fromSongChordTemplate(this.song.chordTemplates, this.song.tuning, this.song.arrangement, this.song.capo);
+                phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
+                levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations, chordTemplates, phraseIterations, this.song.phrases);
+                sngFormat = {
+                    beats_length: this.song.ebeats.length,
+                    beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
+                    phrases_length: this.song.phrases.length,
+                    phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
+                    chord_templates_length: this.song.chordTemplates.length,
+                    chordTemplates: chordTemplates,
+                    chord_notes_length: SNGTypes.getChordNotes().length,
+                    chordNotes: SNGTypes.getChordNotes(),
+                    vocals_length: 0,
+                    vocals: [],
+                    symbols_length: 0,
+                    symbols: {
+                        header: [],
+                        texture: [],
+                        definition: [],
+                    },
+                    phrase_iter_length: this.song.phraseIterations.length,
+                    phraseIterations: phraseIterations,
+                    phrase_extra_info_length: 0,
+                    phraseExtraInfos: [],
+                    new_linked_diffs_length: this.song.newLinkedDiffs.length,
+                    newLinkedDiffs: SNGTypes.NEWLINKEDDIFFS.fromNewLinkedDiffs(this.song.newLinkedDiffs),
+                    actions_length: 0,
+                    actions: [],
+                    events_length: this.song.events.length,
+                    events: SNGTypes.EVENTS.fromEvents(this.song.events),
+                    tone_length: this.song.tones.length,
+                    tone: SNGTypes.TONE.fromTone(this.song.tones, toneObj),
+                    dna_length: dnas.length,
+                    dna: dnas,
+                    sections_length: this.song.sections.length,
+                    sections: SNGTypes.SECTIONS.fromSections(this.song.sections, this.song.phraseIterations, this.song.phrases, this.song.levels, this.song.chordTemplates, this.song.songLength),
+                    levels_length: this.song.levels.length,
+                    levels: levels,
+                    metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
+                };
+                _validate = function (struct, data) {
+                    if (data && data.length > 0)
+                        struct.parse(struct.encode(data));
+                };
+                //validate
+                _validate(SNGParser.BEATSDATA, sngFormat.beats);
+                _validate(SNGParser.PHRASEDATA, sngFormat.phrases);
+                console.log(sngFormat);
+                //(SNGParser.SNGDATA as any).encode(sngFormat);
+                return [2 /*return*/, fileName];
             });
         });
     };
     return Song2014;
 }());
+exports.Song2014 = Song2014;
 var toTitleCase = function (str) {
     return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 };

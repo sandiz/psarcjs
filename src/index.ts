@@ -8,7 +8,7 @@ import * as DDSParser from './ddsparser';
 import * as WEMParser from './wemparser';
 import * as BNKParser from './bnkparser';
 import * as WAAPIHandler from './wemwaapi';
-import { SNGFORMAT } from './types/sng';
+import * as SNGTypes from './types/sng';
 import { join } from 'path';
 import { generate } from './aggregategraphwriter';
 
@@ -31,7 +31,7 @@ import {
 
 const pkgInfo = require("../package.json");
 
-class PSARC {
+export class PSARC {
     /**
      * Initialise psarc file instance
      *
@@ -165,10 +165,10 @@ class PSARC {
     }
 }
 
-class SNG {
+export class SNG {
     public sngFile: string;
     private sngRawData: Buffer | null;
-    private sng: Partial<SNGFORMAT> | null = null;
+    public sng: Partial<SNGTypes.SNGFORMAT> | null = null;
     constructor(file: string) {
         this.sngFile = file;
         this.sngRawData = null;
@@ -182,7 +182,7 @@ class SNG {
     }
 }
 
-class DDS {
+export class DDS {
     public imageFile: string;
     public ddsFiles: string[] = [];
 
@@ -202,7 +202,7 @@ class DDS {
 
 }
 
-class WEM {
+export class WEM {
     static async convert(file: string, tag: string = "") {
         let wemFile = await WEMParser.convert(file, tag);
         return wemFile;
@@ -215,7 +215,7 @@ class WEM {
 }
 
 
-class BNK {
+export class BNK {
     static async validate(bnkFile: string) {
         const data = await promises.readFile(bnkFile);
         return BNKParser.BNKDATA.parse(data);
@@ -226,13 +226,13 @@ class BNK {
     }
 }
 
-class WAAPI {
+export class WAAPI {
     static async convert(file: string, tag: string, platform: Platform): Promise<string> {
         return await WAAPIHandler.Convert(file, tag, platform);
     }
 }
 
-class GENERIC {
+export class GENERIC {
     static async generateToolkit(dir: string, author: string,
         comment: string, v2: string, tk: ToolkitInfo) {
         const f = join(dir, "toolkit.version");
@@ -332,7 +332,7 @@ class GENERIC {
 }
 
 
-class Song2014 {
+export class Song2014 {
     song: ISong2014;
 
     constructor(song: ISong2014) {
@@ -452,8 +452,72 @@ class Song2014 {
     }
 
     async generateSNG(dir: string, tag: string) {
+        const fileName = `${tag}_${this.song.arrangement}.sng`;
 
+        const toneObj = {
+            tonebase: this.song.tonebase, tonea: this.song.tonea,
+            toneb: this.song.toneb, tonec: this.song.tonec, toned: this.song.toned,
+        }
+
+        const dnas = SNGTypes.DNA.fromDNA(this.song.events);
+        const chordTemplates = SNGTypes.CHORDTEMPLATES.fromSongChordTemplate(this.song.chordTemplates, this.song.tuning, this.song.arrangement, this.song.capo);
+        const phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
+        const levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations,
+            chordTemplates, phraseIterations, this.song.phrases);
+        const sngFormat: Partial<SNGTypes.SNGFORMAT> = {
+            beats_length: this.song.ebeats.length,
+            beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
+            phrases_length: this.song.phrases.length,
+            phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
+            chord_templates_length: this.song.chordTemplates.length,
+            chordTemplates,
+            chord_notes_length: SNGTypes.getChordNotes().length,
+            chordNotes: SNGTypes.getChordNotes(),
+            vocals_length: 0,
+            vocals: [],
+            symbols_length: 0,
+            symbols: {
+                header: [],
+                texture: [],
+                definition: [],
+            },
+            phrase_iter_length: this.song.phraseIterations.length,
+            phraseIterations,
+            phrase_extra_info_length: 0,
+            phraseExtraInfos: [],
+            new_linked_diffs_length: this.song.newLinkedDiffs.length,
+            newLinkedDiffs: SNGTypes.NEWLINKEDDIFFS.fromNewLinkedDiffs(this.song.newLinkedDiffs),
+            actions_length: 0,
+            actions: [],
+            events_length: this.song.events.length,
+            events: SNGTypes.EVENTS.fromEvents(this.song.events),
+            tone_length: this.song.tones.length,
+            tone: SNGTypes.TONE.fromTone(this.song.tones, toneObj),
+            dna_length: dnas.length,
+            dna: dnas,
+            sections_length: this.song.sections.length,
+            sections: SNGTypes.SECTIONS.fromSections(
+                this.song.sections, this.song.phraseIterations, this.song.phrases,
+                this.song.levels, this.song.chordTemplates, this.song.songLength),
+            levels_length: this.song.levels.length,
+            levels,
+            metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
+        };
+        const _validate = (struct: any, data: any[] | undefined) => {
+            if (data && data.length > 0)
+                struct.parse(struct.encode(data));
+        }
+        //validate
+        _validate(SNGParser.BEATSDATA, sngFormat.beats);
+        _validate(SNGParser.PHRASEDATA, sngFormat.phrases);
+        console.log(sngFormat);
+
+        //(SNGParser.SNGDATA as any).encode(sngFormat);
+        return fileName;
     }
+
+    // generate vocals
+    // generate showlights
 }
 
 
