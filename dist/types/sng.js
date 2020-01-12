@@ -647,13 +647,11 @@ var LEVELS = /** @class */ (function () {
                         // anchor fret
                         n.anchorFret = ank[j].fret;
                         //if (ank[j].UNK_time == 3.4028234663852886e+38)
-                        ank[j].UNK_time = n.time;
+                        ank[j].UNK_time = ank[j].time; //n.time;
                         var sustain = 0;
                         if (n.time + n.sustain < ank[j].endTime - 0.1)
                             sustain = n.sustain;
                         ank[j].UNK_time2 = n.time + sustain;
-                        //if (ank[j].phraseIterationId == 17)
-                        //console.log(ank[j], n.sustain)
                         break;
                     }
                 }

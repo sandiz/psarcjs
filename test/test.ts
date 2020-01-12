@@ -663,23 +663,44 @@ async function song2014Tests() {
             })
             it("create SNG from xml", async () => {
                 //TODO
-                const parsedXml = await Song2014.fromXML(`${xmls}/${xml}`);
+                const xFile = `${xmls}${xml}`;
+                const parsedXml = await Song2014.fromXML(xFile);
                 const f = await parsedXml.generateSNG("/tmp/", "psarcJSTest");
 
                 const sng = new SNG(f);
                 await sng.parse();
 
                 const xmlPathParse = path.parse(xml);
-                const leftSNG = `${xmls}compare/${xmlPathParse.name}.sng`
-                const rightSNG = f;
+                const leftSNG = `${xmls}/${xmlPathParse.name}.sng`
 
-                let out1 = await spawn('python3', ['test/sng/generate-sng-json.py', leftSNG]);
-                let out2 = await spawn('python3', ['test/sng/generate-sng-json.py', rightSNG]);
-                //console.log(out1.toString() + out2.toString());
+                let out = await spawn('mono',
+                    ['test/xml/xml2sng2014/xml2sng2014.exe', '--xml2sng', '-i', xFile])
 
-                const ljPath = `${xmls}compare/${xmlPathParse.name}.sng.json`;
-                const rjPath = `${f}.json`;
+                //console.log(out.toString());
+                const leftSng = new SNG(leftSNG);
+                await leftSng.parse();
 
+                const lsng = leftSng.sng;
+                const rsng = sng.sng;
+
+                if (lsng && rsng) {
+                    expect(lsng.beats).to.be.deep.equal(rsng.beats);
+                    expect(lsng.phrases).to.be.deep.equal(rsng.phrases);
+                    expect(lsng.chordTemplates).to.be.deep.equal(rsng.chordTemplates);
+                    expect(lsng.chordNotes).to.be.deep.equal(rsng.chordNotes);
+                    expect(lsng.vocals).to.be.deep.equal(rsng.vocals);
+                    expect(lsng.symbols).to.be.deep.equal(rsng.symbols);
+                    expect(lsng.phraseIterations).to.be.deep.equal(rsng.phraseIterations);
+                    expect(lsng.phraseExtraInfos).to.be.deep.equal(rsng.phraseExtraInfos);
+                    expect(lsng.newLinkedDiffs).to.be.deep.equal(rsng.newLinkedDiffs);
+                    expect(lsng.actions).to.be.deep.equal(rsng.actions);
+                    expect(lsng.events).to.be.deep.equal(rsng.events);
+                    expect(lsng.tone).to.be.deep.equal(rsng.tone);
+                    expect(lsng.dna).to.be.deep.equal(rsng.dna);
+                    expect(lsng.sections).to.be.deep.equal(rsng.sections);
+                }
+
+                /*
                 const lj = JSON.parse(await promises.readFile(ljPath));
                 const rj = JSON.parse(await promises.readFile(rjPath));
                 expect(lj.beats).to.be.deep.equal(rj.beats);
@@ -706,6 +727,7 @@ async function song2014Tests() {
                     expect(l0.difficulty).to.be.equal(r0.difficulty);
                     expect(l0.anchors).to.be.equal(r0.anchors);
                 }
+                */
 
             }).timeout(15000);
         })
