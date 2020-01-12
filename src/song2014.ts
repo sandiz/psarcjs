@@ -112,8 +112,8 @@ export class SongSection {
 
 export class SongNote {
     time: number = 0;
-    string: number = 0;
-    fret: number = 0;
+    string: number = -1;
+    fret: number = -1;
     linkNext?: number;
     accent?: number;
     bend?: number;
@@ -166,6 +166,7 @@ export class SongNote {
             }
             Object.assign(main,
                 sustain && { sustain: parseFloat(sustain) },
+                iany.bendValues && { bendValues: BendValue.fromXML(iany.bendValues) }
             )
             return main;
         })
@@ -384,10 +385,32 @@ export class SongPhraseIteration {
     }
 }
 
-export interface BendValue {
-    time: number;
-    step: number;
-    unk5: number;
+export class BendValue {
+    time: number = 0;
+    step: number = -1;
+    unk5: number = -1;
+
+    static fromXML(xmlData: object[]) {
+        if (!xmlData) return [];
+        const item = xmlData[0];
+        const list = (item as any).bendValue;
+
+        if (!list) return [];
+        const bendValues: BendValue[] = list.map((item: object): BendValue => {
+            const iany = (item as any);
+            let { time, step, ...rest } = iany.$;
+            time = parseFloat(time);
+            step = parseFloat(step);
+            rest = objectMap(rest, item => parseInt(item, 10));
+            const main = {
+                time,
+                step,
+                ...rest,
+            }
+            return main;
+        });
+        return bendValues;
+    }
 }
 
 export interface Tuning {

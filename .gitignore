@@ -62,3 +62,4 @@ typings/
 
 test/sng/*.json
 test/dds/*.dds
+test/sng/compare

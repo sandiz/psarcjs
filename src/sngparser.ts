@@ -300,20 +300,20 @@ export const LEVELSDATA: Parser<Partial<LEVELS>> = new Parser()
         type: NOTESDATA,
         length: "notes_length"
     })
-    .uint32("anpi")
+    .uint32("anpi_length")
     .array("averageNotesPerIter", {
         type: "floatle",
-        length: "anpi"
+        length: "anpi_length"
     })
-    .uint32("niicni")
+    .uint32("niicni_length")
     .array("notesInIterCountNoIgnored", {
         type: "int32le",
-        length: "niicni"
+        length: "niicni_length"
     })
-    .uint32("niic")
+    .uint32("niic_length")
     .array("notesInIterCount", {
         type: "int32le",
-        length: "niic"
+        length: "niic_length"
     })
 
 export const METADATADATA: Parser<METADATA> = new Parser()
@@ -335,7 +335,7 @@ export const METADATADATA: Parser<METADATA> = new Parser()
     .uint32("tuningLength")
     .array("tuning", {
         type: "int16le",
-        length: "tuning_length"
+        length: "tuningLength"
     })
     .floatle("firstNoteTime")
     .floatle("firstNoteTime2")
@@ -380,15 +380,15 @@ export const SNGDATA: Parser<Partial<SNGFORMAT>> = new Parser()
         type: PHRASEITERATIONSDATA,
         length: "phrase_iter_length"
     })
-    .uint32("phrase_extra_length")
+    .uint32("phrase_extra_info_length")
     .array("phraseExtraInfos", {
         type: PHRASEEXTRAINFOSDATA,
-        length: "phrase_extra_length"
+        length: "phrase_extra_info_length"
     })
-    .uint32("new_linked_length")
+    .uint32("new_linked_diffs_length")
     .array("newLinkedDiffs", {
         type: NEWLINKEDDIFFSDATA,
-        length: "new_linked_length"
+        length: "new_linked_diffs_length"
     })
     .uint32("actions_length")
     .array("actions", {

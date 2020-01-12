@@ -144,8 +144,8 @@ exports.SongSection = SongSection;
 var SongNote = /** @class */ (function () {
     function SongNote() {
         this.time = 0;
-        this.string = 0;
-        this.fret = 0;
+        this.string = -1;
+        this.fret = -1;
         this.bendValues = [];
     }
     SongNote.fromNoteData = function (noteData) {
@@ -171,7 +171,7 @@ var SongNote = /** @class */ (function () {
             time = parseFloat(time);
             rest = objectMap(rest, function (item) { return parseInt(item, 10); });
             var main = __assign({ time: time }, rest);
-            Object.assign(main, sustain && { sustain: parseFloat(sustain) });
+            Object.assign(main, sustain && { sustain: parseFloat(sustain) }, iany.bendValues && { bendValues: BendValue.fromXML(iany.bendValues) });
             return main;
         });
         return notes;
@@ -407,6 +407,34 @@ var SongPhraseIteration = /** @class */ (function () {
     return SongPhraseIteration;
 }());
 exports.SongPhraseIteration = SongPhraseIteration;
+var BendValue = /** @class */ (function () {
+    function BendValue() {
+        this.time = 0;
+        this.step = -1;
+        this.unk5 = -1;
+    }
+    BendValue.fromXML = function (xmlData) {
+        if (!xmlData)
+            return [];
+        var item = xmlData[0];
+        var list = item.bendValue;
+        if (!list)
+            return [];
+        var bendValues = list.map(function (item) {
+            var iany = item;
+            var _a = iany.$, time = _a.time, step = _a.step, rest = __rest(_a, ["time", "step"]);
+            time = parseFloat(time);
+            step = parseFloat(step);
+            rest = objectMap(rest, function (item) { return parseInt(item, 10); });
+            var main = __assign({ time: time,
+                step: step }, rest);
+            return main;
+        });
+        return bendValues;
+    };
+    return BendValue;
+}());
+exports.BendValue = BendValue;
 var SongHandShape = /** @class */ (function () {
     function SongHandShape() {
         this.chordId = 0;

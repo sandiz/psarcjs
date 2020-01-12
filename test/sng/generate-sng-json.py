@@ -3,9 +3,11 @@ from rocksmith import SNG
 from os import listdir
 from os.path import isfile, join, exists
 import json
+import sys
 
-path = "test/sng"
-onlyfiles = [f for f in listdir(path) if isfile(join(path, f)) and f.endswith(".sng")]
+path = sys.argv[1] if len(sys.argv) > 1 else "test/sng"
+onlyfiles = [f for f in listdir(path) if isfile(
+    join(path, f)) and f.endswith(".sng")]
 
 for sng in onlyfiles:
     file = f"{path}/{sng}"
@@ -21,4 +23,3 @@ for sng in onlyfiles:
     f2 = open(file2, "w")
     f2.write(g)
     f2.close()
-

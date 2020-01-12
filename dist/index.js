@@ -67,8 +67,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var xml2js = __importStar(require("xml2js"));
-//import * as util from 'util';
-var Parser = __importStar(require("./parser"));
+var PSARCParser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var DDSParser = __importStar(require("./ddsparser"));
 var WEMParser = __importStar(require("./wemparser"));
@@ -101,13 +100,13 @@ var PSARC = /** @class */ (function () {
                     case 1:
                         _a.psarcRawData = _b.sent();
                         if (!this.psarcRawData) return [3 /*break*/, 3];
-                        header = Parser.HEADER.parse(this.psarcRawData);
-                        paddedbom = Parser.pad(header.bom);
-                        decryptedbom = Buffer.from(Parser.BOMDecrypt(paddedbom));
+                        header = PSARCParser.HEADER.parse(this.psarcRawData);
+                        paddedbom = PSARCParser.pad(header.bom);
+                        decryptedbom = Buffer.from(PSARCParser.BOMDecrypt(paddedbom));
                         slicedbom = decryptedbom.slice(0, header.bom.length);
-                        this.BOMEntries = Parser.BOM(header.n_entries).parse(slicedbom);
+                        this.BOMEntries = PSARCParser.BOM(header.n_entries).parse(slicedbom);
                         if (!this.BOMEntries) return [3 /*break*/, 3];
-                        return [4 /*yield*/, Parser.readEntry(this.psarcRawData, 0, this.BOMEntries)];
+                        return [4 /*yield*/, PSARCParser.readEntry(this.psarcRawData, 0, this.BOMEntries)];
                     case 2:
                         rawlisting = _b.sent();
                         this.listing = unescape(rawlisting.toString()).split("\n");
@@ -221,11 +220,11 @@ var PSARC = /** @class */ (function () {
                         if (idx === -1)
                             return [2 /*return*/, null];
                         if (!(this.psarcRawData && this.BOMEntries)) return [3 /*break*/, 3];
-                        return [4 /*yield*/, Parser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)];
+                        return [4 /*yield*/, PSARCParser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)];
                     case 1:
                         data = _a.sent();
                         if (!data) return [3 /*break*/, 3];
-                        return [4 /*yield*/, Parser.Decrypt(this.listing[idx], data)];
+                        return [4 /*yield*/, PSARCParser.Decrypt(this.listing[idx], data)];
                     case 2:
                         decrypted = _a.sent();
                         return [2 /*return*/, decrypted];
@@ -518,6 +517,13 @@ var GENERIC = /** @class */ (function () {
             });
         });
     };
+    GENERIC.prototype.generateShowlights = function (dir, tag) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
     return GENERIC;
 }());
 exports.GENERIC = GENERIC;
@@ -540,7 +546,7 @@ var Song2014 = /** @class */ (function () {
                         ret = {
                             version: song.$.version,
                             title: song2014_1.getS(song.title),
-                            arrangement: song2014_1.getS(song.arrangement),
+                            arrangement: song2014_1.getS(song.arrangement).toLowerCase(),
                             part: song2014_1.getI(song.part),
                             offset: song2014_1.getF(song.offset),
                             centOffset: song2014_1.getF(song.centOffset),
@@ -650,64 +656,75 @@ var Song2014 = /** @class */ (function () {
     };
     Song2014.prototype.generateSNG = function (dir, tag) {
         return __awaiter(this, void 0, void 0, function () {
-            var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, sngFormat, _validate;
+            var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, chordNotes, sngFormat, _validate2, path;
             return __generator(this, function (_a) {
-                fileName = tag + "_" + this.song.arrangement + ".sng";
-                toneObj = {
-                    tonebase: this.song.tonebase, tonea: this.song.tonea,
-                    toneb: this.song.toneb, tonec: this.song.tonec, toned: this.song.toned,
-                };
-                dnas = SNGTypes.DNA.fromDNA(this.song.events);
-                chordTemplates = SNGTypes.CHORDTEMPLATES.fromSongChordTemplate(this.song.chordTemplates, this.song.tuning, this.song.arrangement, this.song.capo);
-                phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
-                levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations, chordTemplates, phraseIterations, this.song.phrases);
-                sngFormat = {
-                    beats_length: this.song.ebeats.length,
-                    beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
-                    phrases_length: this.song.phrases.length,
-                    phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
-                    chord_templates_length: this.song.chordTemplates.length,
-                    chordTemplates: chordTemplates,
-                    chord_notes_length: SNGTypes.getChordNotes().length,
-                    chordNotes: SNGTypes.getChordNotes(),
-                    vocals_length: 0,
-                    vocals: [],
-                    symbols_length: 0,
-                    symbols: {
-                        header: [],
-                        texture: [],
-                        definition: [],
-                    },
-                    phrase_iter_length: this.song.phraseIterations.length,
-                    phraseIterations: phraseIterations,
-                    phrase_extra_info_length: 0,
-                    phraseExtraInfos: [],
-                    new_linked_diffs_length: this.song.newLinkedDiffs.length,
-                    newLinkedDiffs: SNGTypes.NEWLINKEDDIFFS.fromNewLinkedDiffs(this.song.newLinkedDiffs),
-                    actions_length: 0,
-                    actions: [],
-                    events_length: this.song.events.length,
-                    events: SNGTypes.EVENTS.fromEvents(this.song.events),
-                    tone_length: this.song.tones.length,
-                    tone: SNGTypes.TONE.fromTone(this.song.tones, toneObj),
-                    dna_length: dnas.length,
-                    dna: dnas,
-                    sections_length: this.song.sections.length,
-                    sections: SNGTypes.SECTIONS.fromSections(this.song.sections, this.song.phraseIterations, this.song.phrases, this.song.levels, this.song.chordTemplates, this.song.songLength),
-                    levels_length: this.song.levels.length,
-                    levels: levels,
-                    metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
-                };
-                _validate = function (struct, data) {
-                    if (data && data.length > 0)
-                        struct.parse(struct.encode(data));
-                };
-                //validate
-                _validate(SNGParser.BEATSDATA, sngFormat.beats);
-                _validate(SNGParser.PHRASEDATA, sngFormat.phrases);
-                console.log(sngFormat);
-                //(SNGParser.SNGDATA as any).encode(sngFormat);
-                return [2 /*return*/, fileName];
+                switch (_a.label) {
+                    case 0:
+                        fileName = tag + "_" + this.song.arrangement + ".sng";
+                        toneObj = {
+                            tonebase: this.song.tonebase, tonea: this.song.tonea,
+                            toneb: this.song.toneb, tonec: this.song.tonec, toned: this.song.toned,
+                        };
+                        dnas = SNGTypes.DNA.fromDNA(this.song.events);
+                        chordTemplates = SNGTypes.CHORDTEMPLATES.fromSongChordTemplate(this.song.chordTemplates, this.song.tuning, this.song.arrangement, this.song.capo);
+                        phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
+                        levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations, chordTemplates, phraseIterations, this.song.phrases);
+                        chordNotes = SNGTypes.getChordNotes();
+                        sngFormat = {
+                            beats_length: this.song.ebeats.length,
+                            beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
+                            phrases_length: this.song.phrases.length,
+                            phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
+                            chord_templates_length: this.song.chordTemplates.length,
+                            chordTemplates: chordTemplates,
+                            chord_notes_length: chordNotes.length,
+                            chordNotes: chordNotes,
+                            vocals_length: 0,
+                            vocals: [],
+                            symbols_length: 0,
+                            symbols: {
+                                header: [],
+                                texture: [],
+                                definition: [],
+                            },
+                            phrase_iter_length: this.song.phraseIterations.length,
+                            phraseIterations: phraseIterations,
+                            phrase_extra_info_length: 0,
+                            phraseExtraInfos: [],
+                            new_linked_diffs_length: this.song.newLinkedDiffs.length,
+                            newLinkedDiffs: SNGTypes.NEWLINKEDDIFFS.fromNewLinkedDiffs(this.song.newLinkedDiffs),
+                            actions_length: 0,
+                            actions: [],
+                            events_length: this.song.events.length,
+                            events: SNGTypes.EVENTS.fromEvents(this.song.events),
+                            tone_length: this.song.tones.length,
+                            tone: SNGTypes.TONE.fromTone(this.song.tones, toneObj),
+                            dna_length: dnas.length,
+                            dna: dnas,
+                            sections_length: this.song.sections.length,
+                            sections: SNGTypes.SECTIONS.fromSections(this.song.sections, this.song.phraseIterations, this.song.phrases, this.song.levels, this.song.chordTemplates, this.song.songLength),
+                            levels_length: levels.length,
+                            levels: levels,
+                            metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
+                        };
+                        _validate2 = function (struct, data) {
+                            if (data)
+                                struct.parse(struct.encode(data));
+                        };
+                        _validate2(SNGParser.SNGDATA, sngFormat);
+                        path = path_1.join(dir, fileName);
+                        return [4 /*yield*/, fs_1.promises.writeFile(path, SNGParser.SNGDATA.encode(sngFormat))];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, path];
+                }
+            });
+        });
+    };
+    Song2014.prototype.generateVocals = function (dir, tag) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
             });
         });
     };

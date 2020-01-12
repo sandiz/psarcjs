@@ -509,7 +509,7 @@ export class LEVELS {
     difficulty: number = 0;
     anchors_length: number = 0;
     anchors: ANCHORS[] = [];
-    anchor_extensions_length = 0;
+    anchor_ext_length = 0;
     anchor_extensions: ANCHOREXTENSIONS[] = [];
     fingerprints: [FPW, FPW] = [new FPW(), new FPW()];
     notes_length = 0;
@@ -523,6 +523,7 @@ export class LEVELS {
 
     static fromLevels(sl: SongLevel[], pi: SongPhraseIteration[], CT: CHORDTEMPLATES[], PH: PHRASEITERATIONS[], phrases: SongPhrase[]): LEVELS[] {
         const levels: LEVELS[] = [];
+        const note_id: { [key: number]: number } = {}
         for (let i = 0; i < sl.length; i += 1) {
             const songLevel = sl[i];
 
@@ -543,7 +544,7 @@ export class LEVELS {
             const anchorExts: ANCHOREXTENSIONS[] = [];
             let anchorExtLength = 0;
             songLevel.notes.forEach(note => {
-                if (note.slideTo != -1)
+                if (note.slideTo && note.slideTo != -1)
                     ++anchorExtLength;
             });
 
@@ -575,8 +576,8 @@ export class LEVELS {
             fingerprints2.fingerprints = fp2;
 
             const notes: NOTES[] = [];
-            const notesInIteration1: number[] = [];
-            const notesInIteration2: number[] = [];
+            const notesInIteration1: number[] = new Array<number>(pi.length).fill(0);
+            const notesInIteration2: number[] = new Array<number>(pi.length).fill(0);
             let acent: number = 0;
 
             songLevel.notes.forEach(note => {
@@ -592,7 +593,7 @@ export class LEVELS {
 
                     // fix for 100% bug issue and improve mastery
                     if (piter.time > note.time && j > 0) {
-                        if (note.ignore == 0)
+                        if (note.ignore == undefined || note.ignore == 0)
                             ++notesInIteration1[j - 1];
 
                         ++notesInIteration2[j - 1];
@@ -600,7 +601,7 @@ export class LEVELS {
                     }
                 }
 
-                if (note.slideTo != -1) {
+                if (note.slideTo && note.slideTo != -1) {
                     var ae: ANCHOREXTENSIONS = {
                         fret: note.slideTo ?? 0,
                         time: note.time + (note.sustain ?? 0),
@@ -614,6 +615,7 @@ export class LEVELS {
                 let id = -1;
                 if (chord.chordNote && chord.chordNote.length > 0)
                     id = addChordNotes(chord);
+                if (id == -1) return;
                 parseChord(pi, chord, cn, id, CT);
                 notes.push(cn);
 
@@ -639,23 +641,25 @@ export class LEVELS {
             let chordInArpeggio: { [key: number]: number } = {}
 
             notes.forEach(n => {
-                for (let id = 0; id < fp1.length; id++) // FingerPrints 1st level (common handshapes)
+                for (let id = 0; id < fp1.length; id++) { // FingerPrints 1st level (common handshapes)
                     if (n.time >= fp1[id].startTime && n.time < fp1[id].endTime) {
                         // Handshapes can be inside other handshapes
-                        if (n.fingerPrintId[0] == -1)
+                        if (n.fingerPrintId[0] == INT16_MAX)
                             n.fingerPrintId[0] = id;
 
                         // Add STRUM to first chord in the handshape (The chord will be rendered as a full chord panel)
                         // In later DLC, frethand muted chords that start a handshape may not have STRUM
-                        if (n.chordId != -1) {
+                        if (n.chordId != INT32_MAX) {
                             // There may be single notes before the first chord so can't use fp1[id].StartTime == n.Time
                             if (!((Object.keys(chordInHandshape)).includes(id.toString()))) {
-                                n.mask |= SNGConstants.NOTE_MASK_STRUM;
-                                chordInHandshape[id] = n.chordId;;
+                                //TODO:check if this is required
+                                //n.mask |= SNGConstants.NOTE_MASK_STRUM;
+                                chordInHandshape[id] = n.chordId;
                             }
                             else if (chordInHandshape[id] != n.chordId) {
                                 // This should not be necessary for official songs
-                                n.mask |= SNGConstants.NOTE_MASK_STRUM;
+                                //TODO:check if this is required
+                                //n.mask |= SNGConstants.NOTE_MASK_STRUM;
                                 chordInHandshape[id] = n.chordId;
                             }
                         }
@@ -673,8 +677,8 @@ export class LEVELS {
                             fp1[id].UNK_endTime = noteEnd;
                         }
                     }
-
-                for (let id = 0; id < fp2.length; id++) // FingerPrints 2nd level (used for -arp(eggio) handshapes)
+                }
+                for (let id = 0; id < fp2.length; id++) { // FingerPrints 2nd level (used for -arp(eggio) handshapes)
                     if (n.time >= fp2[id].startTime && n.time < fp2[id].endTime) {
                         n.fingerPrintId[1] = id;
 
@@ -700,8 +704,8 @@ export class LEVELS {
                         fp2[id].UNK_endTime = n.time + sustain;
                         break;
                     }
-
-                for (let j = 0; j < ank.length; j++)
+                }
+                for (let j = 0; j < ank.length; j++) {
                     if (n.time >= ank[j].time && n.time < ank[j].endTime) {
                         n.anchorWidth = ank[j].width;
                         // anchor fret
@@ -715,6 +719,13 @@ export class LEVELS {
                         ank[j].UNK_time2 = n.time + sustain;
                         break;
                     }
+                    else {
+                        if (ank[j].UNK_time == 3.4028234663852886e+38)
+                            ank[j].UNK_time = ank[j].time;
+                        if (ank[j].UNK_time2 == 1.1754943508222875e-38)
+                            ank[j].UNK_time2 = ank[j].time;
+                    }
+                }
             });
 
             PH.forEach(piter => {
@@ -736,21 +747,21 @@ export class LEVELS {
                 }
                 // fix last phrase note
                 if (count > 0)
-                    notes[j - 1].nextIterNote = -1;
+                    notes[j - 1].nextIterNote = INT16_MAX;
             });
 
             for (let j = 0; j < notes.length; j++) {
                 // Look for notes with PARENT mask (linkNext=1)
                 var n = notes[j];
                 if ((n.mask & SNGConstants.NOTE_MASK_PARENT) != 0) {
-                    if (n.chordId == -1) // Single note
+                    if (n.chordId == INT32_MAX) // Single note
                     {
                         // Find the next note on the same string
                         let x = j + 1;
                         while (x < notes.length) {
                             var nextnote = notes[x];
                             if (nextnote.string == n.string) {
-                                nextnote.parentPrevNote = n.nextIterNote - 1;
+                                nextnote.parentPrevNote = n.nextIterNote == INT16_MAX ? INT16_MAX : n.nextIterNote - 1;
                                 nextnote.mask |= SNGConstants.NOTE_MASK_CHILD;
 
                                 break;
@@ -766,7 +777,7 @@ export class LEVELS {
                     else // Chord
                     {
                         // Chordnotes should always be present
-                        if (n.chordNoteId != -1 && n.chordNoteId != 0) {
+                        if (n.chordNoteId != INT32_MAX) {
                             var chordnotes = cns[n.chordNoteId];
                             // Check which chordNotes have linknext
                             for (let cnString = 0; cnString < 6; cnString++) {
@@ -798,8 +809,8 @@ export class LEVELS {
                 }
             }
 
-            let averageNotesPerIter: number[] = new Array(phrases.length);
-            let iter_count: number[] = new Array(phrases.length);
+            let averageNotesPerIter: number[] = new Array(phrases.length).fill(0);
+            let iter_count: number[] = new Array(phrases.length).fill(0);
 
             for (let j = 0; j < pi.length; j++) {
                 var piter = pi[j];
@@ -813,38 +824,39 @@ export class LEVELS {
                     averageNotesPerIter[j] /= iter_count[j];
             }
 
-            let note_id: { [key: number]: number } = {}
 
             notes.forEach(n => {
                 const buf = (NOTESDATA as any).encode(n);
                 const ncopy = NOTESDATA.parse(buf);
-                ncopy.nextIterNote = 0;
-                ncopy.prevIterNote = 0;
-                ncopy.parentPrevNote = 0;
-                let crc = CRC32.buf(ncopy);
-                if (!Object.keys(note_id).includes(crc))
+                ncopy.nextIterNote = INT16_MAX;
+                ncopy.prevIterNote = INT16_MAX;
+                ncopy.parentPrevNote = INT16_MAX;
+                let crc: number = CRC32.buf((NOTESDATA as any).encode(ncopy));
+                if (!Object.keys(note_id).includes(crc.toString())) {
                     note_id[crc] = Object.values(note_id).length;
+                }
                 n.hash = note_id[crc];
             });
 
             numberNotes(PH, notes);
 
-            levels.push({
+            const level: LEVELS = {
                 difficulty,
-                anchors_length: songLevel.anchors.length,
+                anchors_length: ank.length,
                 anchors: ank,
-                anchor_extensions_length: anchorExtLength,
+                anchor_ext_length: anchorExtLength,
                 anchor_extensions: anchorExts,
                 fingerprints: [fingerprints1, fingerprints2],
                 notes_length: notes.length,
                 notes,
                 anpi_length: phrases.length,
                 averageNotesPerIter,
-                niicni_length: pi.length,
+                niicni_length: notesInIteration1.length,
                 notesInIterCountNoIgnored: notesInIteration1,
-                niic_length: pi.length,
+                niic_length: notesInIteration2.length,
                 notesInIterCount: notesInIteration2,
-            })
+            };
+            levels.push(level);
         }
         return levels;
     }
@@ -943,6 +955,8 @@ function getMaxDifficulty(ph: SongPhrase[]) {
     return max;
 }
 
+const INT16_MAX = 65535;
+const INT32_MAX = 4294967295;
 function parseNote(pi: SongPhraseIteration[], note: SongNote, n: NOTES, prev: NOTES) {
     n.mask = parseNoteMask(note, true);
     // numbering (NoteFlags) will be set later
@@ -954,29 +968,29 @@ function parseNote(pi: SongPhraseIteration[], note: SongNote, n: NOTES, prev: NO
     n.anchorFret = -1;
     // will be overwritten
     n.anchorWidth = -1
-    n.chordId = 0;
-    n.chordNoteId = 0;
+    n.chordId = INT32_MAX;
+    n.chordNoteId = INT32_MAX;
     n.phraseIterationId = getPhraseIterationId(pi, n.time, false);
     n.phraseId = pi[n.phraseIterationId] ? pi[n.phraseIterationId].phraseId : 0;
     // these will be overwritten
-    n.fingerPrintId[0] = 0;
-    n.fingerPrintId[1] = 0;
+    n.fingerPrintId[0] = INT16_MAX;
+    n.fingerPrintId[1] = INT16_MAX;
     // these will be overwritten
-    n.nextIterNote = 0;
-    n.prevIterNote = 0;
-    n.parentPrevNote = 0;
-    n.slideTo = note.slideTo ?? 0;
-    n.slideUnpitchTo = note.slideUnpitchTo ?? 0;
-    n.leftHand = note.leftHand ?? 0;
+    n.nextIterNote = INT16_MAX;
+    n.prevIterNote = INT16_MAX;
+    n.parentPrevNote = INT16_MAX;
+    n.slideTo = note.slideTo ?? -1;
+    n.slideUnpitchTo = note.slideUnpitchTo ?? -1;
+    n.leftHand = note.leftHand ?? -1;
     // 'bvibrato' and 'rchords8' are using 0 value but without TAP mask
     if (note.tap != 0)
-        n.tap = note.tap ?? 0;
+        n.tap = note.tap ?? -1;
     else
         n.tap = -1;
 
     n.pickDirection = note.pickDirection ?? 0;
-    n.slap = note.slap ?? 0;
-    n.pluck = note.pluck ?? 0;
+    n.slap = note.slap ?? -1;
+    n.pluck = note.pluck ?? -1;
     n.vibrato = note.vibrato ?? 0;
     n.sustain = note.sustain ?? 0;
     n.maxBend = note.bend ?? 0;
@@ -992,52 +1006,51 @@ function parseNoteMask(note: SongNote, single: boolean): number {
 
     // single note
     let mask = 0;
-
     if (single)
         mask |= SNGConstants.NOTE_MASK_SINGLE;
     if (note.fret == 0)
         mask |= SNGConstants.NOTE_MASK_OPEN;
-    if (note.linkNext != 0)
+    if (note.linkNext && note.linkNext != 0)
         mask |= SNGConstants.NOTE_MASK_PARENT;
-    if (note.accent != 0)
+    if (note.accent && note.accent != 0)
         mask |= SNGConstants.NOTE_MASK_ACCENT;
-    if (note.bend != 0)
+    if (note.bend && note.bend != 0)
         mask |= SNGConstants.NOTE_MASK_BEND;
-    if (note.hammerOn != 0)
+    if (note.hammerOn && note.hammerOn != 0)
         mask |= SNGConstants.NOTE_MASK_HAMMERON;
-    if (note.harmonic != 0)
+    if (note.harmonic && note.harmonic != 0)
         mask |= SNGConstants.NOTE_MASK_HARMONIC;
 
-    if (single && note.ignore != 0)
+    if (single && note.ignore && note.ignore != 0)
         mask |= SNGConstants.NOTE_MASK_IGNORE;
-    if (single && note.leftHand != -1)
+    if (single && note.leftHand && note.leftHand != -1)
         mask |= SNGConstants.NOTE_MASK_LEFTHAND;
-    if (note.mute != 0)
+    if (note.mute && note.mute != 0)
         mask |= SNGConstants.NOTE_MASK_MUTE;
-    if (note.palmMute != 0)
+    if (note.palmMute && note.palmMute != 0)
         mask |= SNGConstants.NOTE_MASK_PALMMUTE;
-    if (note.pluck != -1)
+    if (note.pluck && note.pluck != -1)
         mask |= SNGConstants.NOTE_MASK_PLUCK;
-    if (note.pullOff != 0)
+    if (note.pullOff && note.pullOff != 0)
         mask |= SNGConstants.NOTE_MASK_PULLOFF;
-    if (note.slap != -1)
+    if (note.slap && note.slap != -1)
         mask |= SNGConstants.NOTE_MASK_SLAP;
-    if (note.slideTo != -1)
+    if (note.slideTo && note.slideTo != -1)
         mask |= SNGConstants.NOTE_MASK_SLIDE;
-    if (note.sustain != 0)
+    if (note.sustain && note.sustain != 0)
         mask |= SNGConstants.NOTE_MASK_SUSTAIN;
-    if (note.tremolo != 0)
+    if (note.tremolo && note.tremolo != 0)
         mask |= SNGConstants.NOTE_MASK_TREMOLO;
-    if (note.harmonicPinch != 0)
+    if (note.harmonicPinch && note.harmonicPinch != 0)
         mask |= SNGConstants.NOTE_MASK_PINCHHARMONIC;
 
-    if (note.rightHand != -1)
+    if (note.rightHand && note.rightHand != -1)
         mask |= SNGConstants.NOTE_MASK_RIGHTHAND;
-    if (note.slideUnpitchTo != -1)
+    if (note.slideUnpitchTo && note.slideUnpitchTo != -1)
         mask |= SNGConstants.NOTE_MASK_SLIDEUNPITCHEDTO;
-    if (note.tap != 0)
+    if (note.tap && note.tap != 0)
         mask |= SNGConstants.NOTE_MASK_TAP;
-    if (note.vibrato != 0)
+    if (note.vibrato && note.vibrato != 0)
         mask |= SNGConstants.NOTE_MASK_VIBRATO;
 
     return mask;
@@ -1057,19 +1070,22 @@ function parseBendData(note: SongNote, single: boolean): BENDS {
     }
     var bends = new BENDS();
     bends.bendValues = new Array<BEND>(count);
-    bends.count = count;
 
     for (let i = 0; i < count; i += 1)
         bends.bendValues[i] = new BEND();
 
     // intentionally not using "count"
+    let usedCount = 0;
     for (let i = 0; i < bend_values; i++) {
         var b = bends.bendValues[i];
         b.time = note.bendValues ? note.bendValues[i].time : 0;
         b.step = note.bendValues ? note.bendValues[i].step : 0;
         b.UNK = note.bendValues ? note.bendValues[i].unk5 : 0;
+
+        if (b.time > 0 || b.step > 0) usedCount++;
     }
 
+    bends.count = usedCount;
     return bends;
 }
 const cns: CHORDNOTES[] = [];
@@ -1082,7 +1098,7 @@ function addChordNotes(chord: SongChord) {
     for (let i = 0; i < 6; i++) {
         let n: SongNote = new SongNote();
         for (let k = 0; k < chord.chordNote.length; k += 1) {
-            let cn = chord.chordNote[i];
+            let cn = chord.chordNote[k];
             if (cn.string == i) {
                 n = cn;
                 break;
@@ -1099,8 +1115,8 @@ function addChordNotes(chord: SongChord) {
         //    c.bends[i].bendValues[i].usedCount = n.bendValues.length;
 
         if (n != null) {
-            c.slideTo[i] = n.slideTo ?? 0;
-            c.slideUnpitchTo[i] = n.slideUnpitchTo ?? 0
+            c.slideTo[i] = n.slideTo ?? -1;
+            c.slideUnpitchTo[i] = n.slideUnpitchTo ?? -1
         }
         else {
             c.slideTo[i] = -1;
@@ -1111,11 +1127,15 @@ function addChordNotes(chord: SongChord) {
     }
     const buf = (CHORDNOTESDATA as any).encode(c);
     let crc = CRC32.buf(buf);
-    if (Object.keys(cnsId).includes(crc))
+
+    //if (c.mask[4] == 12288 && c.mask[5] == 12288)
+    //    console.log(c.mask, chord.chordNote[0]);
+
+    if (Object.keys(cnsId).includes(crc.toString()))
         return cnsId[crc];
 
     // don't export chordnotes if there are no techniques
-    let noTechniques = c.mask.filter(m => m == 0);
+    let noTechniques = c.mask.filter(m => m == 0).length === 6;
     if (noTechniques)
         return -1;
 
@@ -1128,7 +1148,7 @@ function addChordNotes(chord: SongChord) {
 
 function parseChord(pi: SongPhraseIteration[], chord: SongChord, n: NOTES, chordNotesId: number, chordTemplates: CHORDTEMPLATES[]) {
     n.mask |= SNGConstants.NOTE_MASK_CHORD;
-    if (chordNotesId != -1) {
+    if (chordNotesId != INT32_MAX) {
         // there should always be a STRUM too => handshape at chord time
         // probably even for chordNotes which are not exported to SNG
         n.mask |= SNGConstants.NOTE_MASK_CHORDNOTES;
@@ -1159,15 +1179,15 @@ function parseChord(pi: SongPhraseIteration[], chord: SongChord, n: NOTES, chord
     n.chordId = chord.chordId;
     n.chordNoteId = chordNotesId;
     n.phraseIterationId = getPhraseIterationId(pi, n.time, false);
-    n.phraseId = pi[n.phraseIterationId].phraseId;
+    n.phraseId = pi[n.phraseIterationId] ? pi[n.phraseIterationId].phraseId : 0;
     // these will be overwritten
-    n.fingerPrintId[0] = -1;
-    n.fingerPrintId[1] = -1;
+    n.fingerPrintId[0] = INT16_MAX;
+    n.fingerPrintId[1] = INT16_MAX;
     // these will be overwritten
-    n.nextIterNote = -1;
-    n.prevIterNote = -1;
+    n.nextIterNote = INT16_MAX;
+    n.prevIterNote = INT16_MAX;
     // seems to be unused for chords
-    n.parentPrevNote = -1;
+    n.parentPrevNote = INT16_MAX;
     n.slideTo = -1;
     n.slideUnpitchTo = -1;
     n.leftHand = -1;
@@ -1189,7 +1209,6 @@ function parseChord(pi: SongPhraseIteration[], chord: SongChord, n: NOTES, chord
 
     let cnt = 0;
     for (let str = 0; str < 6; str++) {
-        let l: ISong2014;
         if (chordTemplates[chord.chordId].frets[str] != 255)
             ++cnt;
     }
@@ -1244,8 +1263,8 @@ function numberNotes(PI: PHRASEITERATIONS[], notes: NOTES[]) {
                 continue;
 
             // count as repeat if this fret/chord was numbered recently
-            if ((current.chordId == -1 && notes[i].fret == current.fret) ||
-                (current.chordId != -1 && notes[i].chordId == current.chordId)) {
+            if ((current.chordId == INT32_MAX && notes[i].fret == current.fret) ||
+                (current.chordId != INT32_MAX && notes[i].chordId == current.chordId)) {
                 if ((notes[i].flags & SNGConstants.NOTE_FLAGS_NUMBERED) != 0) {
                     repeat = true;
                     break;

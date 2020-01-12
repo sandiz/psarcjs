@@ -1,8 +1,9 @@
 import { promises } from 'fs';
+import { Parser } from 'binary-parser';
 import * as xml2js from 'xml2js';
 
-//import * as util from 'util';
-import * as Parser from './parser';
+import * as util from 'util';
+import * as PSARCParser from './parser';
 import * as SNGParser from './sngparser';
 import * as DDSParser from './ddsparser';
 import * as WEMParser from './wemparser';
@@ -62,15 +63,15 @@ export class PSARC {
         //console.log("parsing psarc:", this.psarcFile, "size:", (this.psarcRawData.length / (1024 * 1024)).toFixed(2), "mb");
 
         if (this.psarcRawData) {
-            const header = Parser.HEADER.parse(this.psarcRawData);
-            const paddedbom = Parser.pad(header.bom);
-            const decryptedbom = Buffer.from(Parser.BOMDecrypt(paddedbom));
+            const header = PSARCParser.HEADER.parse(this.psarcRawData);
+            const paddedbom = PSARCParser.pad(header.bom);
+            const decryptedbom = Buffer.from(PSARCParser.BOMDecrypt(paddedbom));
             const slicedbom = decryptedbom.slice(0, header.bom.length);
 
-            this.BOMEntries = Parser.BOM(header.n_entries).parse(slicedbom);
+            this.BOMEntries = PSARCParser.BOM(header.n_entries).parse(slicedbom);
             // console.log(util.inspect(this.BOMEntries, { depth: null }));
             if (this.BOMEntries) {
-                const rawlisting = await Parser.readEntry(this.psarcRawData, 0, this.BOMEntries);
+                const rawlisting = await PSARCParser.readEntry(this.psarcRawData, 0, this.BOMEntries);
                 this.listing = unescape(rawlisting.toString()).split("\n");
             }
         }
@@ -146,9 +147,9 @@ export class PSARC {
     public async readFile(idx: number) {
         if (idx === -1) return null;
         if (this.psarcRawData && this.BOMEntries) {
-            const data = await Parser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)
+            const data = await PSARCParser.readEntry(this.psarcRawData, idx + 1, this.BOMEntries)
             if (data) {
-                const decrypted = await Parser.Decrypt(this.listing[idx], data);
+                const decrypted = await PSARCParser.Decrypt(this.listing[idx], data);
                 return decrypted;
             }
         }
@@ -329,6 +330,13 @@ export class GENERIC {
         await promises.writeFile(f, xml);
         return f;
     }
+
+    async generateShowlights(dir: string, tag: string) {
+
+    }
+
+    // generate vocals
+    // generate showlights
 }
 
 
@@ -347,7 +355,7 @@ export class Song2014 {
         const ret: ISong2014 = {
             version: song.$.version,
             title: getS(song.title),
-            arrangement: getS(song.arrangement),
+            arrangement: getS(song.arrangement).toLowerCase(),
             part: getI(song.part),
             offset: getF(song.offset),
             centOffset: getF(song.centOffset),
@@ -464,15 +472,16 @@ export class Song2014 {
         const phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
         const levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations,
             chordTemplates, phraseIterations, this.song.phrases);
-        const sngFormat: Partial<SNGTypes.SNGFORMAT> = {
+        const chordNotes: SNGTypes.CHORDNOTES[] = SNGTypes.getChordNotes();
+        const sngFormat: SNGTypes.SNGFORMAT = {
             beats_length: this.song.ebeats.length,
             beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
             phrases_length: this.song.phrases.length,
             phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
             chord_templates_length: this.song.chordTemplates.length,
             chordTemplates,
-            chord_notes_length: SNGTypes.getChordNotes().length,
-            chordNotes: SNGTypes.getChordNotes(),
+            chord_notes_length: chordNotes.length,
+            chordNotes: chordNotes,
             vocals_length: 0,
             vocals: [],
             symbols_length: 0,
@@ -499,25 +508,24 @@ export class Song2014 {
             sections: SNGTypes.SECTIONS.fromSections(
                 this.song.sections, this.song.phraseIterations, this.song.phrases,
                 this.song.levels, this.song.chordTemplates, this.song.songLength),
-            levels_length: this.song.levels.length,
+            levels_length: levels.length,
             levels,
             metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
         };
-        const _validate = (struct: any, data: any[] | undefined) => {
-            if (data && data.length > 0)
+        const _validate2 = (struct: any, data: any | undefined) => {
+            if (data)
                 struct.parse(struct.encode(data));
         }
-        //validate
-        _validate(SNGParser.BEATSDATA, sngFormat.beats);
-        _validate(SNGParser.PHRASEDATA, sngFormat.phrases);
-        console.log(sngFormat);
+        _validate2(SNGParser.SNGDATA, sngFormat);
 
-        //(SNGParser.SNGDATA as any).encode(sngFormat);
-        return fileName;
+        const path = join(dir, fileName);
+        await promises.writeFile(path, (SNGParser.SNGDATA as any).encode(sngFormat))
+        return path;
     }
 
-    // generate vocals
-    // generate showlights
+    async generateVocals(dir: string, tag: string) {
+
+    }
 }
 
 
