@@ -493,15 +493,15 @@ export class NOTES {
     slap: number = -1;
     pluck: number = -1;
     vibrato: number = -1;
-    sustain: number = -1;
+    sustain: number = 0;
     maxBend: number = -1;
     bend_length: number = 0;
     bends: Array<BEND> = [];
 }
 
 export class FPW {
-    length: number = 0;
-    fingerprints: FINGERPRINTS[] = [];
+    item0_length: number = 0;
+    I0: FINGERPRINTS[] = [];
 }
 
 let first_note_time: number = 0;
@@ -533,8 +533,8 @@ export class LEVELS {
                 ank.push({
                     time: songLevel.anchors[j].time,
                     endTime: j + 1 < songLevel.anchors.length ? songLevel.anchors[j + 1].time : pi[pi.length - 1].time,
-                    UNK_time: 3.4028234663852886e+38,
-                    UNK_time2: 1.1754943508222875e-38,
+                    UNK_time: songLevel.anchors[j].time,//3.4028234663852886e+38,
+                    UNK_time2: songLevel.anchors[j].time,//1.1754943508222875e-38,
                     fret: songLevel.anchors[j].fret,
                     width: songLevel.anchors[j].width,
                     phraseIterationId: getPhraseIterationId(pi, songLevel.anchors[j].time, false),
@@ -569,11 +569,11 @@ export class LEVELS {
                     fp1.push(fp);
             });
 
-            fingerprints1.length = fp1.length;
-            fingerprints1.fingerprints = fp1;
+            fingerprints1.item0_length = fp1.length;
+            fingerprints1.I0 = fp1;
 
-            fingerprints2.length = fp2.length;
-            fingerprints2.fingerprints = fp2;
+            fingerprints2.item0_length = fp2.length;
+            fingerprints2.I0 = fp2;
 
             const notes: NOTES[] = [];
             const notesInIteration1: number[] = new Array<number>(pi.length).fill(0);
@@ -670,12 +670,18 @@ export class LEVELS {
                         if (noteEnd >= fp1[id].endTime) {
                             // Not entirely accurate, sometimes Unk4 is -1 even though there is a chord in the handshape...
                             if (n.time == fp1[id].startTime) {
-                                fp1[id].UNK_endTime = fp1[id].endTime;
+                                fp1[id].UNK_endTime = fp1[id].startTime;
                             }
                         }
                         else {
                             fp1[id].UNK_endTime = noteEnd;
                         }
+                    }
+                    else {
+                        if (fp1[id].UNK_startTime == -1)
+                            fp1[id].UNK_startTime = fp1[id].startTime;
+                        if (fp1[id].UNK_endTime == -1)
+                            fp1[id].UNK_endTime = fp1[id].startTime;
                     }
                 }
                 for (let id = 0; id < fp2.length; id++) { // FingerPrints 2nd level (used for -arp(eggio) handshapes)
@@ -704,26 +710,28 @@ export class LEVELS {
                         fp2[id].UNK_endTime = n.time + sustain;
                         break;
                     }
+                    else {
+                        if (fp2[id].UNK_startTime == -1)
+                            fp2[id].UNK_startTime = fp2[id].startTime;
+                        if (fp2[id].UNK_endTime == -1)
+                            fp2[id].UNK_endTime = fp2[id].endTime;
+                    }
                 }
                 for (let j = 0; j < ank.length; j++) {
                     if (n.time >= ank[j].time && n.time < ank[j].endTime) {
                         n.anchorWidth = ank[j].width;
                         // anchor fret
                         n.anchorFret = ank[j].fret;
-                        if (ank[j].UNK_time == 3.4028234663852886e+38)
-                            ank[j].UNK_time = n.time;
+                        //if (ank[j].UNK_time == 3.4028234663852886e+38)
+                        ank[j].UNK_time = n.time;
 
                         let sustain = 0;
                         if (n.time + n.sustain < ank[j].endTime - 0.1)
                             sustain = n.sustain;
                         ank[j].UNK_time2 = n.time + sustain;
+                        //if (ank[j].phraseIterationId == 17)
+                        //console.log(ank[j], n.sustain)
                         break;
-                    }
-                    else {
-                        if (ank[j].UNK_time == 3.4028234663852886e+38)
-                            ank[j].UNK_time = ank[j].time;
-                        if (ank[j].UNK_time2 == 1.1754943508222875e-38)
-                            ank[j].UNK_time2 = ank[j].time;
                     }
                 }
             });
@@ -823,7 +831,6 @@ export class LEVELS {
                 if (iter_count[j] > 0)
                     averageNotesPerIter[j] /= iter_count[j];
             }
-
 
             notes.forEach(n => {
                 const buf = (NOTESDATA as any).encode(n);

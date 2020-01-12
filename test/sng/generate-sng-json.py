@@ -6,11 +6,19 @@ import json
 import sys
 
 path = sys.argv[1] if len(sys.argv) > 1 else "test/sng"
-onlyfiles = [f for f in listdir(path) if isfile(
-    join(path, f)) and f.endswith(".sng")]
+
+onlyfiles = []
+singleFileMode = False
+
+if isfile(path):
+    onlyfiles = [path]
+    singleFileMode = True
+else:
+    onlyfiles = [f for f in listdir(path) if isfile(
+        join(path, f)) and f.endswith(".sng")]
 
 for sng in onlyfiles:
-    file = f"{path}/{sng}"
+    file = path if singleFileMode else f"{path}/{sng}"
     file2 = f"{file}.json"
     if(exists(file2)):
         print(f"Skipping json generation for {sng}")

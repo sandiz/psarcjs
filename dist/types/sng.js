@@ -431,7 +431,7 @@ var NOTES = /** @class */ (function () {
         this.slap = -1;
         this.pluck = -1;
         this.vibrato = -1;
-        this.sustain = -1;
+        this.sustain = 0;
         this.maxBend = -1;
         this.bend_length = 0;
         this.bends = [];
@@ -441,8 +441,8 @@ var NOTES = /** @class */ (function () {
 exports.NOTES = NOTES;
 var FPW = /** @class */ (function () {
     function FPW() {
-        this.length = 0;
-        this.fingerprints = [];
+        this.item0_length = 0;
+        this.I0 = [];
     }
     return FPW;
 }());
@@ -476,8 +476,8 @@ var LEVELS = /** @class */ (function () {
                 ank.push({
                     time: songLevel.anchors[j].time,
                     endTime: j + 1 < songLevel.anchors.length ? songLevel.anchors[j + 1].time : pi[pi.length - 1].time,
-                    UNK_time: 3.4028234663852886e+38,
-                    UNK_time2: 1.1754943508222875e-38,
+                    UNK_time: songLevel.anchors[j].time,
+                    UNK_time2: songLevel.anchors[j].time,
                     fret: songLevel.anchors[j].fret,
                     width: songLevel.anchors[j].width,
                     phraseIterationId: getPhraseIterationId(pi, songLevel.anchors[j].time, false),
@@ -509,10 +509,10 @@ var LEVELS = /** @class */ (function () {
                 else
                     fp1.push(fp);
             });
-            fingerprints1.length = fp1.length;
-            fingerprints1.fingerprints = fp1;
-            fingerprints2.length = fp2.length;
-            fingerprints2.fingerprints = fp2;
+            fingerprints1.item0_length = fp1.length;
+            fingerprints1.I0 = fp1;
+            fingerprints2.item0_length = fp2.length;
+            fingerprints2.I0 = fp2;
             var notes = [];
             var notesInIteration1 = new Array(pi.length).fill(0);
             var notesInIteration2 = new Array(pi.length).fill(0);
@@ -596,12 +596,18 @@ var LEVELS = /** @class */ (function () {
                         if (noteEnd >= fp1[id].endTime) {
                             // Not entirely accurate, sometimes Unk4 is -1 even though there is a chord in the handshape...
                             if (n.time == fp1[id].startTime) {
-                                fp1[id].UNK_endTime = fp1[id].endTime;
+                                fp1[id].UNK_endTime = fp1[id].startTime;
                             }
                         }
                         else {
                             fp1[id].UNK_endTime = noteEnd;
                         }
+                    }
+                    else {
+                        if (fp1[id].UNK_startTime == -1)
+                            fp1[id].UNK_startTime = fp1[id].startTime;
+                        if (fp1[id].UNK_endTime == -1)
+                            fp1[id].UNK_endTime = fp1[id].startTime;
                     }
                 }
                 for (var id = 0; id < fp2.length; id++) { // FingerPrints 2nd level (used for -arp(eggio) handshapes)
@@ -628,25 +634,27 @@ var LEVELS = /** @class */ (function () {
                         fp2[id].UNK_endTime = n.time + sustain;
                         break;
                     }
+                    else {
+                        if (fp2[id].UNK_startTime == -1)
+                            fp2[id].UNK_startTime = fp2[id].startTime;
+                        if (fp2[id].UNK_endTime == -1)
+                            fp2[id].UNK_endTime = fp2[id].endTime;
+                    }
                 }
                 for (var j = 0; j < ank.length; j++) {
                     if (n.time >= ank[j].time && n.time < ank[j].endTime) {
                         n.anchorWidth = ank[j].width;
                         // anchor fret
                         n.anchorFret = ank[j].fret;
-                        if (ank[j].UNK_time == 3.4028234663852886e+38)
-                            ank[j].UNK_time = n.time;
+                        //if (ank[j].UNK_time == 3.4028234663852886e+38)
+                        ank[j].UNK_time = n.time;
                         var sustain = 0;
                         if (n.time + n.sustain < ank[j].endTime - 0.1)
                             sustain = n.sustain;
                         ank[j].UNK_time2 = n.time + sustain;
+                        //if (ank[j].phraseIterationId == 17)
+                        //console.log(ank[j], n.sustain)
                         break;
-                    }
-                    else {
-                        if (ank[j].UNK_time == 3.4028234663852886e+38)
-                            ank[j].UNK_time = ank[j].time;
-                        if (ank[j].UNK_time2 == 1.1754943508222875e-38)
-                            ank[j].UNK_time2 = ank[j].time;
                     }
                 }
             });

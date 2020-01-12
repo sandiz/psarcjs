@@ -1,6 +1,8 @@
 const util = require('util');
 const path = require('path');
 const tmp = require('tmp');
+const spawn = require('await-spawn')
+
 import { expect, use } from 'chai';
 import chaiExclude from 'chai-exclude'
 import assertArrays from 'chai-arrays'
@@ -282,7 +284,7 @@ async function sngTests() {
                     }
                     expect(le.fingerprints.length).to.be.equal(re.fingerprints.length)
                     for (let j = 0; j < le.fingerprints.length; j += 1) {
-                        const le2 = (le.fingerprints[j] as any).I0;
+                        const le2 = le.fingerprints[j].I0;
                         const re2 = re.fingerprints[j];
                         expect(le2).to.be.deep.equal(re2);
                     }
@@ -667,8 +669,45 @@ async function song2014Tests() {
                 const sng = new SNG(f);
                 await sng.parse();
 
-                // once it generates verify sha
-            })
+                const xmlPathParse = path.parse(xml);
+                const leftSNG = `${xmls}compare/${xmlPathParse.name}.sng`
+                const rightSNG = f;
+
+                let out1 = await spawn('python3', ['test/sng/generate-sng-json.py', leftSNG]);
+                let out2 = await spawn('python3', ['test/sng/generate-sng-json.py', rightSNG]);
+                //console.log(out1.toString() + out2.toString());
+
+                const ljPath = `${xmls}compare/${xmlPathParse.name}.sng.json`;
+                const rjPath = `${f}.json`;
+
+                const lj = JSON.parse(await promises.readFile(ljPath));
+                const rj = JSON.parse(await promises.readFile(rjPath));
+                expect(lj.beats).to.be.deep.equal(rj.beats);
+                expect(lj.phrases).to.be.deep.equal(rj.phrases);
+                expect(lj.chordTemplates).to.be.deep.equal(rj.chordTemplates);
+                expect(lj.chordNotes).to.be.deep.equal(rj.chordNotes);
+                expect(lj.vocals).to.be.deep.equal(rj.vocals);
+                expect(lj.symbols).to.be.deep.equal(rj.symbols);
+                expect(lj.phraseIterations).to.be.deep.equal(rj.phraseIterations);
+                expect(lj.phraseExtraInfos).to.be.deep.equal(rj.phraseExtraInfos);
+                expect(lj.newLinkedDiffs).to.be.deep.equal(rj.newLinkedDiffs);
+                expect(lj.actions).to.be.deep.equal(rj.actions);
+                expect(lj.events).to.be.deep.equal(rj.events);
+                expect(lj.tone).to.be.deep.equal(rj.tone);
+                expect(lj.dna).to.be.deep.equal(rj.dna);
+                expect(lj.sections).to.be.deep.equal(rj.sections);
+
+                const ll = lj.levels;
+                const rl = rj.levels;
+                expect(ll.length).to.be.equal(rl.length);
+                for (let i = 0; i < ll.length; i += 1) {
+                    const l0 = ll[i];
+                    const r0 = rl[i];
+                    expect(l0.difficulty).to.be.equal(r0.difficulty);
+                    expect(l0.anchors).to.be.equal(r0.anchors);
+                }
+
+            }).timeout(15000);
         })
 }
 
