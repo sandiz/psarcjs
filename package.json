@@ -8,7 +8,8 @@
     "posttest": "rm -rf test/xml/*.sng && rm -rf test/sng/*.sng.json",
     "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "cover": "python3 test/sng/generate-sng-json.py && c8 --reporter=lcov mocha -r ts-node/register --reporter spec test/*.ts",
-    "build": "rm -rf dist/ && tsc --build --pretty",
+    "postcover": "rm -rf test/xml/*.sng && rm -rf test/sng/*.sng.json",
+    "build": "rm -rf dist/ && tsc --build --pretty"
   },
   "repository": {
     "type": "git",
