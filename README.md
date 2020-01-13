@@ -177,7 +177,8 @@ node.js v12 module to read and extract Rocksmith PSARC files
 - [x] DDS write support
 - [x] WEM write support (requires WWise to be installed)
 - [x] BNK writer support
-- [ ] SNG write support
+- [x] SNG write support
+- [ ] SNG encryption/decryption support
 - [ ] PSARC write support
 
 ## Tests
@@ -197,3 +198,4 @@ In lieu of a formal style guide, take care to maintain the existing coding style
 
 # Thanks
 - [0x0L](https://github.com/0x0L) for the original python implementation (pyrocksmith)
+- [rscustom-devs](https://github.com/rscustom/rocksmith-custom-song-toolkit) psarcjs sng implmentation is derived from the c# implemention. mocha tests for sng is using rstk to check for validity and compatibility. 

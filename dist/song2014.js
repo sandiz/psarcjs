@@ -52,7 +52,7 @@ var SongEbeat = /** @class */ (function () {
             var main = {
                 time: parseFloat(iany.$.time),
             };
-            Object.assign(main, iany.$.measure && { measure: parseInt(iany.$.measure) });
+            Object.assign(main, iany.$.measure && { measure: parseInt(iany.$.measure, 10) });
             return main;
         });
         return controls;
@@ -207,18 +207,18 @@ var SongChordTemplate = /** @class */ (function () {
     function SongChordTemplate() {
         this.displayName = "";
         this.chordName = "";
-        this.fret0 = 0;
-        this.fret1 = 0;
-        this.fret2 = 0;
-        this.fret3 = 0;
-        this.fret4 = 0;
-        this.fret5 = 0;
-        this.finger0 = 0;
-        this.finger1 = 0;
-        this.finger2 = 0;
-        this.finger3 = 0;
-        this.finger4 = 0;
-        this.finger5 = 0;
+        this.fret0 = -1;
+        this.fret1 = -1;
+        this.fret2 = -1;
+        this.fret3 = -1;
+        this.fret4 = -1;
+        this.fret5 = -1;
+        this.finger0 = -1;
+        this.finger1 = -1;
+        this.finger2 = -1;
+        this.finger3 = -1;
+        this.finger4 = -1;
+        this.finger5 = -1;
     }
     SongChordTemplate.fromXML = function (xmlData) {
         if (!xmlData)
@@ -232,18 +232,18 @@ var SongChordTemplate = /** @class */ (function () {
             return {
                 displayName: iany.$.displayName ? iany.$.displayName : '',
                 chordName: iany.$.chordName ? iany.$.chordName : '',
-                fret0: iany.$.fret0 ? parseInt(iany.$.fret0, 10) : 0,
-                fret1: iany.$.fret0 ? parseInt(iany.$.fret1, 10) : 0,
-                fret2: iany.$.fret0 ? parseInt(iany.$.fret2, 10) : 0,
-                fret3: iany.$.fret0 ? parseInt(iany.$.fret3, 10) : 0,
-                fret4: iany.$.fret0 ? parseInt(iany.$.fret4, 10) : 0,
-                fret5: iany.$.fret0 ? parseInt(iany.$.fret5, 10) : 0,
-                finger0: iany.$.fret0 ? parseInt(iany.$.finger0, 10) : 0,
-                finger1: iany.$.fret0 ? parseInt(iany.$.finger1, 10) : 0,
-                finger2: iany.$.fret0 ? parseInt(iany.$.finger2, 10) : 0,
-                finger3: iany.$.fret0 ? parseInt(iany.$.finger3, 10) : 0,
-                finger4: iany.$.fret0 ? parseInt(iany.$.finger4, 10) : 0,
-                finger5: iany.$.fret0 ? parseInt(iany.$.finger5, 10) : 0,
+                fret0: iany.$.fret0 ? parseInt(iany.$.fret0, 10) : -1,
+                fret1: iany.$.fret1 ? parseInt(iany.$.fret1, 10) : -1,
+                fret2: iany.$.fret2 ? parseInt(iany.$.fret2, 10) : -1,
+                fret3: iany.$.fret3 ? parseInt(iany.$.fret3, 10) : -1,
+                fret4: iany.$.fret4 ? parseInt(iany.$.fret4, 10) : -1,
+                fret5: iany.$.fret5 ? parseInt(iany.$.fret5, 10) : -1,
+                finger0: iany.$.finger0 ? parseInt(iany.$.finger0, 10) : -1,
+                finger1: iany.$.finger1 ? parseInt(iany.$.finger1, 10) : -1,
+                finger2: iany.$.finger2 ? parseInt(iany.$.finger2, 10) : -1,
+                finger3: iany.$.finger3 ? parseInt(iany.$.finger3, 10) : -1,
+                finger4: iany.$.finger4 ? parseInt(iany.$.finger4, 10) : -1,
+                finger5: iany.$.finger5 ? parseInt(iany.$.finger5, 10) : -1,
             };
         });
         return chordTemplates;

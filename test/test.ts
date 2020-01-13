@@ -18,6 +18,7 @@ import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
 import { ArrangmentType } from '../src/types/common';
+import { maskPrinter } from '../src/types/constants';
 
 use(Chaifs);
 use(chaiExclude);
@@ -473,7 +474,7 @@ async function waapiTests() {
 }
 
 async function genericTests() {
-    describe("generic tests", async () => {
+    describe("psarcjs: GENERIC tests", async () => {
         it("generate toolkit.version", async () => {
             const f = await GENERIC.generateToolkit("/tmp/", "sandi", "comment 1", "1", { name: "psarcjs-test", version: "0.0.1" });
             const data = await promises.readFile(f);
@@ -548,7 +549,7 @@ async function bnkTests() {
 }
 
 async function song2014Tests() {
-    describe("Song2014 tests", async () => {
+    describe("psarcjs: SONG2014: generate xml/sng", async () => {
         let song2014: ISong2014;
         before(async () => {
             const date = new Date(Date.now());
@@ -656,13 +657,12 @@ async function song2014Tests() {
         && !i.includes("showlights")
     );
     (forEach(xmlf) as any)
-        .describe("Song2014: parse %s", async (xml: string) => {
+        .describe("psarcjs: SONG2014: parse %s", async (xml: string) => {
             it("create Song2014 from xml", async () => {
                 const parsedXml = await Song2014.fromXML(`${xmls}/${xml}`);
                 expect(parsedXml).to.be.an("object");
-            })
+            }).timeout(15000);
             it("create SNG from xml", async () => {
-                //TODO
                 const xFile = `${xmls}${xml}`;
                 const parsedXml = await Song2014.fromXML(xFile);
                 const f = await parsedXml.generateSNG("/tmp/", "psarcJSTest");
@@ -750,7 +750,9 @@ async function song2014Tests() {
                                     expect(li.chordId).to.be.equal(ri.chordId);
                                     expect(li.startTime).to.be.equal(ri.startTime);
                                     expect(li.endTime).to.be.equal(ri.endTime);
-                                    expect(li.UNK_startTime).to.be.equal(ri.UNK_startTime);
+                                    let msg = "mine: " + JSON.stringify(li) + "\n";
+                                    msg += "ideal: " + JSON.stringify(ri) + "\n";
+                                    expect(li.UNK_startTime).to.be.equal(ri.UNK_startTime, msg);
                                     expect(li.UNK_endTime).to.be.closeTo(ri.UNK_endTime, 0.001);
                                 }
                             }
@@ -759,7 +761,13 @@ async function song2014Tests() {
                             const rn = r0.notes;
                             if (ln && rn) {
                                 expect(l0.notes.length).to.be.equal(r0.notes.length);
-                                expect(l0.notes).to.be.deep.equal(r0.notes);
+                                for (let i = 0; i < l0.notes.length; i += 1) {
+                                    const ln = l0.notes[i];
+                                    const rn = r0.notes[i];
+                                    //let msg = "mine: " + maskPrinter(ln.mask) + "\n\n";
+                                    //msg += "ideal: " + maskPrinter(rn.mask) + "\n\n";
+                                    expect(ln).to.be.deep.equal(rn);
+                                }
                             }
 
                             const lanpi = l0.averageNotesPerIter;
@@ -787,7 +795,7 @@ async function song2014Tests() {
 
                     expect(lsng.metadata).to.be.deep.equal(rsng.metadata);
                 }
-            }).timeout(15000);
+            }).timeout(60000);
         })
 }
 
@@ -797,19 +805,18 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
-    //await psarcTests();
-    //await sngTests();
+    await psarcTests();
+    await sngTests();
     await song2014Tests();
 
-    return;
     await genericTests();
     await ddsTests();
     await bnkTests();
     await wemTests();
-    /*
+
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
-    }*/
+    }
 }
 
 fn();

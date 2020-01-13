@@ -30,7 +30,7 @@ export class SongEbeat {
                 time: parseFloat(iany.$.time),
             }
             Object.assign(main,
-                iany.$.measure && { measure: parseInt(iany.$.measure) },
+                iany.$.measure && { measure: parseInt(iany.$.measure, 10) },
             )
             return main;
         })
@@ -198,18 +198,18 @@ export class SongEvent {
 export class SongChordTemplate {
     displayName: string = "";
     chordName: string = "";
-    fret0: number = 0;
-    fret1: number = 0;
-    fret2: number = 0;
-    fret3: number = 0;
-    fret4: number = 0;
-    fret5: number = 0;
-    finger0: number = 0;
-    finger1: number = 0;
-    finger2: number = 0;
-    finger3: number = 0;
-    finger4: number = 0;
-    finger5: number = 0;
+    fret0: number = -1;
+    fret1: number = -1;
+    fret2: number = -1;
+    fret3: number = -1;
+    fret4: number = -1;
+    fret5: number = -1
+    finger0: number = -1;
+    finger1: number = -1;
+    finger2: number = -1;
+    finger3: number = -1;
+    finger4: number = -1;
+    finger5: number = -1;
 
     static fromXML(xmlData: object[]): SongChordTemplate[] {
         if (!xmlData) return [];
@@ -223,18 +223,18 @@ export class SongChordTemplate {
             return {
                 displayName: iany.$.displayName ? iany.$.displayName : '',
                 chordName: iany.$.chordName ? iany.$.chordName : '',
-                fret0: iany.$.fret0 ? parseInt(iany.$.fret0, 10) : 0,
-                fret1: iany.$.fret0 ? parseInt(iany.$.fret1, 10) : 0,
-                fret2: iany.$.fret0 ? parseInt(iany.$.fret2, 10) : 0,
-                fret3: iany.$.fret0 ? parseInt(iany.$.fret3, 10) : 0,
-                fret4: iany.$.fret0 ? parseInt(iany.$.fret4, 10) : 0,
-                fret5: iany.$.fret0 ? parseInt(iany.$.fret5, 10) : 0,
-                finger0: iany.$.fret0 ? parseInt(iany.$.finger0, 10) : 0,
-                finger1: iany.$.fret0 ? parseInt(iany.$.finger1, 10) : 0,
-                finger2: iany.$.fret0 ? parseInt(iany.$.finger2, 10) : 0,
-                finger3: iany.$.fret0 ? parseInt(iany.$.finger3, 10) : 0,
-                finger4: iany.$.fret0 ? parseInt(iany.$.finger4, 10) : 0,
-                finger5: iany.$.fret0 ? parseInt(iany.$.finger5, 10) : 0,
+                fret0: iany.$.fret0 ? parseInt(iany.$.fret0, 10) : -1,
+                fret1: iany.$.fret1 ? parseInt(iany.$.fret1, 10) : -1,
+                fret2: iany.$.fret2 ? parseInt(iany.$.fret2, 10) : -1,
+                fret3: iany.$.fret3 ? parseInt(iany.$.fret3, 10) : -1,
+                fret4: iany.$.fret4 ? parseInt(iany.$.fret4, 10) : -1,
+                fret5: iany.$.fret5 ? parseInt(iany.$.fret5, 10) : -1,
+                finger0: iany.$.finger0 ? parseInt(iany.$.finger0, 10) : -1,
+                finger1: iany.$.finger1 ? parseInt(iany.$.finger1, 10) : -1,
+                finger2: iany.$.finger2 ? parseInt(iany.$.finger2, 10) : -1,
+                finger3: iany.$.finger3 ? parseInt(iany.$.finger3, 10) : -1,
+                finger4: iany.$.finger4 ? parseInt(iany.$.finger4, 10) : -1,
+                finger5: iany.$.finger5 ? parseInt(iany.$.finger5, 10) : -1,
             }
         })
         return chordTemplates;
@@ -524,12 +524,12 @@ export class SongChord {
     linkNext: number = 0;
     accent: number = 0;
     chordId: number = 0;
-    fretHandMute: number = 0;
-    highDensity: number = 0;
-    ignore: number = 0;
-    palmMute: number = 0;
-    hopo: number = 0;
-    strum: number = 0;
+    fretHandMute?: number = 0;
+    highDensity?: number = 0;
+    ignore?: number = 0;
+    palmMute?: number = 0;
+    hopo?: number = 0;
+    strum?: number = 0;
     chordNote: SongNote[] = [];
 
     static fromXML(xmlData: object[]): SongChord[] {

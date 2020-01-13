@@ -1,5 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+function maskPrinter(n) {
+    var validMasks = [];
+    var keys = Object.keys(exports.SNGConstants);
+    for (var i = 0; i < keys.length; i += 1) {
+        var key = keys[i];
+        if (n & exports.SNGConstants[key])
+            validMasks.push(key.toString());
+    }
+    return validMasks.join(",");
+}
+exports.maskPrinter = maskPrinter;
 exports.SNGConstants = {
     NOTE_TURNING_BPM_TEMPO: 0x00000004,
     // chord template Mask (displayName ends with "arp" or "nop")

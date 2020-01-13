@@ -35,7 +35,7 @@ var BEATS = /** @class */ (function () {
         var beat = 0;
         return beats.map(function (item) {
             var time = item.time;
-            if (item.measure && item.measure >= 0) {
+            if (item.measure != undefined && item.measure >= 0) {
                 measure = item.measure;
                 beat = 0;
             }
@@ -102,9 +102,9 @@ var CHORDTEMPLATES = /** @class */ (function () {
             return [];
         return ct.map(function (item, index) {
             var mask = 0;
-            var frets = [0, 0, 0, 0, 0, 0];
-            var fingers = [0, 0, 0, 0, 0, 0];
-            var notes = [0, 0, 0, 0, 0, 0];
+            var frets = [-1, -1, -1, -1, -1, -1];
+            var fingers = [-1, -1, -1, -1, -1, -1];
+            var notes = [-1, -1, -1, -1, -1, -1];
             if (item.displayName.endsWith("arp"))
                 mask = (mask | constants_1.SNGConstants.CHORD_MASK_ARPEGGIO) >>> 0;
             else if (item.displayName.endsWith("nop"))
@@ -557,7 +557,7 @@ var LEVELS = /** @class */ (function () {
                     var piter = pi[j];
                     // fix for 100% bug issue and improve mastery
                     if (piter.time > chord.time && j > 0) {
-                        if (chord.ignore == 0)
+                        if (chord.ignore == undefined || chord.ignore == 0)
                             ++notesInIteration1[j - 1];
                         ++notesInIteration2[j - 1];
                         break;
@@ -570,7 +570,8 @@ var LEVELS = /** @class */ (function () {
             var chordInHandshape = {};
             var chordInArpeggio = {};
             notes.forEach(function (n) {
-                for (var id = 0; id < fp1.length; id++) { // FingerPrints 1st level (common handshapes)
+                // FingerPrints 1st level (common handshapes)
+                for (var id = 0; id < fp1.length; id++) {
                     if (n.time >= fp1[id].startTime && n.time < fp1[id].endTime) {
                         // Handshapes can be inside other handshapes
                         if (n.fingerPrintId[0] == INT16_MAX)
@@ -603,14 +604,9 @@ var LEVELS = /** @class */ (function () {
                             fp1[id].UNK_endTime = noteEnd;
                         }
                     }
-                    else {
-                        if (fp1[id].UNK_startTime == -1)
-                            fp1[id].UNK_startTime = fp1[id].startTime;
-                        if (fp1[id].UNK_endTime == -1)
-                            fp1[id].UNK_endTime = fp1[id].endTime;
-                    }
                 }
-                for (var id = 0; id < fp2.length; id++) { // FingerPrints 2nd level (used for -arp(eggio) handshapes)
+                // FingerPrints 2nd level (used for -arp(eggio) handshapes)
+                for (var id = 0; id < fp2.length; id++) {
                     if (n.time >= fp2[id].startTime && n.time < fp2[id].endTime) {
                         n.fingerPrintId[1] = id;
                         // Add STRUM to first chord in the arpeggio handshape
@@ -633,12 +629,6 @@ var LEVELS = /** @class */ (function () {
                             sustain = n.sustain;
                         fp2[id].UNK_endTime = n.time + sustain;
                         break;
-                    }
-                    else {
-                        if (fp2[id].UNK_startTime == -1)
-                            fp2[id].UNK_startTime = fp2[id].startTime;
-                        if (fp2[id].UNK_endTime == -1)
-                            fp2[id].UNK_endTime = fp2[id].endTime;
                     }
                 }
                 for (var j = 0; j < ank.length; j++) {
@@ -877,45 +867,45 @@ function parseNoteMask(note, single) {
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_SINGLE) >>> 0;
     if (note.fret == 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_OPEN) >>> 0;
-    if (note.linkNext && note.linkNext != 0)
+    if (note.linkNext !== undefined && note.linkNext != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_PARENT) >>> 0;
-    if (note.accent && note.accent != 0)
+    if (note.accent !== undefined && note.accent != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_ACCENT) >>> 0;
-    if (note.bend && note.bend != 0)
+    if (note.bend !== undefined && note.bend != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_BEND) >>> 0;
-    if (note.hammerOn && note.hammerOn != 0)
+    if (note.hammerOn !== undefined && note.hammerOn != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_HAMMERON) >>> 0;
-    if (note.harmonic && note.harmonic != 0)
+    if (note.harmonic !== undefined && note.harmonic != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_HARMONIC) >>> 0;
-    if (single && note.ignore && note.ignore != 0)
+    if (single && note.ignore !== undefined && note.ignore != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_IGNORE) >>> 0;
-    if (single && note.leftHand && note.leftHand != -1)
+    if (single && note.leftHand !== undefined && note.leftHand != -1)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_LEFTHAND) >>> 0;
-    if (note.mute && note.mute != 0)
+    if (note.mute !== undefined && note.mute != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_MUTE) >>> 0;
-    if (note.palmMute && note.palmMute != 0)
+    if (note.palmMute !== undefined && note.palmMute != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_PALMMUTE) >>> 0;
-    if (note.pluck && note.pluck != -1)
+    if (note.pluck !== undefined && note.pluck != -1)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_PLUCK) >>> 0;
-    if (note.pullOff && note.pullOff != 0)
+    if (note.pullOff !== undefined && note.pullOff != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_PULLOFF) >>> 0;
-    if (note.slap && note.slap != -1)
+    if (note.slap !== undefined && note.slap != -1)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_SLAP) >>> 0;
-    if (note.slideTo && note.slideTo != -1)
+    if (note.slideTo !== undefined && note.slideTo != -1)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_SLIDE) >>> 0;
-    if (note.sustain && note.sustain != 0)
+    if (note.sustain !== undefined && note.sustain != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_SUSTAIN) >>> 0;
-    if (note.tremolo && note.tremolo != 0)
+    if (note.tremolo !== undefined && note.tremolo != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_TREMOLO) >>> 0;
-    if (note.harmonicPinch && note.harmonicPinch != 0)
+    if (note.harmonicPinch !== undefined && note.harmonicPinch != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_PINCHHARMONIC) >>> 0;
-    if (note.rightHand && note.rightHand != -1)
+    if (note.rightHand !== undefined && note.rightHand != -1)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_RIGHTHAND) >>> 0;
-    if (note.slideUnpitchTo && note.slideUnpitchTo != -1)
+    if (note.slideUnpitchTo !== undefined && note.slideUnpitchTo != -1)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_SLIDEUNPITCHEDTO) >>> 0;
-    if (note.tap && note.tap != 0)
+    if (note.tap !== undefined && note.tap != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_TAP) >>> 0;
-    if (note.vibrato && note.vibrato != 0)
+    if (note.vibrato !== undefined && note.vibrato != 0)
         mask = (mask | constants_1.SNGConstants.NOTE_MASK_VIBRATO) >>> 0;
     return mask;
 }
@@ -999,23 +989,24 @@ function addChordNotes(chord) {
     return cnsId[crc];
 }
 function parseChord(pi, chord, n, chordNotesId, chordTemplates) {
+    var msg = "";
     n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_CHORD) >>> 0;
     if (chordNotesId != INT32_MAX) {
         // there should always be a STRUM too => handshape at chord time
         // probably even for chordNotes which are not exported to SNG
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_CHORDNOTES) >>> 0;
     }
-    if (chord.linkNext != 0)
+    if (chord.linkNext !== undefined && chord.linkNext != 0)
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_PARENT) >>> 0;
-    if (chord.accent != 0)
+    if (chord.accent !== undefined && chord.accent != 0)
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_ACCENT) >>> 0;
-    if (chord.fretHandMute != 0)
+    if (chord.fretHandMute !== undefined && chord.fretHandMute != 0)
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_FRETHANDMUTE) >>> 0;
-    if (chord.highDensity != 0)
+    if (chord.highDensity !== undefined && chord.highDensity != 0)
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_HIGHDENSITY) >>> 0;
-    if (chord.ignore != 0)
+    if (chord.ignore !== undefined && chord.ignore != 0)
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_IGNORE) >>> 0;
-    if (chord.palmMute != 0)
+    if (chord.palmMute !== undefined && chord.palmMute != 0)
         n.mask = (n.mask | constants_1.SNGConstants.NOTE_MASK_PALMMUTE) >>> 0;
     n.time = chord.time;
     n.string = -1;

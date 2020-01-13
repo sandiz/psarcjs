@@ -4,7 +4,7 @@
   "description": "node.js module to read and extract Rocksmith PSARC files",
   "main": "dist/index.js",
   "scripts": {
-    "test": "python3 test/sng/generate-sng-json.py && mocha -r ts-node/register --reporter spec test/*.ts",
+    "test": "python3 test/sng/generate-sng-json.py && mocha --bail -r ts-node/register --reporter spec test/*.ts",
     "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
     "cover": "c8 --reporter=html --reporter=text mocha -r ts-node/register --reporter spec test/*.ts",
     "build": "rm -rf dist/ && tsc --build --pretty"

@@ -1,4 +1,15 @@
 
+export function maskPrinter(n: number) {
+    let validMasks = [];
+
+    const keys = Object.keys(SNGConstants);
+    for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i] as keyof typeof SNGConstants;
+        if (n & SNGConstants[key])
+            validMasks.push(key.toString());
+    }
+    return validMasks.join(",");
+}
 export const SNGConstants = {
     NOTE_TURNING_BPM_TEMPO: 0x00000004,
 
