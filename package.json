@@ -5,9 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "python3 test/sng/generate-sng-json.py && mocha --bail -r ts-node/register --reporter spec test/*.ts",
+    "posttest": "rm -rf test/xml/*.sng && rm -rf test/sng/*.sng.json",
     "drypack": "npm pack && tar -xvzf *.tgz && rm -rf package *.tgz",
-    "cover": "c8 --reporter=html --reporter=text mocha -r ts-node/register --reporter spec test/*.ts",
-    "build": "rm -rf dist/ && tsc --build --pretty"
+    "cover": "python3 test/sng/generate-sng-json.py && c8 --reporter=lcov mocha -r ts-node/register --reporter spec test/*.ts",
+    "build": "rm -rf dist/ && tsc --build --pretty",
   },
   "repository": {
     "type": "git",
