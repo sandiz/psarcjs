@@ -674,14 +674,14 @@ async function song2014Tests() {
                 const leftSNG = `${xmls}/${xmlPathParse.name}.sng`
 
                 let out = await spawn('mono',
-                    ['test/xml/xml2sng2014/xml2sng2014.exe', '--xml2sng', '-i', xFile])
+                    ['test/xml/xml2sng2014/sng2014.exe', '--xml2sng', '-i', xFile])
 
                 //console.log(out.toString());
-                const leftSng = new SNG(leftSNG);
-                await leftSng.parse();
+                const idealSNG = new SNG(leftSNG);
+                await idealSNG.parse();
 
-                const lsng = leftSng.sng;
-                const rsng = sng.sng;
+                const lsng = sng.sng;
+                const rsng = idealSNG.sng;
 
                 if (lsng && rsng) {
                     expect(lsng.beats).to.be.deep.equal(rsng.beats);
@@ -698,37 +698,95 @@ async function song2014Tests() {
                     expect(lsng.tone).to.be.deep.equal(rsng.tone);
                     expect(lsng.dna).to.be.deep.equal(rsng.dna);
                     expect(lsng.sections).to.be.deep.equal(rsng.sections);
+
+                    const ll = lsng.levels;
+                    const rl = rsng.levels;
+                    if (ll && rl) {
+                        expect(ll.length).to.be.equal(rl.length);
+                        for (let i = 0; i < ll.length; i += 1) {
+                            const l0 = ll[i];
+                            const r0 = rl[i];
+                            expect(l0.difficulty).to.be.equal(r0.difficulty);
+
+                            const la = l0.anchors;
+                            const ra = r0.anchors;
+                            if (la && ra) {
+                                expect(l0.anchors.length).to.be.equal(r0.anchors.length);
+                                for (let i = 0; i < l0.anchors.length; i += 1) {
+                                    const li = la[i]
+                                    const ri = ra[i];
+
+                                    expect(li.width).to.be.equal(ri.width);
+                                    expect(li.endTime).to.be.equal(ri.endTime);
+                                    expect(li.time).to.be.equal(ri.time);
+                                    expect(li.fret).to.be.equal(ri.fret);
+                                    expect(li.phraseIterationId).to.be.equal(ri.phraseIterationId);
+                                    expect(li.UNK_time).to.be.equal(ri.UNK_time);
+                                    expect(li.UNK_time2).to.be.closeTo(ri.UNK_time2, 0.001);
+                                }
+                            }
+
+                            const lae = l0.anchor_extensions;
+                            const rae = r0.anchor_extensions;
+                            if (lae && rae) {
+                                expect(l0.anchor_extensions.length).to.be.equal(r0.anchor_extensions.length);
+                                for (let i = 0; i < l0.anchor_extensions.length; i += 1) {
+                                    const li = lae[i]
+                                    const ri = rae[i];
+
+                                    expect(li.fret).to.be.equal(ri.fret);
+                                    expect(li.time).to.be.closeTo(ri.time, 0.001);
+                                }
+                            }
+
+                            const lfp1 = l0.fingerprints[0]
+                            const rfp1 = r0.fingerprints[0]
+                            if (lfp1 && rfp1) {
+                                expect(lfp1.item0_length).to.be.equal(rfp1.item0_length);
+                                for (let i = 0; i < lfp1.item0_length; i += 1) {
+                                    const li = lfp1.I0[i];
+                                    const ri = rfp1.I0[i];
+
+                                    expect(li.chordId).to.be.equal(ri.chordId);
+                                    expect(li.startTime).to.be.equal(ri.startTime);
+                                    expect(li.endTime).to.be.equal(ri.endTime);
+                                    expect(li.UNK_startTime).to.be.equal(ri.UNK_startTime);
+                                    expect(li.UNK_endTime).to.be.closeTo(ri.UNK_endTime, 0.001);
+                                }
+                            }
+
+                            const ln = l0.notes;
+                            const rn = r0.notes;
+                            if (ln && rn) {
+                                expect(l0.notes.length).to.be.equal(r0.notes.length);
+                                expect(l0.notes).to.be.deep.equal(r0.notes);
+                            }
+
+                            const lanpi = l0.averageNotesPerIter;
+                            const ranpi = r0.averageNotesPerIter;
+                            if (lanpi && ranpi) {
+                                expect(lanpi.length).to.be.equal(ranpi.length);
+                                expect(lanpi).to.be.deep.equal(ranpi);
+                            }
+
+                            const lniicni = l0.notesInIterCountNoIgnored;
+                            const rniicni = r0.notesInIterCountNoIgnored;
+                            if (lniicni && rniicni) {
+                                expect(lniicni.length).to.be.equal(rniicni.length);
+                                expect(lniicni).to.be.deep.equal(rniicni);
+                            }
+
+                            const lniici = l0.notesInIterCount;
+                            const rniicc = r0.notesInIterCount;
+                            if (lniici && rniicc) {
+                                expect(lniici.length).to.be.equal(rniicc.length);
+                                expect(lniici).to.be.deep.equal(rniicc);
+                            }
+                        }
+                    }
+
+                    expect(lsng.metadata).to.be.deep.equal(rsng.metadata);
                 }
-
-                /*
-                const lj = JSON.parse(await promises.readFile(ljPath));
-                const rj = JSON.parse(await promises.readFile(rjPath));
-                expect(lj.beats).to.be.deep.equal(rj.beats);
-                expect(lj.phrases).to.be.deep.equal(rj.phrases);
-                expect(lj.chordTemplates).to.be.deep.equal(rj.chordTemplates);
-                expect(lj.chordNotes).to.be.deep.equal(rj.chordNotes);
-                expect(lj.vocals).to.be.deep.equal(rj.vocals);
-                expect(lj.symbols).to.be.deep.equal(rj.symbols);
-                expect(lj.phraseIterations).to.be.deep.equal(rj.phraseIterations);
-                expect(lj.phraseExtraInfos).to.be.deep.equal(rj.phraseExtraInfos);
-                expect(lj.newLinkedDiffs).to.be.deep.equal(rj.newLinkedDiffs);
-                expect(lj.actions).to.be.deep.equal(rj.actions);
-                expect(lj.events).to.be.deep.equal(rj.events);
-                expect(lj.tone).to.be.deep.equal(rj.tone);
-                expect(lj.dna).to.be.deep.equal(rj.dna);
-                expect(lj.sections).to.be.deep.equal(rj.sections);
-
-                const ll = lj.levels;
-                const rl = rj.levels;
-                expect(ll.length).to.be.equal(rl.length);
-                for (let i = 0; i < ll.length; i += 1) {
-                    const l0 = ll[i];
-                    const r0 = rl[i];
-                    expect(l0.difficulty).to.be.equal(r0.difficulty);
-                    expect(l0.anchors).to.be.equal(r0.anchors);
-                }
-                */
-
             }).timeout(15000);
         })
 }

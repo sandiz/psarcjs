@@ -168,7 +168,7 @@ export class PSARC {
 
 export class SNG {
     public sngFile: string;
-    private sngRawData: Buffer | null;
+    public sngRawData: Buffer | null;
     public sng: Partial<SNGTypes.SNGFORMAT> | null = null;
     constructor(file: string) {
         this.sngFile = file;
