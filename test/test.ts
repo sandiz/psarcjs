@@ -20,7 +20,7 @@ import {
 import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
-import { ArrangmentType } from '../src/types/common';
+import { ArrangmentType, ShowLights, Vocals } from '../src/types/common';
 import { maskPrinter } from '../src/types/constants';
 import { getUuid } from '../src/aggregategraphwriter';
 
@@ -517,13 +517,42 @@ async function genericTests() {
             const data = await promises.readFile(f);
             expect(data).to.be.of.length.greaterThan(0);
         })
-        it("generate/parse showlights xml", async () => {
-            //TODO
-        })
-        it("generate/parse vocals xml", () => {
-            //TODO
-        })
     });
+}
+
+async function showLightsTest() {
+    const f = await promises.readdir(xmls);
+    const xmlf = f.filter((i: string) => i.endsWith("showlights.xml"));
+
+    (forEach(xmlf) as any)
+        .describe("psarcjs: SHOWLIGHTS tests", async (f2: string) => {
+            const file = `${xmls}/${f2}`
+            it("generate/parse showlights", async () => {
+                const lights = await ShowLights.fromXML(file);
+                const xml = ShowLights.toXML(lights);
+                const f = "/tmp/showlights.xml"
+                await promises.writeFile(f, xml);
+                await ShowLights.fromXML(f);
+            })
+        })
+}
+
+
+async function vocalsTest() {
+    const f = await promises.readdir(xmls);
+    const xmlf = f.filter((i: string) => i.endsWith("vocals.xml"));
+
+    (forEach(xmlf) as any)
+        .describe("psarcjs: VOCALS tests", async (f2: string) => {
+            const file = `${xmls}/${f2}`
+            it("generate/parse showlights", async () => {
+                const vocals = await Vocals.fromXML(file);
+                const xml = Vocals.toXML(vocals);
+                const f = "/tmp/vocals.xml"
+                await promises.writeFile(f, xml);
+                await Vocals.fromXML(f);
+            })
+        })
 }
 
 async function bnkTests() {
@@ -822,6 +851,8 @@ async function fn() {
     await song2014Tests();
 
     await genericTests();
+    await showLightsTest();
+    await vocalsTest();
     await ddsTests();
     await bnkTests();
     await wemTests();

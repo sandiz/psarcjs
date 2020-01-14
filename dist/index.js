@@ -629,6 +629,13 @@ var GENERIC = /** @class */ (function () {
             });
         });
     };
+    GENERIC.prototype.generateVocals = function (dir, tag) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
     return GENERIC;
 }());
 exports.GENERIC = GENERIC;
@@ -830,13 +837,6 @@ var Song2014 = /** @class */ (function () {
                         _a.sent();
                         return [2 /*return*/, path];
                 }
-            });
-        });
-    };
-    Song2014.prototype.generateVocals = function (dir, tag) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
             });
         });
     };

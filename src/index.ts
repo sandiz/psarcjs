@@ -417,6 +417,9 @@ export class GENERIC {
 
     }
 
+    async generateVocals(dir: string, tag: string) {
+
+    }
     // generate vocals
     // generate showlights
 }
@@ -610,10 +613,6 @@ export class Song2014 {
 
         await promises.writeFile(path, sng.packedData);
         return path;
-    }
-
-    async generateVocals(dir: string, tag: string) {
-
     }
 }
 
