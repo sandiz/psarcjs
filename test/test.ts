@@ -10,6 +10,9 @@ import forEach from 'mocha-each'
 import Chaifs = require('chai-fs');
 const promises = require('fs').promises;
 import {
+    join
+} from 'path';
+import {
     PSARC, SNG, DDS,
     WEM, WAAPI, GENERIC, BNK,
     Song2014,
@@ -19,18 +22,13 @@ import {
 } from '../src/song2014'
 import { ArrangmentType } from '../src/types/common';
 import { maskPrinter } from '../src/types/constants';
+import { getUuid } from '../src/aggregategraphwriter';
 
 use(Chaifs);
 use(chaiExclude);
 use(assertArrays);
 tmp.setGracefulCleanup();
 
-const getUuid = (a = '') => (
-    a
-        /* eslint-disable no-bitwise */
-        ? ((Number(a) ^ Math.random() * 16) >> Number(a) / 4).toString(16)
-        : (`${1e7}-${1e3}-${4e3}-${8e3}-${1e11}`).replace(/[018]/g, getUuid)
-);
 async function psarcTests() {
     describe('psarcjs: PSARC: test.psarc', function () {
         const file = "test/psarc/test.psarc";
@@ -658,6 +656,7 @@ async function song2014Tests() {
     );
     (forEach(xmlf) as any)
         .describe("psarcjs: SONG2014: parse %s", async (xml: string) => {
+            let sng: SNG | null = null;
             it("create Song2014 from xml", async () => {
                 const parsedXml = await Song2014.fromXML(`${xmls}/${xml}`);
                 expect(parsedXml).to.be.an("object");
@@ -667,7 +666,7 @@ async function song2014Tests() {
                 const parsedXml = await Song2014.fromXML(xFile);
                 const f = await parsedXml.generateSNG("/tmp/", "psarcJSTest");
 
-                const sng = new SNG(f);
+                sng = new SNG(f);
                 await sng.parse();
 
                 const xmlPathParse = path.parse(xml);
@@ -794,6 +793,19 @@ async function song2014Tests() {
                     }
 
                     expect(lsng.metadata).to.be.deep.equal(rsng.metadata);
+                }
+            }).timeout(60000);
+            it("pack/unpack sng", async () => {
+                if (sng) {
+                    await sng.pack();
+                    const fileName = `psarcJSTest_packed.sng`;
+                    const path = join("/tmp/", fileName);
+                    await promises.writeFile(path, sng.packedData);
+
+                    const sng2 = new SNG(path);
+                    await sng2.parse();
+                    expect(path).to.be.length.greaterThan(0);
+                    expect(sng2.sng?.metadata?.maxScores).to.be.greaterThan(10);
                 }
             }).timeout(60000);
         })

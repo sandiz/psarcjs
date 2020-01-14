@@ -1,13 +1,13 @@
 import { Parser } from 'binary-parser';
 import * as aesjs from 'aes-js';
 import * as zlib from 'zlib';
-import { PSARCHEADER, BOM } from './types/common';
+import { PSARCHEADER, BOM, Platform } from './types/common';
 
 const BLOCK_SIZE = 2 ** 16;
 const ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C"
-const ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42"
-const MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D"
-const WIN_KEY = "CB648DF3D12A16BF71701414E69619EC171CCA5D2A142E3E59DE7ADDA18A3A30"
+export const ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42"
+export const MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D"
+export const WIN_KEY = "CB648DF3D12A16BF71701414E69619EC171CCA5D2A142E3E59DE7ADDA18A3A30"
 
 export const unzip = (data: Buffer) => new Promise<Buffer>((resolve, reject) => {
     zlib.unzip(data, {
@@ -19,6 +19,13 @@ export const unzip = (data: Buffer) => new Promise<Buffer>((resolve, reject) => 
         }
     });
 });
+
+export const zip = (data: Buffer) => new Promise<Buffer>((resolve, reject) => {
+    zlib.gzip(data, (err, res) => {
+        if (err) reject(err)
+        resolve(res);
+    })
+})
 
 export const mod = (x: number, n: number) => (x % n + n) % n
 
@@ -47,6 +54,22 @@ export async function ENTRYDecrypt(data: Buffer, key: string) {
     let payload = decrypted.slice(4, data.length)
     let buf: Buffer = await unzip(Buffer.from(payload))
     return buf;
+}
+
+export async function ENTRYEncrypt(data: Buffer, platform: Platform): Promise<{ buf: Buffer, iv: Buffer }> {
+    const key = platform == Platform.Mac ? MAC_KEY : WIN_KEY;
+    const iv = Buffer.alloc(16, 0);
+
+    const ctr = Buffer.from(iv).readUInt32BE(0);
+    const uintAkey = aesjs.utils.hex.toBytes(key)
+    const quanta = data;
+
+    const aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
+    const buf = aesCtr.encrypt(pad(quanta));
+    return {
+        buf: Buffer.from(buf),
+        iv
+    };
 }
 
 export async function Decrypt(listing: string, contents: Buffer): Promise<Buffer> {

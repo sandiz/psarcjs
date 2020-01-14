@@ -904,6 +904,22 @@ export interface SNGFORMAT {
     metadata: METADATA;
 }
 
+export interface PackedSNG {
+    magic: number; /* int32 */ //0x4A
+    platformHeader: number;
+    iv: Buffer,
+    encryptedData: Buffer;
+    signature: Buffer; /* length 56 */
+}
+
+export interface UnpackedSNG {
+    uncompressedLength: number;
+    compressedData: Buffer;
+}
+
+export interface EncryptedSNG {
+}
+
 function getPhraseIterationId(pi: SongPhraseIteration[], time: number, end: boolean): number {
     let id = 0;
     while (id + 1 < pi.length) {

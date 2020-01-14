@@ -46,11 +46,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var binary_parser_1 = require("binary-parser");
 var aesjs = __importStar(require("aes-js"));
 var zlib = __importStar(require("zlib"));
+var common_1 = require("./types/common");
 var BLOCK_SIZE = Math.pow(2, 16);
 var ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C";
-var ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42";
-var MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D";
-var WIN_KEY = "CB648DF3D12A16BF71701414E69619EC171CCA5D2A142E3E59DE7ADDA18A3A30";
+exports.ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42";
+exports.MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D";
+exports.WIN_KEY = "CB648DF3D12A16BF71701414E69619EC171CCA5D2A142E3E59DE7ADDA18A3A30";
 exports.unzip = function (data) { return new Promise(function (resolve, reject) {
     zlib.unzip(data, {}, function (err, buffer) {
         if (!err) {
@@ -59,6 +60,13 @@ exports.unzip = function (data) { return new Promise(function (resolve, reject) 
         else {
             reject(err);
         }
+    });
+}); };
+exports.zip = function (data) { return new Promise(function (resolve, reject) {
+    zlib.gzip(data, function (err, res) {
+        if (err)
+            reject(err);
+        resolve(res);
     });
 }); };
 exports.mod = function (x, n) { return (x % n + n) % n; };
@@ -71,7 +79,7 @@ function pad(buffer, blocksize) {
 exports.pad = pad;
 function BOMDecrypt(buffer) {
     var key = aesjs.utils.hex.toBytes(ARC_KEY);
-    var iv = aesjs.utils.hex.toBytes(ARC_IV);
+    var iv = aesjs.utils.hex.toBytes(exports.ARC_IV);
     var aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
     return aescfb.decrypt(buffer);
 }
@@ -98,6 +106,25 @@ function ENTRYDecrypt(data, key) {
     });
 }
 exports.ENTRYDecrypt = ENTRYDecrypt;
+function ENTRYEncrypt(data, platform) {
+    return __awaiter(this, void 0, void 0, function () {
+        var key, iv, ctr, uintAkey, quanta, aesCtr, buf;
+        return __generator(this, function (_a) {
+            key = platform == common_1.Platform.Mac ? exports.MAC_KEY : exports.WIN_KEY;
+            iv = Buffer.alloc(16, 0);
+            ctr = Buffer.from(iv).readUInt32BE(0);
+            uintAkey = aesjs.utils.hex.toBytes(key);
+            quanta = data;
+            aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
+            buf = aesCtr.encrypt(pad(quanta));
+            return [2 /*return*/, {
+                    buf: Buffer.from(buf),
+                    iv: iv
+                }];
+        });
+    });
+}
+exports.ENTRYEncrypt = ENTRYEncrypt;
 function Decrypt(listing, contents) {
     return __awaiter(this, void 0, void 0, function () {
         var data;
@@ -106,13 +133,13 @@ function Decrypt(listing, contents) {
                 case 0:
                     data = contents;
                     if (!listing.includes("songs/bin/macos")) return [3 /*break*/, 2];
-                    return [4 /*yield*/, ENTRYDecrypt(contents, MAC_KEY)];
+                    return [4 /*yield*/, ENTRYDecrypt(contents, exports.MAC_KEY)];
                 case 1:
                     data = _a.sent();
                     return [3 /*break*/, 4];
                 case 2:
                     if (!listing.includes("songs/bin/generic")) return [3 /*break*/, 4];
-                    return [4 /*yield*/, ENTRYDecrypt(contents, WIN_KEY)];
+                    return [4 /*yield*/, ENTRYDecrypt(contents, exports.WIN_KEY)];
                 case 3:
                     data = _a.sent();
                     _a.label = 4;

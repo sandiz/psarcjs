@@ -66,7 +66,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
+var binary_parser_1 = require("binary-parser");
 var xml2js = __importStar(require("xml2js"));
+var os = __importStar(require("os"));
 var PSARCParser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var DDSParser = __importStar(require("./ddsparser"));
@@ -76,6 +78,7 @@ var WAAPIHandler = __importStar(require("./wemwaapi"));
 var SNGTypes = __importStar(require("./types/sng"));
 var path_1 = require("path");
 var aggregategraphwriter_1 = require("./aggregategraphwriter");
+var common_1 = require("./types/common");
 var song2014_1 = require("./song2014");
 var pkgInfo = require("../package.json");
 var PSARC = /** @class */ (function () {
@@ -244,26 +247,128 @@ var PSARC = /** @class */ (function () {
     return PSARC;
 }());
 exports.PSARC = PSARC;
+var packedParser = function (len) { return new binary_parser_1.Parser()
+    .endianess("little")
+    .int32("magic")
+    .int32("platformHeader")
+    .buffer("iv", {
+    length: 16
+})
+    .buffer("encryptedData", {
+    length: len - (4 + 4 + 16 + 56)
+})
+    .buffer("signature", {
+    length: 56,
+}); };
 var SNG = /** @class */ (function () {
-    function SNG(file) {
+    function SNG(file, platform) {
+        if (platform === void 0) { platform = undefined; }
+        this.rawData = null; /* sng file data, can be encrypted or decrypted */
+        this.packedData = null; /* encrypted sng  */
+        this.unpackedData = null; /* decrypted sng */
         this.sng = null;
+        this.packedSNG = null;
         this.sngFile = file;
-        this.sngRawData = null;
+        if (platform)
+            this.platform = platform;
+        else
+            this.platform = os.platform() == "darwin" ? common_1.Platform.Mac : common_1.Platform.Windows;
     }
     SNG.prototype.parse = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a;
+            var d;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(this.sngFile)];
+                    case 1:
+                        d = _a.sent();
+                        this.rawData = d;
+                        if (!this.rawData) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.unpack()];
+                    case 2:
+                        _a.sent();
+                        if (this.unpackedData)
+                            this.sng = SNGParser.SNGDATA.parse(this.unpackedData);
+                        else
+                            throw (new Error("failed to unpack sng"));
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SNG.prototype.pack = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var compressed, q, p, payload, encrypted, encParser, encryptedBuffer;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.unpackedData) return [3 /*break*/, 4];
+                        return [4 /*yield*/, PSARCParser.zip(this.unpackedData)];
+                    case 1:
+                        compressed = _a.sent();
+                        return [4 /*yield*/, PSARCParser.unzip(compressed)];
+                    case 2:
+                        _a.sent();
+                        q = new binary_parser_1.Parser()
+                            .int32("uncompressedLength")
+                            .buffer("compressedData", {
+                            length: compressed.length,
+                        });
+                        p = {
+                            uncompressedLength: this.unpackedData.length,
+                            compressedData: compressed,
+                        };
+                        return [4 /*yield*/, PSARCParser.ENTRYEncrypt(q.encode(p), this.platform)];
+                    case 3:
+                        payload = _a.sent();
+                        encrypted = {
+                            magic: 0x4A,
+                            platformHeader: 3,
+                            iv: payload.iv,
+                            encryptedData: payload.buf,
+                            signature: Buffer.alloc(56, 0),
+                        };
+                        encParser = packedParser(payload.buf.length + (4 + 4 + 16 + 56));
+                        encryptedBuffer = encParser.encode(encrypted);
+                        this.packedData = encryptedBuffer;
+                        return [3 /*break*/, 5];
+                    case 4: throw new Error("sng decrypted data is null, call parse() first");
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SNG.prototype.unpack = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var p, pData, _a, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = this;
-                        return [4 /*yield*/, fs_1.promises.readFile(this.sngFile)];
+                        if (!this.rawData) return [3 /*break*/, 7];
+                        p = packedParser(this.rawData.length);
+                        _b.label = 1;
                     case 1:
-                        _a.sngRawData = _b.sent();
-                        if (this.sngRawData) {
-                            this.sng = SNGParser.SNGDATA.parse(this.sngRawData);
-                        }
-                        return [2 /*return*/];
+                        _b.trys.push([1, 5, , 6]);
+                        pData = p.parse(this.rawData);
+                        if (!(pData.magic == 0x4A)) return [3 /*break*/, 3];
+                        _a = this;
+                        return [4 /*yield*/, PSARCParser.ENTRYDecrypt(this.rawData, this.platform == common_1.Platform.Mac ? PSARCParser.MAC_KEY : PSARCParser.WIN_KEY)];
+                    case 2:
+                        _a.unpackedData = _b.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        this.unpackedData = this.rawData;
+                        _b.label = 4;
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
+                        e_1 = _b.sent();
+                        console.log(e_1);
+                        this.unpackedData = this.rawData;
+                        return [3 /*break*/, 6];
+                    case 6: return [3 /*break*/, 8];
+                    case 7: throw new Error("sng raw data is null, call parse() first");
+                    case 8: return [2 /*return*/];
                 }
             });
         });
@@ -656,7 +761,7 @@ var Song2014 = /** @class */ (function () {
     };
     Song2014.prototype.generateSNG = function (dir, tag) {
         return __awaiter(this, void 0, void 0, function () {
-            var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, chordNotes, sngFormat, _validate2, path;
+            var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, chordNotes, sngFormat, _validate2, path, buf, sng;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -713,8 +818,15 @@ var Song2014 = /** @class */ (function () {
                         };
                         _validate2(SNGParser.SNGDATA, sngFormat);
                         path = path_1.join(dir, fileName);
-                        return [4 /*yield*/, fs_1.promises.writeFile(path, SNGParser.SNGDATA.encode(sngFormat))];
+                        buf = SNGParser.SNGDATA.encode(sngFormat);
+                        sng = new SNG(path);
+                        sng.rawData = buf;
+                        sng.unpackedData = buf;
+                        return [4 /*yield*/, sng.pack()];
                     case 1:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.writeFile(path, sng.packedData)];
+                    case 2:
                         _a.sent();
                         return [2 /*return*/, path];
                 }

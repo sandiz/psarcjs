@@ -85,7 +85,7 @@ var GraphItem = /** @class */ (function () {
             //data += "\n"; //debug
             return data;
         };
-        this.uuid = getUuid();
+        this.uuid = exports.getUuid();
     }
     return GraphItem;
 }());
@@ -113,7 +113,7 @@ var GraphItemLLID = /** @class */ (function () {
             //data += "\n"; //debug
             return data;
         };
-        this.uuid = getUuid();
+        this.uuid = exports.getUuid();
     }
     return GraphItemLLID;
 }());
@@ -190,7 +190,7 @@ function addXML(tag, details) {
                 xml.tags = [TagValue.Application, TagValue.XML];
                 xml.relpath = xml.canonical + "/" + xml.name + ".xml";
                 xml.logpath = xml.canonical + "/" + xml.name + ".xml";
-                xml.llid = getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
+                xml.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
                 data += xml.serialize();
             }
         }
@@ -203,7 +203,7 @@ function addXML(tag, details) {
     xml.tags = [TagValue.Application, TagValue.XML];
     xml.relpath = xml.canonical + "/" + xml.name + ".xml";
     xml.logpath = xml.canonical + "/" + xml.name + ".xml";
-    xml.llid = getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
+    xml.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
     data += xml.serialize();
     return data;
 }
@@ -223,7 +223,7 @@ function addSNG(tag, details, platform) {
                 sng.tags = [TagValue.Application, TagValue.MusicgameSong];
                 sng.relpath = sng.canonical + "/" + sng.name + ".sng";
                 sng.logpath = sng.canonical + "/" + sng.name + ".sng";
-                sng.llid = getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
+                sng.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
                 data += sng.serialize();
             }
         }
@@ -241,7 +241,7 @@ function addDDS(tag) {
         dds.tags = [TagValue.DDS, TagValue.Image];
         dds.relpath = dds.canonical + "/" + dds.name + ".dds";
         dds.logpath = dds.canonical + "/" + dds.name + ".dds";
-        dds.llid = getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
+        dds.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
         data += dds.serialize();
     }
     return data;
@@ -257,7 +257,7 @@ function addBNK(tag, platform) {
         bnk.tags = [TagValue.Audio, TagValue.WwiseSoundBank, platform === common_1.Platform.Mac ? TagValue.MacOS : TagValue.DX9];
         bnk.relpath = bnk.canonical + "/" + bnk.name + ".bnk";
         bnk.logpath = bnk.canonical + "/" + bnk.name + ".bnk";
-        bnk.llid = getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
+        bnk.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
         data += bnk.serialize();
     }
     return data;
@@ -272,10 +272,10 @@ function addXBLOCK(tag) {
     data += xblock.serialize();
     return data;
 }
-var getUuid = function (a) {
+exports.getUuid = function (a) {
     if (a === void 0) { a = ''; }
     return (a
         /* eslint-disable no-bitwise */
         ? ((Number(a) ^ Math.random() * 16) >> Number(a) / 4).toString(16)
-        : (1e7 + "-" + 1e3 + "-" + 4e3 + "-" + 8e3 + "-" + 1e11).replace(/[018]/g, getUuid));
+        : (1e7 + "-" + 1e3 + "-" + 4e3 + "-" + 8e3 + "-" + 1e11).replace(/[018]/g, exports.getUuid));
 };

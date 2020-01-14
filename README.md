@@ -178,7 +178,7 @@ node.js v12 module to read and extract Rocksmith PSARC files
 - [x] WEM write support (requires WWise to be installed)
 - [x] BNK writer support
 - [x] SNG write support
-- [ ] SNG encryption/decryption support
+- [x] SNG encryption/decryption support
 - [ ] PSARC write support
 
 ## Tests

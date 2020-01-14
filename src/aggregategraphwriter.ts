@@ -230,7 +230,7 @@ function addXBLOCK(tag: string): string {
     return data;
 }
 
-const getUuid = (a: string = ''): string => (
+export const getUuid = (a: string = ''): string => (
     a
         /* eslint-disable no-bitwise */
         ? ((Number(a) ^ Math.random() * 16) >> Number(a) / 4).toString(16)
