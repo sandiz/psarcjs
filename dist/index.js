@@ -66,6 +66,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
+var fs_extra_1 = require("fs-extra");
 var binary_parser_1 = require("binary-parser");
 var xml2js = __importStar(require("xml2js"));
 var os = __importStar(require("os"));
@@ -243,6 +244,184 @@ var PSARC = /** @class */ (function () {
      */
     PSARC.prototype.getRawData = function () {
         return this.psarcRawData;
+    };
+    PSARC.existsAsync = function (path) {
+        return new Promise(function (resolve, reject) {
+            fs_1.exists(path, function (exists) {
+                resolve(exists);
+            });
+        });
+    };
+    PSARC.generateDirectory = function (dir, options) {
+        return __awaiter(this, void 0, void 0, function () {
+            var name, root, exists, fm, gfxassets, audio, songsarr, arrKeys, i, key, arr, j, oneIdx, xml, dest, songsbin, binKeys, i, key, sng, j, oneIdx, xml, dest, gamex;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log(options);
+                        name = "" + options.tag + (options.platform == common_1.Platform.Mac ? '_m' : '_p');
+                        root = path_1.join(dir, name);
+                        return [4 /*yield*/, PSARC.existsAsync(root)];
+                    case 1:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 3];
+                        return [4 /*yield*/, fs_1.promises.mkdir(root)];
+                    case 2:
+                        _a.sent();
+                        _a.label = 3;
+                    case 3: return [4 /*yield*/, GENERIC.generateToolkit(root, options.toolkit.author, options.toolkit.comment, options.toolkit.version, options.toolkit.tk)];
+                    case 4:
+                        _a.sent();
+                        return [4 /*yield*/, GENERIC.generateAppid(root)];
+                    case 5:
+                        _a.sent();
+                        return [4 /*yield*/, GENERIC.generateAggregateGraph(root, options.tag, options.arrDetails, options.platform)];
+                    case 6:
+                        _a.sent();
+                        fm = path_1.join(root, "flatmodels/rs");
+                        return [4 /*yield*/, PSARC.existsAsync(fm)];
+                    case 7:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 9];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(fm)];
+                    case 8:
+                        _a.sent();
+                        _a.label = 9;
+                    case 9: return [4 /*yield*/, fs_1.promises.copyFile("data/flatmodels/rsenumerable_root.flat", path_1.join(fm, "rsenumerable_root.flat"))];
+                    case 10:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.copyFile("data/flatmodels/rsenumerable_song.flat", path_1.join(fm, "rsenumerable_song.flat"))];
+                    case 11:
+                        _a.sent();
+                        gfxassets = path_1.join(root, "gfxassets/album_art");
+                        return [4 /*yield*/, PSARC.existsAsync(gfxassets)];
+                    case 12:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 14];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(gfxassets)];
+                    case 13:
+                        _a.sent();
+                        _a.label = 14;
+                    case 14: return [4 /*yield*/, fs_1.promises.copyFile(options.dds[256], path_1.join(gfxassets, "album_" + options.tag + "_256.dds"))];
+                    case 15:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.copyFile(options.dds[128], path_1.join(gfxassets, "album_" + options.tag + "_128.dds"))];
+                    case 16:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.copyFile(options.dds[64], path_1.join(gfxassets, "album_" + options.tag + "_64.dds"))];
+                    case 17:
+                        _a.sent();
+                        audio = path_1.join(root, "audio", options.platform === common_1.Platform.Mac ? "mac" : "windows");
+                        return [4 /*yield*/, PSARC.existsAsync(audio)];
+                    case 18:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 20];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(audio)];
+                    case 19:
+                        _a.sent();
+                        _a.label = 20;
+                    case 20: return [4 /*yield*/, fs_1.promises.copyFile(options.audio.main.wem, path_1.join(audio, path_1.basename(options.audio.main.wem)))];
+                    case 21:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.copyFile(options.audio.preview.wem, path_1.join(audio, path_1.basename(options.audio.preview.wem)))];
+                    case 22:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.copyFile(options.audio.main.bnk, path_1.join(audio, "song_" + options.tag + ".bnk"))];
+                    case 23:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.copyFile(options.audio.preview.bnk, path_1.join(audio, "song_" + options.tag + "_preview.bnk"))];
+                    case 24:
+                        _a.sent();
+                        songsarr = path_1.join(root, "songs/arr");
+                        return [4 /*yield*/, PSARC.existsAsync(songsarr)];
+                    case 25:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 27];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(songsarr)];
+                    case 26:
+                        _a.sent();
+                        _a.label = 27;
+                    case 27:
+                        arrKeys = Object.keys(options.songs.arrangements);
+                        i = 0;
+                        _a.label = 28;
+                    case 28:
+                        if (!(i < arrKeys.length)) return [3 /*break*/, 33];
+                        key = arrKeys[i];
+                        arr = options.songs.arrangements[key];
+                        j = 0;
+                        _a.label = 29;
+                    case 29:
+                        if (!(j < arr.length)) return [3 /*break*/, 32];
+                        oneIdx = j + 1;
+                        xml = arr[j];
+                        dest = path_1.join(songsarr, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".xml");
+                        return [4 /*yield*/, fs_1.promises.copyFile(xml, dest)];
+                    case 30:
+                        _a.sent();
+                        _a.label = 31;
+                    case 31:
+                        j += 1;
+                        return [3 /*break*/, 29];
+                    case 32:
+                        i += 1;
+                        return [3 /*break*/, 28];
+                    case 33:
+                        songsbin = path_1.join(root, "songs/bin", options.platform == common_1.Platform.Mac ? "macos" : "generic");
+                        return [4 /*yield*/, PSARC.existsAsync(songsbin)];
+                    case 34:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 36];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(songsbin)];
+                    case 35:
+                        _a.sent();
+                        _a.label = 36;
+                    case 36:
+                        binKeys = Object.keys(options.songs.sngs);
+                        i = 0;
+                        _a.label = 37;
+                    case 37:
+                        if (!(i < binKeys.length)) return [3 /*break*/, 42];
+                        key = binKeys[i];
+                        sng = options.songs.sngs[key];
+                        j = 0;
+                        _a.label = 38;
+                    case 38:
+                        if (!(j < sng.length)) return [3 /*break*/, 41];
+                        oneIdx = j + 1;
+                        xml = sng[j];
+                        dest = path_1.join(songsbin, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".sng");
+                        return [4 /*yield*/, fs_1.promises.copyFile(xml, dest)];
+                    case 39:
+                        _a.sent();
+                        _a.label = 40;
+                    case 40:
+                        j += 1;
+                        return [3 /*break*/, 38];
+                    case 41:
+                        i += 1;
+                        return [3 /*break*/, 37];
+                    case 42:
+                        gamex = path_1.join(root, "gamexblocks/nsongs");
+                        return [4 /*yield*/, PSARC.existsAsync(gamex)];
+                    case 43:
+                        exists = _a.sent();
+                        if (!!exists) return [3 /*break*/, 45];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(gamex)];
+                    case 44:
+                        _a.sent();
+                        _a.label = 45;
+                    case 45: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    PSARC.packDirectory = function (dir, platform) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
     };
     return PSARC;
 }());
@@ -619,20 +798,6 @@ var GENERIC = /** @class */ (function () {
                         _a.sent();
                         return [2 /*return*/, f];
                 }
-            });
-        });
-    };
-    GENERIC.prototype.generateShowlights = function (dir, tag) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
-            });
-        });
-    };
-    GENERIC.prototype.generateVocals = function (dir, tag) {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
             });
         });
     };

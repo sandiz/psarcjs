@@ -34,7 +34,7 @@ export enum Platform { Windows, Mac }
 
 export type Arrangements = { [persistentID: string]: object };
 
-export enum ArrangmentType { LEAD = "lead", RHYTHM = "rhythm", BASS = "bass", VOCALS = "vocals" }
+export enum ArrangmentType { LEAD = "lead", RHYTHM = "rhythm", BASS = "bass", VOCALS = "vocals", SHOWLIGHTS = "showlights" }
 export interface ArrangementDetails {
     [ArrangmentType.LEAD]: number;
     [ArrangmentType.RHYTHM]: number;
@@ -129,5 +129,36 @@ export class Vocals {
         const builder = new xml2js.Builder();
         const xml = builder.buildObject(e);
         return xml;
+    }
+}
+
+export interface PSARCOptions {
+    tag: string,
+    platform: Platform,
+    toolkit: { author: string, comment: string, version: string, tk: ToolkitInfo },
+    arrDetails: ArrangementDetails,
+    dds: {
+        '256': string,
+        '128': string,
+        '64': string,
+    },
+    audio: {
+        main: { wem: string, bnk: string },
+        preview: { wem: string, bnk: string },
+    },
+    songs: {
+        arrangements: {
+            [ArrangmentType.LEAD]: string[],
+            [ArrangmentType.BASS]: string[],
+            [ArrangmentType.RHYTHM]: string[],
+            [ArrangmentType.VOCALS]: string[],
+            [ArrangmentType.SHOWLIGHTS]: string[],
+        },
+        sngs: {
+            [ArrangmentType.LEAD]: string[],
+            [ArrangmentType.BASS]: string[],
+            [ArrangmentType.RHYTHM]: string[],
+            [ArrangmentType.VOCALS]: string[],
+        }
     }
 }

@@ -20,7 +20,7 @@ import {
 import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
-import { ArrangmentType, ShowLights, Vocals } from '../src/types/common';
+import { ArrangmentType, ShowLights, Vocals, Platform } from '../src/types/common';
 import { maskPrinter } from '../src/types/constants';
 import { getUuid } from '../src/aggregategraphwriter';
 
@@ -840,16 +840,73 @@ async function song2014Tests() {
         })
 }
 
+async function psarcGenerateTests() {
+    describe("psarcjs: PSARC: generate tests ", async () => {
+        it("psracjs: generate directory", async () => {
+            const dir = "/tmp";
+            const xml = 'test/xml/atmaink_bass.xml';
+            const parsed: Song2014 = await Song2014.fromXML(xml);
+            const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest");
+
+            const slights = "test/xml/atmaink_showlights.xml";
+            await PSARC.generateDirectory(dir, {
+                tag: "psarcjs_test",
+                platform: Platform.Mac,
+                toolkit: {
+                    author: 'psarcjs_author',
+                    comment: 'psarcjs_comment',
+                    version: '1',
+                    tk: {
+                        name: 'application_using_psarcjs',
+                        version: "0.0.1"
+                    }
+                },
+                arrDetails: {
+                    [ArrangmentType.LEAD]: 0,
+                    [ArrangmentType.RHYTHM]: 0,
+                    [ArrangmentType.BASS]: 1,
+                    [ArrangmentType.VOCALS]: 0,
+                },
+                dds: {
+                    '256': 'test/dds/album_poster_256.dds',
+                    '128': 'test/dds/album_poster_128.dds',
+                    '64': 'test/dds/album_poster_64.dds',
+                },
+                audio: {
+                    main: { wem: 'test/wem/180976557.wem', bnk: 'test/bnk/song_atmaink.bnk' },
+                    preview: { wem: 'test/wem/1563725178.wem', bnk: 'test/bnk/song_atmaink_preview.bnk' }
+                },
+                songs: {
+                    arrangements: {
+                        [ArrangmentType.LEAD]: [],
+                        [ArrangmentType.RHYTHM]: [],
+                        [ArrangmentType.BASS]: [xml],
+                        [ArrangmentType.VOCALS]: [],
+                        [ArrangmentType.SHOWLIGHTS]: [slights],
+                    },
+                    sngs: {
+                        [ArrangmentType.LEAD]: [],
+                        [ArrangmentType.RHYTHM]: [],
+                        [ArrangmentType.BASS]: [sngFile],
+                        [ArrangmentType.VOCALS]: [],
+                    }
+                }
+            })
+            throw new Error('ad');
+        })
+    })
+}
+
 const sngs = "test/sng/";
 const ddss = "test/dds/";
 const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
-    await psarcTests();
-    await sngTests();
-    await song2014Tests();
-
+    //await psarcTests();
+    //await sngTests();
+    //await song2014Tests();
+    /*
     await genericTests();
     await showLightsTest();
     await vocalsTest();
@@ -860,6 +917,8 @@ async function fn() {
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
     }
+    */
+    await psarcGenerateTests();
 }
 
 fn();

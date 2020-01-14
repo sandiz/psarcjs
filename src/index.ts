@@ -1,4 +1,5 @@
-import { promises } from 'fs';
+import { promises, exists } from 'fs';
+import { mkdirp } from 'fs-extra';
 import { Parser } from 'binary-parser';
 import * as xml2js from 'xml2js';
 
@@ -11,12 +12,12 @@ import * as WEMParser from './wemparser';
 import * as BNKParser from './bnkparser';
 import * as WAAPIHandler from './wemwaapi';
 import * as SNGTypes from './types/sng';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { generate } from './aggregategraphwriter';
 
 import {
     BOM, Arrangements, ArrangementDetails,
-    Platform, Arrangement, ToolkitInfo,
+    Platform, Arrangement, ToolkitInfo, PSARCOptions,
 } from "./types/common";
 
 import {
@@ -164,6 +165,103 @@ export class PSARC {
      */
     getRawData() {
         return this.psarcRawData;
+    }
+
+    static existsAsync(path: string) {
+        return new Promise(function (resolve, reject) {
+            exists(path, function (exists) {
+                resolve(exists);
+            })
+        })
+    }
+    static async generateDirectory(dir: string, options: PSARCOptions) {
+        console.log(options);
+        /*
+            toolkit.version -- DONE
+            appid.appid
+            tag_aggregrategraph.nt
+            flatmodels -> rs -> rsenumerable_song.flat, rsenumerable_root.flat
+            gfxassets -> album_art -> album_tag_{256,128,64}.dds
+            audio -> mac/windows -> rand.wem, rand.wem, song_tag.bnk song_tag_preview.bnk
+            songs -> arr -> tag_showlights.xml, tag_arrangement.xml
+                  -> bin -> macos/generic -> tag_arrangement.sng
+            manifests -> songs_dlc_tag -> songs_dlc_tag.hsan, tag_arrangement.json
+            gamexblocks -> nsongs -> tag.xblock
+        */
+        const name = `${options.tag}${options.platform == Platform.Mac ? '_m' : '_p'}`;
+        const root = join(dir, name);
+        let exists = await PSARC.existsAsync(root);
+        if (!exists) await promises.mkdir(root);
+
+        await GENERIC.generateToolkit(root, options.toolkit.author, options.toolkit.comment, options.toolkit.version, options.toolkit.tk);
+        await GENERIC.generateAppid(root);
+        await GENERIC.generateAggregateGraph(root, options.tag, options.arrDetails, options.platform)
+
+        const fm = join(root, "flatmodels/rs");
+        exists = await PSARC.existsAsync(fm);
+        if (!exists) await mkdirp(fm)
+
+        await promises.copyFile("data/flatmodels/rsenumerable_root.flat", join(fm, "rsenumerable_root.flat"));
+        await promises.copyFile("data/flatmodels/rsenumerable_song.flat", join(fm, "rsenumerable_song.flat"));
+
+        const gfxassets = join(root, "gfxassets/album_art");
+        exists = await PSARC.existsAsync(gfxassets);
+        if (!exists) await mkdirp(gfxassets);
+
+        await promises.copyFile(options.dds[256], join(gfxassets, `album_${options.tag}_256.dds`));
+        await promises.copyFile(options.dds[128], join(gfxassets, `album_${options.tag}_128.dds`));
+        await promises.copyFile(options.dds[64], join(gfxassets, `album_${options.tag}_64.dds`));
+
+
+        const audio = join(root, "audio", options.platform === Platform.Mac ? "mac" : "windows");
+        exists = await PSARC.existsAsync(audio);
+        if (!exists) await mkdirp(audio);
+
+        await promises.copyFile(options.audio.main.wem, join(audio, basename(options.audio.main.wem)));
+        await promises.copyFile(options.audio.preview.wem, join(audio, basename(options.audio.preview.wem)));
+        await promises.copyFile(options.audio.main.bnk, join(audio, `song_${options.tag}.bnk`));
+        await promises.copyFile(options.audio.preview.bnk, join(audio, `song_${options.tag}_preview.bnk`));
+
+        const songsarr = join(root, "songs/arr");
+        exists = await PSARC.existsAsync(songsarr);
+        if (!exists) await mkdirp(songsarr);
+        const arrKeys = Object.keys(options.songs.arrangements);
+        for (let i = 0; i < arrKeys.length; i += 1) {
+            const key = arrKeys[i] as keyof typeof options.songs.arrangements;
+            const arr = options.songs.arrangements[key];
+            for (let j = 0; j < arr.length; j += 1) {
+                const oneIdx = j + 1;
+                const xml = arr[j];
+                const dest = join(songsarr, `${options.tag}_${key}${oneIdx > 1 ? `${oneIdx}` : ""}.xml`);
+                await promises.copyFile(xml, dest);
+            }
+        }
+
+        const songsbin = join(root, "songs/bin", options.platform == Platform.Mac ? "macos" : "generic");
+        exists = await PSARC.existsAsync(songsbin);
+        if (!exists) await mkdirp(songsbin);
+        const binKeys = Object.keys(options.songs.sngs);
+        for (let i = 0; i < binKeys.length; i += 1) {
+            const key = binKeys[i] as keyof typeof options.songs.sngs;
+            const sng = options.songs.sngs[key];
+            for (let j = 0; j < sng.length; j += 1) {
+                const oneIdx = j + 1;
+                const xml = sng[j];
+                const dest = join(songsbin, `${options.tag}_${key}${oneIdx > 1 ? `${oneIdx}` : ""}.sng`);
+                await promises.copyFile(xml, dest);
+            }
+        }
+
+
+
+        const gamex = join(root, "gamexblocks/nsongs");
+        exists = await PSARC.existsAsync(gamex);
+        if (!exists) await mkdirp(gamex);
+        //await GENERIC.generateXBlock([], options.tag, gamex);
+    }
+
+    static async packDirectory(dir: string, platform: Platform) {
+
     }
 }
 
@@ -412,16 +510,6 @@ export class GENERIC {
         await promises.writeFile(f, xml);
         return f;
     }
-
-    async generateShowlights(dir: string, tag: string) {
-
-    }
-
-    async generateVocals(dir: string, tag: string) {
-
-    }
-    // generate vocals
-    // generate showlights
 }
 
 

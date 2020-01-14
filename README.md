@@ -179,6 +179,7 @@ node.js v12 module to read and extract Rocksmith PSARC files
 - [x] BNK writer support
 - [x] SNG write support
 - [x] SNG encryption/decryption support
+- [ ] Vocals SNG
 - [ ] PSARC write support
 
 ## Tests

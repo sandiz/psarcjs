@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<showlights count="29">
+  <!-- CST v2.8.4.0-420e01fc  -->
+  <showlight time="10" note="26" />
+  <showlight time="11.624" note="50" />
+  <showlight time="13.284" note="48" />
+  <showlight time="14.945" note="50" />
+  <showlight time="16.605" note="48" />
+  <showlight time="19.927" note="48" />
+  <showlight time="21.587" note="50" />
+  <showlight time="23.248" note="48" />
+  <showlight time="26.569" note="48" />
+  <showlight time="28.229" note="50" />
+  <showlight time="29.89" note="48" />
+  <showlight time="34.871" note="48" />
+  <showlight time="41.514" note="48" />
+  <showlight time="83.027" note="50" />
+  <showlight time="86.348" note="48" />
+  <showlight time="88.009" note="50" />
+  <showlight time="89.669" note="48" />
+  <showlight time="92.99" note="48" />
+  <showlight time="94.651" note="50" />
+  <showlight time="96.312" note="48" />
+  <showlight time="99.633" note="48" />
+  <showlight time="101.293" note="50" />
+  <showlight time="102.954" note="48" />
+  <showlight time="107.935" note="48" />
+  <showlight time="179.339" note="50" />
+  <showlight time="180.999" note="48" />
+  <showlight time="185.981" note="50" />
+  <showlight time="187.641" note="66" />
+  <showlight time="187.641" note="57" />
+</showlights>

@@ -67,6 +67,7 @@ var ArrangmentType;
     ArrangmentType["RHYTHM"] = "rhythm";
     ArrangmentType["BASS"] = "bass";
     ArrangmentType["VOCALS"] = "vocals";
+    ArrangmentType["SHOWLIGHTS"] = "showlights";
 })(ArrangmentType = exports.ArrangmentType || (exports.ArrangmentType = {}));
 var ShowLights = /** @class */ (function () {
     function ShowLights() {
