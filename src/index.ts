@@ -17,7 +17,7 @@ import { generate } from './aggregategraphwriter';
 
 import {
     BOM, Arrangements, ArrangementDetails,
-    Platform, Arrangement, ToolkitInfo, PSARCOptions, ArrangementPart, Manifest, ManifestReplacer,
+    Platform, Arrangement, ToolkitInfo, PSARCOptions, ArrangementPart, Manifest, ManifestReplacer, VocalArrangement, HSANManifest, AttributesHeader, VocalAttributesHeader, ArrangementType,
 } from "./types/common";
 
 import {
@@ -513,28 +513,58 @@ export class GENERIC {
 }
 
 export class MANIFEST {
-    static async generateJSON(dir: string, tag: string, arr: Arrangement) {
+    static async generateJSON(dir: string, tag: string, arr: Arrangement | VocalArrangement) {
+        const header = JSON.parse(JSON.stringify(arr.header));
+        if (arr instanceof Arrangement) {
+            delete (header.metronome);
+            delete (header.representative);
+            delete (header.routeMask);
+            delete (header.bassPick);
+        }
         const obj: Manifest = {
             entries: {
                 [arr.header.persistentID]: {
                     attributes: {
                         ...arr.main,
-                        ...arr.header,
+                        ...header,
                     }
                 }
             },
             modelName: "RSEnumerable_Song",
             iterationVersion: 2,
             insertRoot: "Static.Songs.Entries",
-        }
-        const allKeys = Object.keys(arr.main).concat(Object.keys(arr.header));
+        };
+        const allKeys = arr instanceof Arrangement ? Object.keys(arr.main).concat(Object.keys(header)) : Object.keys(arr);
         const json = JSON.stringify(obj, (k, v) => ManifestReplacer(allKeys, k, v), "  ");
         const path = join(dir, `${tag}_${arr.arrType}.json`);
         await promises.writeFile(path, json);
         return path;
     }
 
-    static async generateHSAN(arr: Arrangement) {
+    static async generateHSAN(dir: string, tag: string, arrs: (Arrangement | VocalArrangement)[]) {
+        const filename = `songs_dlc_${tag}.hsan`;
+        const obj: HSANManifest = {
+            entries: {
+
+            },
+            insertRoot: "Static.Songs.Headers",
+        };
+        arrs.forEach(arr => {
+            const header = JSON.parse(JSON.stringify(arr.header));
+            if (arr instanceof Arrangement) {
+                delete (header.metronome);
+                if (arr.header.arrangementName.toLowerCase() !== ArrangementType.BASS)
+                    delete (header.bassPick);
+            }
+            if (!Object.keys(obj.entries).includes(header.persistentID))
+                obj.entries[header.persistentID] = {};
+
+            obj.entries[header.persistentID]["attributes"] = header;
+        });
+        const json = JSON.stringify(obj, (k, v) => ManifestReplacer([], k, v), "  ");
+        const path = join(dir, filename);
+        await promises.writeFile(path, json);
+        return path;
     }
 }
 

@@ -7,7 +7,7 @@ import {
     ISong2014, SongNote, SongChord
 } from "../song2014";
 import { SNGConstants, maskPrinter } from './constants'
-import { ArrangementType } from "./common";
+import { ArrangementType, Vocals } from "./common";
 import { CHORDNOTESDATA, NOTESDATA } from "../sngparser";
 
 export class BEND {
@@ -162,11 +162,22 @@ export interface SYMBOLS {
     definition: Array<DEFINITION>;
 }
 
-export interface VOCALS {
-    time: number;
-    note: number;
-    length: number;
-    lyrics: string[48];
+export class VOCALS {
+    time: number = 0;
+    note: number = 0;
+    length: number = 0;
+    lyrics: string[48] = '';
+
+    static fromVocals(vocals: Vocals[]): VOCALS[] {
+        return vocals.map(vocal => {
+            return {
+                time: vocal.time,
+                note: vocal.note,
+                length: vocal.length,
+                lyrics: vocal.lyric.slice(0, 48),
+            }
+        })
+    }
 }
 
 export class CHORDNOTES {

@@ -20,7 +20,7 @@ import {
 import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
-import { ArrangementType, ShowLights, Vocals, Platform, ArrangementTypeInt, Arrangement, Manifest, ManifestTone, ManifestToneReviver } from '../src/types/common';
+import { ArrangementType, ShowLights, Vocals, Platform, ArrangementTypeInt, Arrangement, Manifest, ManifestTone, ManifestToneReviver, VocalArrangement } from '../src/types/common';
 import { maskPrinter } from '../src/types/constants';
 import { getUuid } from '../src/aggregategraphwriter';
 
@@ -553,12 +553,19 @@ async function vocalsTest() {
     (forEach(xmlf) as any)
         .describe("psarcjs: VOCALS tests", async (f2: string) => {
             const file = `${xmls}/${f2}`
-            it("generate/parse showlights", async () => {
+            it("generate/parse vocals", async () => {
                 const vocals = await Vocals.fromXML(file);
                 const xml = Vocals.toXML(vocals);
                 const f = "/tmp/vocals.xml"
                 await promises.writeFile(f, xml);
                 await Vocals.fromXML(f);
+            })
+
+            it("generate vocals sng", async () => {
+                const parsed: Vocals[] = await Vocals.fromXML(file);
+                const sngFile = await Vocals.generateSNG("/tmp/", "psarcJSGenerateTest", parsed);
+                const sng = new SNG(sngFile);
+                await sng.parse();
             })
         })
 }
@@ -966,7 +973,9 @@ async function manifestTests() {
         year: 1999,
         scrollSpeed: 13
     }
+    const hsanFile = "test/blinktest/songs_dlc_bwab1anthem.hsan";
 
+    const arrangements: (Arrangement | VocalArrangement)[] = [];
     describe("psarcjs: MANIFEST: generate tests", async () => {
         (forEach(leads.concat(rhythms).concat(basss)) as any)
             .it(`psarcjs: generate arrangement json`, async function (lead: ManifestTestInfo) {
@@ -990,10 +999,10 @@ async function manifestTests() {
                     represent: true,
                     details: {
                         [ArrangementType.LEAD]: leads.length,
-                        [ArrangementType.RHYTHM]: leads.length,
-                        [ArrangementType.BASS]: leads.length,
-                        [ArrangementType.VOCALS]: leads.length,
-                        [ArrangementType.SHOWLIGHTS]: leads.length,
+                        [ArrangementType.RHYTHM]: rhythms.length,
+                        [ArrangementType.BASS]: basss.length,
+                        [ArrangementType.VOCALS]: 1,
+                        [ArrangementType.SHOWLIGHTS]: 1,
                     },
                     tones: tonesObj,
                     info: {
@@ -1005,6 +1014,7 @@ async function manifestTests() {
                         scrollSpeed: 13,
                     }
                 });
+                arrangements.push(arr);
                 const json = await MANIFEST.generateJSON("/tmp", "psarcjs_test", arr);
 
                 const genObj = JSON.parse(await promises.readFile(json));
@@ -1025,18 +1035,70 @@ async function manifestTests() {
                 expect(lattr).excluding(excludes).to.be.deep.equal(rattr);
             })
 
-        it("psarcjs: generate vocals json", async () => {
+        it("psarcjs: generate vocals json", async function () {
             //@ts-ignore
             this.timeout(15000);
-            const xml = vocals.xml;
             const left = vocals.json;
             const pid = vocals.pid;
+            const arr = new VocalArrangement({
+                tag: vocals.tag,
+                sortOrder: 0,
+                volume: -9.2,
+                previewVolume: -8.3,
+                bassPicked: false,
+                represent: true,
+                details: {
+                    [ArrangementType.LEAD]: leads.length,
+                    [ArrangementType.RHYTHM]: rhythms.length,
+                    [ArrangementType.BASS]: basss.length,
+                    [ArrangementType.VOCALS]: 1,
+                    [ArrangementType.SHOWLIGHTS]: 1,
+                },
+                tones: [],
+                info: {
+                    songName: "Anthem",
+                    albumName: "Enema of the State",
+                    persistentID: pid,
+                    year: 1999,
+                    currentPartition: 0,
+                    scrollSpeed: 13,
+                }
+            });
+            arrangements.push(arr);
+            const json = await MANIFEST.generateJSON("/tmp", "psarcjs_test", arr);
 
-            const parsed: Vocals[] = await Vocals.fromXML(xml);
-            const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest");
-            const sng = new SNG(sngFile);
-            await sng.parse();
+            const genObj = JSON.parse(await promises.readFile(json));
+            const leftObj = JSON.parse(await promises.readFile(left));
 
+            const lattr = genObj.Entries[pid].Attributes;
+            const rattr = leftObj.Entries[pid].Attributes;
+            /* force some fields */
+            rattr.SKU = "RS2";
+            expect(lattr).excluding(['MasterID_RDV']).to.be.deep.equal(rattr);
+        })
+
+        it("psarcjs: generate hsan", async () => {
+            expect(arrangements.length).to.be.greaterThan(0);
+            const hsan = await MANIFEST.generateHSAN("/tmp", "psarcjs_test", arrangements);
+            const hsanObj = JSON.parse(await promises.readFile(hsan));
+            const leftObj = JSON.parse(await promises.readFile(hsanFile));
+
+            const keys = Object.keys(hsanObj["Entries"]);
+            for (let i = 0; i < keys.length; i += 1) {
+                const pid = keys[i];
+                const rattr = hsanObj["Entries"][pid]["Attributes"];
+                const lattr = leftObj["Entries"][pid]["Attributes"];
+                lattr.SKU = "RS2";
+                let excludes = ["MasterID_RDV", "SongDiffEasy", "SongDiffHard", "SongDiffMed", "SongDifficulty"];
+
+                if (lattr["ArrangementName"] !== "Vocals") {
+                    expect(lattr["SongDiffEasy"]).to.be.closeTo(rattr["SongDiffEasy"], 0.0001)
+                    expect(lattr["SongDiffMed"]).to.be.closeTo(rattr["SongDiffMed"], 0.0001)
+                    expect(lattr["SongDiffHard"]).to.be.closeTo(rattr["SongDiffHard"], 0.0001)
+                    expect(lattr["SongDifficulty"]).to.be.closeTo(rattr["SongDifficulty"], 0.0001)
+                }
+                expect(lattr).excluding(excludes).to.be.deep.equal(rattr);
+            }
         })
     });
 
@@ -1049,10 +1111,10 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
-    //await psarcTests();
-    //await sngTests();
-    //await song2014Tests();
-    /*
+    await psarcTests();
+    await sngTests();
+    await song2014Tests();
+
     await genericTests();
     await showLightsTest();
     await vocalsTest();
@@ -1063,7 +1125,7 @@ async function fn() {
     if (process.env.GITHUB_ACTIONS !== "true") {
         await waapiTests();
     }
-    */
+
     //await psarcGenerateTests();
     await manifestTests();
 }

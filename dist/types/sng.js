@@ -136,6 +136,26 @@ var CHORDTEMPLATES = /** @class */ (function () {
     return CHORDTEMPLATES;
 }());
 exports.CHORDTEMPLATES = CHORDTEMPLATES;
+var VOCALS = /** @class */ (function () {
+    function VOCALS() {
+        this.time = 0;
+        this.note = 0;
+        this.length = 0;
+        this.lyrics = '';
+    }
+    VOCALS.fromVocals = function (vocals) {
+        return vocals.map(function (vocal) {
+            return {
+                time: vocal.time,
+                note: vocal.note,
+                length: vocal.length,
+                lyrics: vocal.lyric.slice(0, 48),
+            };
+        });
+    };
+    return VOCALS;
+}());
+exports.VOCALS = VOCALS;
 var CHORDNOTES = /** @class */ (function () {
     function CHORDNOTES() {
         this.mask = [];

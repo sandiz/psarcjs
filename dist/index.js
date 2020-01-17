@@ -809,22 +809,29 @@ var MANIFEST = /** @class */ (function () {
     }
     MANIFEST.generateJSON = function (dir, tag, arr) {
         return __awaiter(this, void 0, void 0, function () {
-            var obj, allKeys, json, path;
+            var header, obj, allKeys, json, path;
             var _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        header = JSON.parse(JSON.stringify(arr.header));
+                        if (arr instanceof common_1.Arrangement) {
+                            delete (header.metronome);
+                            delete (header.representative);
+                            delete (header.routeMask);
+                            delete (header.bassPick);
+                        }
                         obj = {
                             entries: (_a = {},
                                 _a[arr.header.persistentID] = {
-                                    attributes: __assign(__assign({}, arr.main), arr.header)
+                                    attributes: __assign(__assign({}, arr.main), header)
                                 },
                                 _a),
                             modelName: "RSEnumerable_Song",
                             iterationVersion: 2,
                             insertRoot: "Static.Songs.Entries",
                         };
-                        allKeys = Object.keys(arr.main).concat(Object.keys(arr.header));
+                        allKeys = arr instanceof common_1.Arrangement ? Object.keys(arr.main).concat(Object.keys(header)) : Object.keys(arr);
                         json = JSON.stringify(obj, function (k, v) { return common_1.ManifestReplacer(allKeys, k, v); }, "  ");
                         path = path_1.join(dir, tag + "_" + arr.arrType + ".json");
                         return [4 /*yield*/, fs_1.promises.writeFile(path, json)];
@@ -835,10 +842,35 @@ var MANIFEST = /** @class */ (function () {
             });
         });
     };
-    MANIFEST.generateHSAN = function (arr) {
+    MANIFEST.generateHSAN = function (dir, tag, arrs) {
         return __awaiter(this, void 0, void 0, function () {
+            var filename, obj, json, path;
             return __generator(this, function (_a) {
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        filename = "songs_dlc_" + tag + ".hsan";
+                        obj = {
+                            entries: {},
+                            insertRoot: "Static.Songs.Headers",
+                        };
+                        arrs.forEach(function (arr) {
+                            var header = JSON.parse(JSON.stringify(arr.header));
+                            if (arr instanceof common_1.Arrangement) {
+                                delete (header.metronome);
+                                if (arr.header.arrangementName.toLowerCase() !== common_1.ArrangementType.BASS)
+                                    delete (header.bassPick);
+                            }
+                            if (!Object.keys(obj.entries).includes(header.persistentID))
+                                obj.entries[header.persistentID] = {};
+                            obj.entries[header.persistentID]["attributes"] = header;
+                        });
+                        json = JSON.stringify(obj, function (k, v) { return common_1.ManifestReplacer([], k, v); }, "  ");
+                        path = path_1.join(dir, filename);
+                        return [4 /*yield*/, fs_1.promises.writeFile(path, json)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, path];
+                }
             });
         });
     };

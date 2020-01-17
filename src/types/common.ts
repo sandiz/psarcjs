@@ -1,10 +1,12 @@
 import { promises } from 'fs';
 import * as xml2js from 'xml2js';
+import { join } from 'path';
 import { SNG, toTitleCase } from '..';
 import { ISong2014, Tuning, SongArrangementProperties, SongNote, SongChord } from '../song2014';
 import { TagValue, getUuid } from '../aggregategraphwriter';
 import { getRandomInt } from '../bnkparser';
-import { getNoteCount } from './sng';
+import { getNoteCount, SNGFORMAT, METADATA, VOCALS } from './sng';
+import { SNGDATA } from '../sngparser';
 export interface PSARCHEADER {
     MAGIC: string[4],
     VERSION: number,
@@ -69,11 +71,19 @@ const URN_TEMPLATE_SHORT = (a: string, b: string) => `urn:${a}:${b}`;
 export interface Manifest {
     entries: {
         [key: string]: {
-            [key: string]: Attributes | AttributesHeader
+            [key: string]: Attributes | AttributesHeader | VocalAttributes | VocalAttributesHeader
         }
     };
     modelName?: string;
     iterationVersion?: number;
+    insertRoot: string;
+}
+export interface HSANManifest {
+    entries: {
+        [key: string]: {
+            [key: string]: AttributesHeader | VocalAttributesHeader
+        }
+    };
     insertRoot: string;
 }
 export class AttributesHeader {
@@ -166,9 +176,27 @@ export interface ArrangementPart {
     persistentID: string;
     arrangementType: ArrangementType;
 }
+
+interface ArrangementOptions {
+    tag: string,
+    sortOrder: number,
+    volume: number,
+    previewVolume: number,
+    bassPicked?: boolean,
+    represent?: boolean,
+    details: ArrangementDetails,
+    tones: ManifestTone[],
+    info?: {
+        songName: string,
+        albumName: string,
+        persistentID?: string,
+        year?: number,
+        currentPartition: number,
+        scrollSpeed: number,
+    }
+}
 /* represents an arrangment in psarc */
 export class Arrangement {
-    public isVocal: boolean;
     public song2014: ISong2014;
     public arrType: ArrangementType;
 
@@ -176,24 +204,7 @@ export class Arrangement {
     public main = new Attributes();
 
 
-    constructor(song: ISong2014, sng: SNG, options: {
-        tag: string,
-        sortOrder: number,
-        volume: number,
-        previewVolume: number,
-        bassPicked?: boolean,
-        represent?: boolean,
-        details: ArrangementDetails,
-        tones: ManifestTone[],
-        info?: {
-            songName: string,
-            albumName: string,
-            persistentID?: string,
-            year?: number,
-            currentPartition: number,
-            scrollSpeed: number,
-        }
-    }) {
+    constructor(song: ISong2014, sng: SNG, options: ArrangementOptions) {
         this.arrType = ArrangementType[song.arrangement.toUpperCase() as keyof typeof ArrangementType];
         this.main.arrangementType = ArrangementTypeInt[song.arrangement.toUpperCase() as keyof typeof ArrangementType];
         this.header.arrangementName = toTitleCase(song.arrangement);
@@ -208,7 +219,6 @@ export class Arrangement {
         const albumUrn = URN_TEMPLATE(TagValue.Image, TagValue.DDS, `album_${options.tag.toLowerCase()}`);
         const jsonUrn = URN_TEMPLATE(TagValue.Database, TagValue.JsonDB, `${dlcName}_${this.arrType}`);
 
-        this.isVocal = this.main.arrangementType == ArrangementTypeInt.VOCALS;
         this.song2014 = song;
         this.header.albumArt = albumUrn;
         this.header.dLCKey = options.tag;
@@ -257,13 +267,9 @@ export class Arrangement {
         this.header.easyMastery = parseFloat((this.header.notesEasy / this.header.notesHard).toFixed(9));
         this.header.mediumMastery = parseFloat((this.header.notesMedium / this.header.notesHard).toFixed(9));
         this.main.arrangementProperties = song.arrangementProperties;
-        /*
         if (this.arrType == ArrangementType.BASS) {
             this.header.bassPick = options.bassPicked == undefined ? 0 : (options.bassPicked ? 1 : 0);
         }
-        else
-            delete this.header.bassPick;
-        */
 
         this.main.arrangementProperties.Metronome = 0;
         switch (this.arrType) {
@@ -328,11 +334,6 @@ export class Arrangement {
         this.main.tone_D = tret.toned;
         this.main.tone_Base = tret.tonebase;
         this.main.tone_Multiplayer = tret.tone_mult;
-
-        delete (this.header.metronome);
-        delete (this.header.representative);
-        delete (this.header.routeMask);
-        delete (this.header.bassPick);
     }
 
     private getSongDifficulty() {
@@ -721,6 +722,85 @@ export class Arrangement {
         }
     }
 }
+export class VocalAttributes {
+    public arrangementSort = 0;
+    public blockAsset: string = '';
+    public dynamicVisualDensity = new Array<number>(20).fill(2.0);
+    public fullName: string = '';
+    public masterID_PS3 = -1;
+    public masterID_XBox360 = -1;
+    public maxPhraseDifficulty = 0;
+    public previewBankPath: string = '';
+    public relativeDifficulty = 0;
+    public score_MaxNotes = 0;
+    public score_PNV = 0;
+    public showlightsXML: string = '';
+    public songAsset: string = '';
+    public songAverageTempo = 0;
+    public songBank: string = '';
+    public songEvent: string = '';
+    public songPartition = 0;
+    public songXml: string = '';
+    public targetScore = 0;
+    public inputEvent: string = '';
+    public songVolume: number = 0;
+    public previewVolume: number = 0;
+}
+
+export class VocalAttributesHeader {
+    public albumArt: string = '';
+    public arrangementName: string = '';
+    public capoFret = 0;
+    public DLC = true;
+    public DLCKey: string = '';
+    public leaderboardChallengeRating = 0;
+    public manifestUrn: string = '';
+    public masterID_RDV: number = 0;
+    public shipping = true;
+    public SKU = "RS2";
+    public songKey: string = '';
+    public persistentID: string = '';
+}
+export class VocalArrangement {
+    public arrType = ArrangementType.VOCALS;
+    public header: VocalAttributesHeader = new VocalAttributesHeader();
+    public main: VocalAttributes = new VocalAttributes();
+
+    constructor(options: ArrangementOptions) {
+        const masterID = getRandomInt();
+        const pID = options.info?.persistentID ?? getUuid().replace(/-/g, "").toUpperCase();
+        const dlcName = options.tag.toLowerCase();
+
+        const xblockUrn = URN_TEMPLATE_SHORT(TagValue.EmergentWorld, dlcName);
+        const showlightUrn = URN_TEMPLATE(TagValue.Application, TagValue.XML, `${dlcName}_showlights`);
+        const songXmlUrn = URN_TEMPLATE(TagValue.Application, TagValue.XML, `${dlcName}_${this.arrType}`);
+        const songSngUrn = URN_TEMPLATE(TagValue.Application, TagValue.MusicgameSong, `${dlcName}_${this.arrType}`);
+        const albumUrn = URN_TEMPLATE(TagValue.Image, TagValue.DDS, `album_${options.tag.toLowerCase()}`);
+        const jsonUrn = URN_TEMPLATE(TagValue.Database, TagValue.JsonDB, `${dlcName}_${this.arrType}`);
+
+        this.main.blockAsset = xblockUrn;
+        this.main.fullName = `${options.tag}_${toTitleCase(this.arrType)}`;
+        this.main.previewBankPath = `song_${dlcName}_preview.bnk`;
+        this.main.showlightsXML = showlightUrn;
+        this.main.songAsset = songSngUrn;
+        this.main.songBank = `song_${dlcName}.bnk`;
+        this.main.songEvent = `Play_${options.tag}`;
+        this.main.inputEvent = "Play_Tone_Standard_Mic";
+        this.main.songVolume = options.volume;
+        this.main.previewVolume = options.previewVolume;
+        this.header.albumArt = albumUrn;
+        this.header.arrangementName = "Vocals";
+        this.header.DLCKey = options.tag;
+        this.header.manifestUrn = jsonUrn;
+        this.header.masterID_RDV = masterID;
+        this.header.songKey = this.header.DLCKey;
+        this.header.persistentID = pID;
+        this.main.songXml = songXmlUrn;
+
+        delete (this.arrType);
+    }
+
+}
 
 const SectionUINames = {
     fadein: "$[34276] Fade In [1]",
@@ -996,6 +1076,58 @@ export class Vocals {
         const builder = new xml2js.Builder();
         const xml = builder.buildObject(e);
         return xml;
+    }
+
+    static async generateSNG(dir: string, tag: string, vocals: Vocals[]) {
+        const fileName = `${tag}_vocals.sng`;
+        const sngFormat: SNGFORMAT = {
+            beats_length: 0,
+            beats: [],
+            phrases_length: 0,
+            phrases: [],
+            chord_templates_length: 0,
+            chordTemplates: [],
+            chord_notes_length: 0,
+            chordNotes: [],
+            vocals_length: vocals.length,
+            vocals: VOCALS.fromVocals(vocals),
+            symbols_length: 0,
+            symbols: {
+                header: [],
+                texture: [],
+                definition: [],
+            },
+            phrase_iter_length: 0,
+            phraseIterations: [],
+            phrase_extra_info_length: 0,
+            phraseExtraInfos: [],
+            new_linked_diffs_length: 0,
+            newLinkedDiffs: [],
+            actions_length: 0,
+            actions: [],
+            events_length: 0,
+            events: [],
+            tone_length: 0,
+            tone: [],
+            dna_length: 0,
+            dna: [],
+            sections_length: 0,
+            sections: [],
+            levels_length: 0,
+            levels: [],
+            metadata: new METADATA(),
+        }
+        SNGDATA.parse((SNGDATA as any).encode(sngFormat));
+
+        const path = join(dir, fileName);
+        const buf = (SNGDATA as any).encode(sngFormat);
+        const sng = new SNG(path);
+        sng.rawData = buf;
+        sng.unpackedData = buf;
+        await sng.pack();
+
+        await promises.writeFile(path, sng.packedData);
+        return path;
     }
 }
 

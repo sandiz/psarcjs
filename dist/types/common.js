@@ -76,11 +76,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var xml2js = __importStar(require("xml2js"));
+var path_1 = require("path");
 var __1 = require("..");
 var song2014_1 = require("../song2014");
 var aggregategraphwriter_1 = require("../aggregategraphwriter");
 var bnkparser_1 = require("../bnkparser");
 var sng_1 = require("./sng");
+var sngparser_1 = require("../sngparser");
 var Platform;
 (function (Platform) {
     Platform[Platform["Windows"] = 0] = "Windows";
@@ -234,7 +236,6 @@ var Arrangement = /** @class */ (function () {
         var songSngUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Application, aggregategraphwriter_1.TagValue.MusicgameSong, dlcName + "_" + this.arrType);
         var albumUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Image, aggregategraphwriter_1.TagValue.DDS, "album_" + options.tag.toLowerCase());
         var jsonUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Database, aggregategraphwriter_1.TagValue.JsonDB, dlcName + "_" + this.arrType);
-        this.isVocal = this.main.arrangementType == ArrangementTypeInt.VOCALS;
         this.song2014 = song;
         this.header.albumArt = albumUrn;
         this.header.dLCKey = options.tag;
@@ -280,13 +281,9 @@ var Arrangement = /** @class */ (function () {
         this.header.easyMastery = parseFloat((this.header.notesEasy / this.header.notesHard).toFixed(9));
         this.header.mediumMastery = parseFloat((this.header.notesMedium / this.header.notesHard).toFixed(9));
         this.main.arrangementProperties = song.arrangementProperties;
-        /*
         if (this.arrType == ArrangementType.BASS) {
             this.header.bassPick = options.bassPicked == undefined ? 0 : (options.bassPicked ? 1 : 0);
         }
-        else
-            delete this.header.bassPick;
-        */
         this.main.arrangementProperties.Metronome = 0;
         switch (this.arrType) {
             case ArrangementType.BASS:
@@ -341,10 +338,6 @@ var Arrangement = /** @class */ (function () {
         this.main.tone_D = tret.toned;
         this.main.tone_Base = tret.tonebase;
         this.main.tone_Multiplayer = tret.tone_mult;
-        delete (this.header.metronome);
-        delete (this.header.representative);
-        delete (this.header.routeMask);
-        delete (this.header.bassPick);
     }
     Arrangement.prototype.getSongDifficulty = function () {
         // This is not the way official values are calculated, but sometimes gets pretty close
@@ -705,6 +698,90 @@ var Arrangement = /** @class */ (function () {
     return Arrangement;
 }());
 exports.Arrangement = Arrangement;
+var VocalAttributes = /** @class */ (function () {
+    function VocalAttributes() {
+        this.arrangementSort = 0;
+        this.blockAsset = '';
+        this.dynamicVisualDensity = new Array(20).fill(2.0);
+        this.fullName = '';
+        this.masterID_PS3 = -1;
+        this.masterID_XBox360 = -1;
+        this.maxPhraseDifficulty = 0;
+        this.previewBankPath = '';
+        this.relativeDifficulty = 0;
+        this.score_MaxNotes = 0;
+        this.score_PNV = 0;
+        this.showlightsXML = '';
+        this.songAsset = '';
+        this.songAverageTempo = 0;
+        this.songBank = '';
+        this.songEvent = '';
+        this.songPartition = 0;
+        this.songXml = '';
+        this.targetScore = 0;
+        this.inputEvent = '';
+        this.songVolume = 0;
+        this.previewVolume = 0;
+    }
+    return VocalAttributes;
+}());
+exports.VocalAttributes = VocalAttributes;
+var VocalAttributesHeader = /** @class */ (function () {
+    function VocalAttributesHeader() {
+        this.albumArt = '';
+        this.arrangementName = '';
+        this.capoFret = 0;
+        this.DLC = true;
+        this.DLCKey = '';
+        this.leaderboardChallengeRating = 0;
+        this.manifestUrn = '';
+        this.masterID_RDV = 0;
+        this.shipping = true;
+        this.SKU = "RS2";
+        this.songKey = '';
+        this.persistentID = '';
+    }
+    return VocalAttributesHeader;
+}());
+exports.VocalAttributesHeader = VocalAttributesHeader;
+var VocalArrangement = /** @class */ (function () {
+    function VocalArrangement(options) {
+        var _a, _b;
+        this.arrType = ArrangementType.VOCALS;
+        this.header = new VocalAttributesHeader();
+        this.main = new VocalAttributes();
+        var masterID = bnkparser_1.getRandomInt();
+        var pID = (_b = (_a = options.info) === null || _a === void 0 ? void 0 : _a.persistentID, (_b !== null && _b !== void 0 ? _b : aggregategraphwriter_1.getUuid().replace(/-/g, "").toUpperCase()));
+        var dlcName = options.tag.toLowerCase();
+        var xblockUrn = URN_TEMPLATE_SHORT(aggregategraphwriter_1.TagValue.EmergentWorld, dlcName);
+        var showlightUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Application, aggregategraphwriter_1.TagValue.XML, dlcName + "_showlights");
+        var songXmlUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Application, aggregategraphwriter_1.TagValue.XML, dlcName + "_" + this.arrType);
+        var songSngUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Application, aggregategraphwriter_1.TagValue.MusicgameSong, dlcName + "_" + this.arrType);
+        var albumUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Image, aggregategraphwriter_1.TagValue.DDS, "album_" + options.tag.toLowerCase());
+        var jsonUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Database, aggregategraphwriter_1.TagValue.JsonDB, dlcName + "_" + this.arrType);
+        this.main.blockAsset = xblockUrn;
+        this.main.fullName = options.tag + "_" + __1.toTitleCase(this.arrType);
+        this.main.previewBankPath = "song_" + dlcName + "_preview.bnk";
+        this.main.showlightsXML = showlightUrn;
+        this.main.songAsset = songSngUrn;
+        this.main.songBank = "song_" + dlcName + ".bnk";
+        this.main.songEvent = "Play_" + options.tag;
+        this.main.inputEvent = "Play_Tone_Standard_Mic";
+        this.main.songVolume = options.volume;
+        this.main.previewVolume = options.previewVolume;
+        this.header.albumArt = albumUrn;
+        this.header.arrangementName = "Vocals";
+        this.header.DLCKey = options.tag;
+        this.header.manifestUrn = jsonUrn;
+        this.header.masterID_RDV = masterID;
+        this.header.songKey = this.header.DLCKey;
+        this.header.persistentID = pID;
+        this.main.songXml = songXmlUrn;
+        delete (this.arrType);
+    }
+    return VocalArrangement;
+}());
+exports.VocalArrangement = VocalArrangement;
 var SectionUINames = {
     fadein: "$[34276] Fade In [1]",
     fadeout: "$[34277] Fade Out [1]",
@@ -917,6 +994,67 @@ var Vocals = /** @class */ (function () {
         var builder = new xml2js.Builder();
         var xml = builder.buildObject(e);
         return xml;
+    };
+    Vocals.generateSNG = function (dir, tag, vocals) {
+        return __awaiter(this, void 0, void 0, function () {
+            var fileName, sngFormat, path, buf, sng;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        fileName = tag + "_vocals.sng";
+                        sngFormat = {
+                            beats_length: 0,
+                            beats: [],
+                            phrases_length: 0,
+                            phrases: [],
+                            chord_templates_length: 0,
+                            chordTemplates: [],
+                            chord_notes_length: 0,
+                            chordNotes: [],
+                            vocals_length: vocals.length,
+                            vocals: sng_1.VOCALS.fromVocals(vocals),
+                            symbols_length: 0,
+                            symbols: {
+                                header: [],
+                                texture: [],
+                                definition: [],
+                            },
+                            phrase_iter_length: 0,
+                            phraseIterations: [],
+                            phrase_extra_info_length: 0,
+                            phraseExtraInfos: [],
+                            new_linked_diffs_length: 0,
+                            newLinkedDiffs: [],
+                            actions_length: 0,
+                            actions: [],
+                            events_length: 0,
+                            events: [],
+                            tone_length: 0,
+                            tone: [],
+                            dna_length: 0,
+                            dna: [],
+                            sections_length: 0,
+                            sections: [],
+                            levels_length: 0,
+                            levels: [],
+                            metadata: new sng_1.METADATA(),
+                        };
+                        sngparser_1.SNGDATA.parse(sngparser_1.SNGDATA.encode(sngFormat));
+                        path = path_1.join(dir, fileName);
+                        buf = sngparser_1.SNGDATA.encode(sngFormat);
+                        sng = new __1.SNG(path);
+                        sng.rawData = buf;
+                        sng.unpackedData = buf;
+                        return [4 /*yield*/, sng.pack()];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.writeFile(path, sng.packedData)];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, path];
+                }
+            });
+        });
     };
     return Vocals;
 }());
