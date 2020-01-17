@@ -7,7 +7,7 @@ import {
     ISong2014, SongNote, SongChord
 } from "../song2014";
 import { SNGConstants, maskPrinter } from './constants'
-import { ArrangmentType } from "./common";
+import { ArrangementType } from "./common";
 import { CHORDNOTESDATA, NOTESDATA } from "../sngparser";
 
 export class BEND {
@@ -125,7 +125,7 @@ export class CHORDTEMPLATES {
             fingers[5] = item.finger5;
 
             for (let i = 0; i < 6; i++) {
-                notes[i] = getMidiNote(Object.values(tuning), i, frets[i], arrangement == ArrangmentType.BASS, capo, true)
+                notes[i] = getMidiNote(Object.values(tuning), i, frets[i], arrangement == ArrangementType.BASS, capo, true)
             }
 
             return {
@@ -1289,7 +1289,7 @@ function numberNotes(PI: PHRASEITERATIONS[], notes: NOTES[]) {
 }
 
 let ignoreCount = 0;
-function getNoteCount(PH: PHRASEITERATIONS[], levels: LEVELS[], Level: number) {
+export function getNoteCount(PH: PHRASEITERATIONS[], levels: LEVELS[], Level: number) {
     // time => note count
     var notes: { [key: number]: number } = {}
     var level: { [key: number]: number } = {}

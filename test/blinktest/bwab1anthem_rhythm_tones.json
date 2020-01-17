@@ -1,0 +1,71 @@
+[
+    {
+        "GearList": {
+            "Rack1": {
+                "Type": "Racks",
+                "KnobValues": {
+                    "Rack_StudioEQ_BassFreq": 75.0,
+                    "Rack_StudioEQ_HiMidFreq": 3.0,
+                    "Rack_StudioEQ_TrebleFreq": 9.0,
+                    "Rack_StudioEQ_LoMidFreq": 1600.0,
+                    "Rack_StudioEQ_Treble": -2.0,
+                    "Rack_StudioEQ_LoMidQ": 3.0,
+                    "Rack_StudioEQ_Bass": 3.0,
+                    "Rack_StudioEQ_HiMid": 2.0,
+                    "Rack_StudioEQ_LoMid": 6.0,
+                    "Rack_StudioEQ_HiMidQ": 0.0
+                },
+                "Key": "Rack_StudioEQ"
+            },
+            "Amp": {
+                "Type": "Amps",
+                "KnobValues": {
+                    "Bass_Amp_HT400B_HiShift": 0.0,
+                    "Bass_Amp_HT400B_Bass": 10.0,
+                    "Bass_Amp_HT400B_LoShift": 0.0,
+                    "Bass_Amp_HT400B_Gain": 57.0,
+                    "Bass_Amp_HT400B_Mid": 1.0,
+                    "Bass_Amp_HT400B_Treble": 3.0
+                },
+                "Key": "Bass_Amp_HT400B"
+            },
+            "Cabinet": {
+                "Type": "Cabinets",
+                "KnobValues": {},
+                "Key": "Bass_Cab_CA1510BC_57_Edge"
+            },
+            "PrePedal1": {
+                "Type": "Pedals",
+                "KnobValues": {
+                    "Bass_Pedal_MBComp_Filter": 600.0,
+                    "Bass_Pedal_MBComp_Compress": 56.0,
+                    "Bass_Pedal_MBComp_Rate": 40.0
+                },
+                "Key": "Bass_Pedal_MBComp"
+            },
+            "PrePedal2": {
+                "Type": "Pedals",
+                "KnobValues": {
+                    "Pedal_EQ8_400": 0.0,
+                    "Pedal_EQ8_100": 2.0,
+                    "Pedal_EQ8_6400": 0.0,
+                    "Pedal_EQ8_50": 1.0,
+                    "Pedal_EQ8_200": 1.0,
+                    "Pedal_EQ8_3200": 1.0,
+                    "Pedal_EQ8_1600": 6.0,
+                    "Pedal_EQ8_800": -5.0
+                },
+                "Key": "Pedal_EQ8"
+            }
+        },
+        "IsCustom": true,
+        "Volume": "-24.05",
+        "ToneDescriptors": [
+            "$[35715]BASS"
+        ],
+        "Key": "Bass",
+        "NameSeparator": " - ",
+        "Name": "Bass",
+        "SortOrder": 22.0
+    }
+]

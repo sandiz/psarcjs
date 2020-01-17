@@ -21,6 +21,22 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var SongEbeat = /** @class */ (function () {
     function SongEbeat() {
@@ -29,7 +45,7 @@ var SongEbeat = /** @class */ (function () {
     SongEbeat.fromBeatData = function (beats) {
         var idx = 0;
         return beats.map(function (item) {
-            var _a = item.split(" "), time = _a[0], beat = _a[1];
+            var _a = __read(item.split(" "), 2), time = _a[0], beat = _a[1];
             var timef = parseFloat(time);
             var beati = parseInt(beat);
             if (beati === 1) {
@@ -93,7 +109,6 @@ exports.SongPhrase = SongPhrase;
 var SongTone = /** @class */ (function () {
     function SongTone() {
         this.time = 0;
-        this.id = 0;
         this.name = '';
     }
     SongTone.fromXML = function (xmlData) {
@@ -435,6 +450,45 @@ var BendValue = /** @class */ (function () {
     return BendValue;
 }());
 exports.BendValue = BendValue;
+var SongArrangementProperties = /** @class */ (function () {
+    function SongArrangementProperties() {
+        this.bonusArr = 0;
+        this.Metronome = 0;
+        this.pathLead = 0;
+        this.pathRhythm = 0;
+        this.pathBass = 0;
+        this.routeMask = 0;
+        this.represent = 0;
+        this.standardTuning = 0;
+        this.nonStandardChords = 0;
+        this.barreChords = 0;
+        this.powerChords = 0;
+        this.dropDPower = 0;
+        this.openChords = 0;
+        this.fingerPicking = 0;
+        this.pickDirection = 0;
+        this.doubleStops = 0;
+        this.palmMutes = 0;
+        this.harmonics = 0;
+        this.pinchHarmonics = 0;
+        this.hopo = 0;
+        this.tremolo = 0;
+        this.slides = 0;
+        this.unpitchedSlides = 0;
+        this.bends = 0;
+        this.tapping = 0;
+        this.vibrato = 0;
+        this.fretHandMutes = 0;
+        this.slapPop = 0;
+        this.twoFingerPicking = 0;
+        this.fifthsAndOctaves = 0;
+        this.syncopation = 0;
+        this.bassPick = 0;
+        this.sustain = 0;
+    }
+    return SongArrangementProperties;
+}());
+exports.SongArrangementProperties = SongArrangementProperties;
 var SongHandShape = /** @class */ (function () {
     function SongHandShape() {
         this.chordId = 0;

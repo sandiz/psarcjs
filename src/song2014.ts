@@ -67,7 +67,6 @@ export class SongPhrase {
 
 export class SongTone {
     time: number = 0;
-    id?: number = 0;
     name: string = '';
 
     static fromXML(xmlData: object[]): SongTone[] {
@@ -422,40 +421,40 @@ export interface Tuning {
     string5: number;
 }
 
-export interface SongArrangementProperties {
-    bonusArr: number;
-    Metronome: number;
-    pathLead: number;
-    pathRhythm: number;
-    pathBass: number;
-    routeMask: number;
-    represent: number;
-    standardTuning: number;
-    nonStandardChords: number
-    barreChords: number;
-    powerChords: number;
-    dropDPower: number;
-    openChords: number;
-    fingerPicking: number;
-    pickDirection: number;
-    doubleStops: number;
-    palmMutes: number;
-    harmonics: number;
-    pinchHarmonics: number;
-    hopo: number;
-    tremolo: number;
-    slides: number;
-    unpitchedSlides: number;
-    bends: number;
-    tapping: number;
-    vibrato: number;
-    fretHandMutes: number;
-    slapPop: number;
-    twoFingerPicking: number;
-    fifthsAndOctaves: number;
-    syncopation: number;
-    bassPick: number;
-    sustain: number;
+export class SongArrangementProperties {
+    public bonusArr: number = 0;
+    public Metronome: number = 0;
+    public pathLead: number = 0;
+    public pathRhythm: number = 0;
+    public pathBass: number = 0;
+    public routeMask: number = 0;
+    public represent: number = 0;
+    public standardTuning: number = 0;
+    public nonStandardChords: number = 0;
+    public barreChords: number = 0;
+    public powerChords: number = 0;
+    public dropDPower: number = 0;
+    public openChords: number = 0;
+    public fingerPicking: number = 0;
+    public pickDirection: number = 0;
+    public doubleStops: number = 0;
+    public palmMutes: number = 0;
+    public harmonics: number = 0;
+    public pinchHarmonics: number = 0;
+    public hopo: number = 0;
+    public tremolo: number = 0;
+    public slides: number = 0;
+    public unpitchedSlides: number = 0;
+    public bends: number = 0;
+    public tapping: number = 0;
+    public vibrato: number = 0;
+    public fretHandMutes: number = 0;
+    public slapPop: number = 0;
+    public twoFingerPicking: number = 0;
+    public fifthsAndOctaves: number = 0;
+    public syncopation: number = 0;
+    public bassPick: number = 0;
+    public sustain: number = 0;
 }
 
 

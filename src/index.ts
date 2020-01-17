@@ -1,4 +1,4 @@
-import { promises, exists } from 'fs';
+import { promises, exists, read } from 'fs';
 import { mkdirp } from 'fs-extra';
 import { Parser } from 'binary-parser';
 import * as xml2js from 'xml2js';
@@ -17,7 +17,7 @@ import { generate } from './aggregategraphwriter';
 
 import {
     BOM, Arrangements, ArrangementDetails,
-    Platform, Arrangement, ToolkitInfo, PSARCOptions,
+    Platform, Arrangement, ToolkitInfo, PSARCOptions, ArrangementPart, Manifest, ManifestReplacer,
 } from "./types/common";
 
 import {
@@ -436,7 +436,7 @@ export class GENERIC {
         return await generate(dir, tag, arrDetails, platform);
     }
 
-    static async generateXBlock(arrs: Arrangement[], tag: string, dir: string) {
+    static async generateXBlock(arrs: ArrangementPart[], tag: string, dir: string) {
         const f = join(dir, `${tag}.xblock`);
         const ptypes = [
             "Header", "Manifest", "SngAsset",
@@ -448,7 +448,7 @@ export class GENERIC {
             "urn:image:dds:", "urn:image:dds:", "", "urn:application:xml:",
             "urn:audio:wwise-sound-bank:", "urn:audio:wwise-sound-bank:"
         ]
-        const getValue = (item: string, index: number, tag: string, arr: Arrangement) => {
+        const getValue = (item: string, index: number, tag: string, arr: ArrangementPart) => {
             switch (item) {
                 case "Header":
                     return `${ptypePrefix[index]}songs_dlc_${tag}`;
@@ -471,7 +471,7 @@ export class GENERIC {
                     return "";
             }
         }
-        const property = (arr: Arrangement) => ptypes.map((item, index) => {
+        const property = (arr: ArrangementPart) => ptypes.map((item, index) => {
             return {
                 $: {
                     name: item
@@ -509,6 +509,32 @@ export class GENERIC {
         const xml = builder.buildObject(xblock);
         await promises.writeFile(f, xml);
         return f;
+    }
+}
+
+export class MANIFEST {
+    static async generateJSON(dir: string, tag: string, arr: Arrangement) {
+        const obj: Manifest = {
+            entries: {
+                [arr.header.persistentID]: {
+                    attributes: {
+                        ...arr.main,
+                        ...arr.header,
+                    }
+                }
+            },
+            modelName: "RSEnumerable_Song",
+            iterationVersion: 2,
+            insertRoot: "Static.Songs.Entries",
+        }
+        const allKeys = Object.keys(arr.main).concat(Object.keys(arr.header));
+        const json = JSON.stringify(obj, (k, v) => ManifestReplacer(allKeys, k, v), "  ");
+        const path = join(dir, `${tag}_${arr.arrType}.json`);
+        await promises.writeFile(path, json);
+        return path;
+    }
+
+    static async generateHSAN(arr: Arrangement) {
     }
 }
 
@@ -705,7 +731,7 @@ export class Song2014 {
 }
 
 
-const toTitleCase = function (str: string) {
+export const toTitleCase = function (str: string) {
     return str.replace(/\w\S*/g, function (txt: string) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 }
 const objectMap = (object: { [key: string]: any }, mapFn: (item: any) => void) => {
@@ -727,4 +753,5 @@ module.exports = {
     Song2014,
     SongEbeat,
     SongNote,
+    MANIFEST,
 }

@@ -1,0 +1,1411 @@
+{
+  "Entries": {
+    "A38B3EAFB9044CEE867F8F7E6BE4650D": {
+      "Attributes": {
+        "ArrangementProperties": {
+          "bonusArr": 0,
+          "Metronome": 0,
+          "pathLead": 1,
+          "pathRhythm": 0,
+          "pathBass": 0,
+          "routeMask": 1,
+          "represent": 1,
+          "standardTuning": 1,
+          "nonStandardChords": 1,
+          "barreChords": 0,
+          "powerChords": 0,
+          "dropDPower": 0,
+          "openChords": 1,
+          "fingerPicking": 0,
+          "pickDirection": 0,
+          "doubleStops": 1,
+          "palmMutes": 1,
+          "harmonics": 0,
+          "pinchHarmonics": 0,
+          "hopo": 0,
+          "tremolo": 1,
+          "slides": 1,
+          "unpitchedSlides": 1,
+          "bends": 0,
+          "tapping": 1,
+          "vibrato": 0,
+          "fretHandMutes": 0,
+          "slapPop": 0,
+          "twoFingerPicking": 0,
+          "fifthsAndOctaves": 0,
+          "syncopation": 0,
+          "bassPick": 0,
+          "sustain": 1
+        },
+        "ArrangementSort": 0,
+        "ArrangementType": 0,
+        "BlockAsset": "urn:emergent-world:bwab1anthem",
+        "Chords": {
+          "5": {
+            "6": [
+              7,
+              9,
+              12
+            ],
+            "7": [
+              7,
+              9,
+              12
+            ],
+            "8": [
+              7,
+              9,
+              10
+            ],
+            "9": [
+              7,
+              9,
+              10
+            ],
+            "12": [
+              9,
+              10,
+              11,
+              12
+            ],
+            "17": [
+              4,
+              5,
+              6,
+              11
+            ],
+            "18": [
+              7,
+              9,
+              10
+            ],
+            "21": [
+              9,
+              10,
+              11,
+              12
+            ]
+          },
+          "6": {
+            "6": [
+              9,
+              11,
+              12
+            ],
+            "7": [
+              9,
+              11,
+              12
+            ],
+            "8": [
+              9,
+              10,
+              11
+            ],
+            "9": [
+              9,
+              10,
+              11
+            ],
+            "12": [
+              9,
+              10,
+              11,
+              12
+            ],
+            "17": [
+              4,
+              9,
+              10,
+              11
+            ],
+            "18": [
+              9,
+              10,
+              11
+            ],
+            "21": [
+              9,
+              10,
+              11,
+              12
+            ]
+          },
+          "7": {
+            "0": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "1": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "2": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "5": [
+              3,
+              5
+            ],
+            "6": [
+              5,
+              8,
+              11
+            ],
+            "7": [
+              5,
+              8,
+              11
+            ],
+            "8": [
+              5,
+              6,
+              11
+            ],
+            "9": [
+              5,
+              6,
+              11
+            ],
+            "12": [
+              5,
+              6,
+              7,
+              8
+            ],
+            "17": [
+              4,
+              7,
+              9,
+              10
+            ],
+            "18": [
+              5,
+              6,
+              11
+            ],
+            "21": [
+              5,
+              6,
+              7,
+              8
+            ]
+          },
+          "8": {
+            "0": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "1": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "2": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "5": [
+              3,
+              9
+            ],
+            "6": [
+              5,
+              7,
+              8
+            ],
+            "7": [
+              5,
+              7,
+              8
+            ],
+            "8": [
+              5,
+              6,
+              7
+            ],
+            "9": [
+              5,
+              6,
+              7
+            ],
+            "12": [
+              5,
+              6,
+              7,
+              8
+            ],
+            "17": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "18": [
+              5,
+              6,
+              7
+            ],
+            "21": [
+              5,
+              6,
+              7,
+              8
+            ]
+          },
+          "9": {
+            "3": [
+              7,
+              9,
+              10
+            ],
+            "4": [
+              7,
+              9,
+              10
+            ],
+            "5": [
+              3,
+              5
+            ],
+            "10": [
+              9,
+              12
+            ],
+            "11": [
+              9,
+              11,
+              12
+            ],
+            "19": [
+              9,
+              12
+            ],
+            "20": [
+              9,
+              11,
+              12
+            ]
+          },
+          "10": {
+            "3": [
+              9,
+              10,
+              11
+            ],
+            "4": [
+              9,
+              10,
+              11
+            ],
+            "10": [
+              9,
+              12
+            ],
+            "11": [
+              9,
+              11,
+              12
+            ],
+            "19": [
+              9,
+              12
+            ],
+            "20": [
+              9,
+              11,
+              12
+            ]
+          },
+          "11": {
+            "3": [
+              5,
+              6,
+              11
+            ],
+            "4": [
+              5,
+              6,
+              11
+            ],
+            "10": [
+              5,
+              8
+            ],
+            "11": [
+              5,
+              7,
+              8
+            ],
+            "19": [
+              5,
+              8
+            ],
+            "20": [
+              5,
+              7,
+              8
+            ]
+          },
+          "12": {
+            "3": [
+              5,
+              6,
+              7
+            ],
+            "4": [
+              5,
+              6,
+              7
+            ],
+            "10": [
+              5,
+              8
+            ],
+            "11": [
+              5,
+              7,
+              8
+            ],
+            "19": [
+              5,
+              8
+            ],
+            "20": [
+              5,
+              7,
+              8
+            ]
+          }
+        },
+        "ChordTemplates": [
+          {
+            "ChordId": 5,
+            "ChordName": "E5",
+            "Fingers": [
+              -1,
+              1,
+              1,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              0,
+              2,
+              2,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 6,
+            "ChordName": "G#5",
+            "Fingers": [
+              1,
+              3,
+              4,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              4,
+              6,
+              6,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 7,
+            "ChordName": "F#5",
+            "Fingers": [
+              1,
+              3,
+              4,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              2,
+              4,
+              4,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 8,
+            "ChordName": "B5",
+            "Fingers": [
+              -1,
+              1,
+              3,
+              4,
+              -1,
+              -1
+            ],
+            "Frets": [
+              -1,
+              2,
+              4,
+              4,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 9,
+            "ChordName": "E5",
+            "Fingers": [
+              -1,
+              1,
+              -1,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              0,
+              2,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 10,
+            "ChordName": "G#5",
+            "Fingers": [
+              1,
+              3,
+              -1,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              4,
+              6,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 11,
+            "ChordName": "F#5",
+            "Fingers": [
+              1,
+              3,
+              -1,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              2,
+              4,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          {
+            "ChordId": 12,
+            "ChordName": "B5",
+            "Fingers": [
+              -1,
+              1,
+              3,
+              -1,
+              -1,
+              -1
+            ],
+            "Frets": [
+              -1,
+              2,
+              4,
+              -1,
+              -1,
+              -1
+            ]
+          }
+        ],
+        "DynamicVisualDensity": [
+          5.0,
+          4.5,
+          4.0,
+          3.6,
+          3.2,
+          2.9,
+          2.5,
+          2.3,
+          2.0,
+          1.8,
+          1.6,
+          1.3,
+          1.3,
+          1.3,
+          1.3,
+          1.3,
+          1.3,
+          1.3,
+          1.3,
+          1.3
+        ],
+        "FullName": "bwaB1Anthem_Lead",
+        "LastConversionDateTime": "1-16-20 21:48",
+        "MasterID_PS3": 72128119,
+        "MasterID_XBox360": 72128119,
+        "MaxPhraseDifficulty": 12,
+        "PhraseIterations": [
+          {
+            "PhraseIndex": 0,
+            "MaxDifficulty": 0,
+            "Name": "COUNT",
+            "StartTime": 7.718,
+            "EndTime": 10.18
+          },
+          {
+            "PhraseIndex": 2,
+            "MaxDifficulty": 8,
+            "Name": "p1",
+            "StartTime": 10.18,
+            "EndTime": 20.036
+          },
+          {
+            "PhraseIndex": 2,
+            "MaxDifficulty": 8,
+            "Name": "p1",
+            "StartTime": 20.036,
+            "EndTime": 29.996
+          },
+          {
+            "PhraseIndex": 2,
+            "MaxDifficulty": 8,
+            "Name": "p1",
+            "StartTime": 29.996,
+            "EndTime": 39.948
+          },
+          {
+            "PhraseIndex": 3,
+            "MaxDifficulty": 12,
+            "Name": "p2",
+            "StartTime": 39.948,
+            "EndTime": 50.164
+          },
+          {
+            "PhraseIndex": 3,
+            "MaxDifficulty": 12,
+            "Name": "p2",
+            "StartTime": 50.164,
+            "EndTime": 60.38
+          },
+          {
+            "PhraseIndex": 4,
+            "MaxDifficulty": 9,
+            "Name": "p3",
+            "StartTime": 60.38,
+            "EndTime": 65.429
+          },
+          {
+            "PhraseIndex": 5,
+            "MaxDifficulty": 8,
+            "Name": "p4",
+            "StartTime": 65.429,
+            "EndTime": 74.816
+          },
+          {
+            "PhraseIndex": 5,
+            "MaxDifficulty": 8,
+            "Name": "p4",
+            "StartTime": 74.816,
+            "EndTime": 84.204
+          },
+          {
+            "PhraseIndex": 6,
+            "MaxDifficulty": 8,
+            "Name": "p5",
+            "StartTime": 84.204,
+            "EndTime": 93.407
+          },
+          {
+            "PhraseIndex": 7,
+            "MaxDifficulty": 8,
+            "Name": "p6",
+            "StartTime": 93.407,
+            "EndTime": 102.61
+          },
+          {
+            "PhraseIndex": 8,
+            "MaxDifficulty": 12,
+            "Name": "p7",
+            "StartTime": 102.61,
+            "EndTime": 111.685
+          },
+          {
+            "PhraseIndex": 9,
+            "MaxDifficulty": 12,
+            "Name": "p8",
+            "StartTime": 111.685,
+            "EndTime": 120.544
+          },
+          {
+            "PhraseIndex": 10,
+            "MaxDifficulty": 8,
+            "Name": "p9",
+            "StartTime": 120.544,
+            "EndTime": 129.497
+          },
+          {
+            "PhraseIndex": 11,
+            "MaxDifficulty": 2,
+            "Name": "p10",
+            "StartTime": 129.497,
+            "EndTime": 138.391
+          },
+          {
+            "PhraseIndex": 11,
+            "MaxDifficulty": 2,
+            "Name": "p10",
+            "StartTime": 138.391,
+            "EndTime": 147.406
+          },
+          {
+            "PhraseIndex": 12,
+            "MaxDifficulty": 2,
+            "Name": "p11",
+            "StartTime": 147.406,
+            "EndTime": 150.945
+          },
+          {
+            "PhraseIndex": 1,
+            "MaxDifficulty": 0,
+            "Name": "p0",
+            "StartTime": 150.945,
+            "EndTime": 164.588
+          },
+          {
+            "PhraseIndex": 13,
+            "MaxDifficulty": 8,
+            "Name": "p12",
+            "StartTime": 164.588,
+            "EndTime": 174.65
+          },
+          {
+            "PhraseIndex": 7,
+            "MaxDifficulty": 8,
+            "Name": "p6",
+            "StartTime": 174.65,
+            "EndTime": 183.808
+          },
+          {
+            "PhraseIndex": 8,
+            "MaxDifficulty": 12,
+            "Name": "p7",
+            "StartTime": 183.808,
+            "EndTime": 192.757
+          },
+          {
+            "PhraseIndex": 9,
+            "MaxDifficulty": 12,
+            "Name": "p8",
+            "StartTime": 192.757,
+            "EndTime": 201.728
+          },
+          {
+            "PhraseIndex": 10,
+            "MaxDifficulty": 8,
+            "Name": "p9",
+            "StartTime": 201.728,
+            "EndTime": 210.852
+          },
+          {
+            "PhraseIndex": 14,
+            "MaxDifficulty": 2,
+            "Name": "p13",
+            "StartTime": 210.852,
+            "EndTime": 219.906
+          },
+          {
+            "PhraseIndex": 15,
+            "MaxDifficulty": 2,
+            "Name": "p14",
+            "StartTime": 219.906,
+            "EndTime": 224.561
+          },
+          {
+            "PhraseIndex": 16,
+            "MaxDifficulty": 0,
+            "Name": "END",
+            "StartTime": 224.561,
+            "EndTime": 227.332
+          }
+        ],
+        "Phrases": [
+          {
+            "MaxDifficulty": 0,
+            "Name": "COUNT",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 0,
+            "Name": "p0",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 8,
+            "Name": "p1",
+            "IterationCount": 3
+          },
+          {
+            "MaxDifficulty": 12,
+            "Name": "p2",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 9,
+            "Name": "p3",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 8,
+            "Name": "p4",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 8,
+            "Name": "p5",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 8,
+            "Name": "p6",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 12,
+            "Name": "p7",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 12,
+            "Name": "p8",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 8,
+            "Name": "p9",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 2,
+            "Name": "p10",
+            "IterationCount": 2
+          },
+          {
+            "MaxDifficulty": 2,
+            "Name": "p11",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 8,
+            "Name": "p12",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 2,
+            "Name": "p13",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 2,
+            "Name": "p14",
+            "IterationCount": 1
+          },
+          {
+            "MaxDifficulty": 0,
+            "Name": "END",
+            "IterationCount": 1
+          }
+        ],
+        "PreviewBankPath": "song_bwab1anthem_preview.bnk",
+        "RelativeDifficulty": 0,
+        "Score_MaxNotes": 884.0,
+        "Score_PNV": 113.122169,
+        "Sections": [
+          {
+            "Name": "intro",
+            "UIName": "$[34286] Intro [1]",
+            "Number": 1,
+            "StartTime": 10.18,
+            "EndTime": 20.036,
+            "StartPhraseIterationIndex": 1,
+            "EndPhraseIterationIndex": 1,
+            "IsSolo": false
+          },
+          {
+            "Name": "verse",
+            "UIName": "$[34304] Verse [1]",
+            "Number": 1,
+            "StartTime": 20.036,
+            "EndTime": 29.996,
+            "StartPhraseIterationIndex": 2,
+            "EndPhraseIterationIndex": 2,
+            "IsSolo": false
+          },
+          {
+            "Name": "verse",
+            "UIName": "$[34304] Verse [1]",
+            "Number": 2,
+            "StartTime": 29.996,
+            "EndTime": 39.948,
+            "StartPhraseIterationIndex": 3,
+            "EndPhraseIterationIndex": 3,
+            "IsSolo": false
+          },
+          {
+            "Name": "chorus",
+            "UIName": "$[34279] Chorus [1]",
+            "Number": 1,
+            "StartTime": 39.948,
+            "EndTime": 50.164,
+            "StartPhraseIterationIndex": 4,
+            "EndPhraseIterationIndex": 4,
+            "IsSolo": false
+          },
+          {
+            "Name": "chorus",
+            "UIName": "$[34279] Chorus [1]",
+            "Number": 2,
+            "StartTime": 50.164,
+            "EndTime": 60.38,
+            "StartPhraseIterationIndex": 5,
+            "EndPhraseIterationIndex": 5,
+            "IsSolo": false
+          },
+          {
+            "Name": "preverse",
+            "UIName": "$[34297] Pre Verse [1]",
+            "Number": 1,
+            "StartTime": 60.38,
+            "EndTime": 65.429,
+            "StartPhraseIterationIndex": 6,
+            "EndPhraseIterationIndex": 6,
+            "IsSolo": false
+          },
+          {
+            "Name": "verse",
+            "UIName": "$[34304] Verse [1]",
+            "Number": 3,
+            "StartTime": 65.429,
+            "EndTime": 74.816,
+            "StartPhraseIterationIndex": 7,
+            "EndPhraseIterationIndex": 7,
+            "IsSolo": false
+          },
+          {
+            "Name": "verse",
+            "UIName": "$[34304] Verse [1]",
+            "Number": 4,
+            "StartTime": 74.816,
+            "EndTime": 84.204,
+            "StartPhraseIterationIndex": 8,
+            "EndPhraseIterationIndex": 8,
+            "IsSolo": false
+          },
+          {
+            "Name": "chorus",
+            "UIName": "$[34279] Chorus [1]",
+            "Number": 3,
+            "StartTime": 84.204,
+            "EndTime": 93.407,
+            "StartPhraseIterationIndex": 9,
+            "EndPhraseIterationIndex": 9,
+            "IsSolo": false
+          },
+          {
+            "Name": "chorus",
+            "UIName": "$[34279] Chorus [1]",
+            "Number": 4,
+            "StartTime": 93.407,
+            "EndTime": 102.61,
+            "StartPhraseIterationIndex": 10,
+            "EndPhraseIterationIndex": 10,
+            "IsSolo": false
+          },
+          {
+            "Name": "postchorus",
+            "UIName": "$[34293] Post Chorus [1]",
+            "Number": 1,
+            "StartTime": 102.61,
+            "EndTime": 111.685,
+            "StartPhraseIterationIndex": 11,
+            "EndPhraseIterationIndex": 11,
+            "IsSolo": false
+          },
+          {
+            "Name": "postchorus",
+            "UIName": "$[34293] Post Chorus [1]",
+            "Number": 2,
+            "StartTime": 111.685,
+            "EndTime": 120.544,
+            "StartPhraseIterationIndex": 12,
+            "EndPhraseIterationIndex": 12,
+            "IsSolo": false
+          },
+          {
+            "Name": "postchorus",
+            "UIName": "$[34293] Post Chorus [1]",
+            "Number": 3,
+            "StartTime": 120.544,
+            "EndTime": 129.497,
+            "StartPhraseIterationIndex": 13,
+            "EndPhraseIterationIndex": 13,
+            "IsSolo": false
+          },
+          {
+            "Name": "interlude",
+            "UIName": "$[34285] Interlude [1]",
+            "Number": 1,
+            "StartTime": 129.497,
+            "EndTime": 138.391,
+            "StartPhraseIterationIndex": 14,
+            "EndPhraseIterationIndex": 14,
+            "IsSolo": false
+          },
+          {
+            "Name": "interlude",
+            "UIName": "$[34285] Interlude [1]",
+            "Number": 2,
+            "StartTime": 138.391,
+            "EndTime": 147.406,
+            "StartPhraseIterationIndex": 15,
+            "EndPhraseIterationIndex": 15,
+            "IsSolo": false
+          },
+          {
+            "Name": "bridge",
+            "UIName": "$[34282] Bridge [1]",
+            "Number": 1,
+            "StartTime": 147.406,
+            "EndTime": 150.945,
+            "StartPhraseIterationIndex": 16,
+            "EndPhraseIterationIndex": 16,
+            "IsSolo": false
+          },
+          {
+            "Name": "noguitar",
+            "UIName": "$[6091] No Guitar [1]",
+            "Number": 1,
+            "StartTime": 150.945,
+            "EndTime": 164.588,
+            "StartPhraseIterationIndex": 17,
+            "EndPhraseIterationIndex": 17,
+            "IsSolo": false
+          },
+          {
+            "Name": "chorus",
+            "UIName": "$[34279] Chorus [1]",
+            "Number": 5,
+            "StartTime": 164.588,
+            "EndTime": 174.65,
+            "StartPhraseIterationIndex": 18,
+            "EndPhraseIterationIndex": 18,
+            "IsSolo": false
+          },
+          {
+            "Name": "chorus",
+            "UIName": "$[34279] Chorus [1]",
+            "Number": 6,
+            "StartTime": 174.65,
+            "EndTime": 183.808,
+            "StartPhraseIterationIndex": 19,
+            "EndPhraseIterationIndex": 19,
+            "IsSolo": false
+          },
+          {
+            "Name": "postchorus",
+            "UIName": "$[34293] Post Chorus [1]",
+            "Number": 4,
+            "StartTime": 183.808,
+            "EndTime": 192.757,
+            "StartPhraseIterationIndex": 20,
+            "EndPhraseIterationIndex": 20,
+            "IsSolo": false
+          },
+          {
+            "Name": "postchorus",
+            "UIName": "$[34293] Post Chorus [1]",
+            "Number": 5,
+            "StartTime": 192.757,
+            "EndTime": 201.728,
+            "StartPhraseIterationIndex": 21,
+            "EndPhraseIterationIndex": 21,
+            "IsSolo": false
+          },
+          {
+            "Name": "postchorus",
+            "UIName": "$[34293] Post Chorus [1]",
+            "Number": 6,
+            "StartTime": 201.728,
+            "EndTime": 210.852,
+            "StartPhraseIterationIndex": 22,
+            "EndPhraseIterationIndex": 22,
+            "IsSolo": false
+          },
+          {
+            "Name": "outro",
+            "UIName": "$[34291] Outro [1]",
+            "Number": 1,
+            "StartTime": 210.852,
+            "EndTime": 219.906,
+            "StartPhraseIterationIndex": 23,
+            "EndPhraseIterationIndex": 23,
+            "IsSolo": false
+          },
+          {
+            "Name": "outro",
+            "UIName": "$[34291] Outro [1]",
+            "Number": 2,
+            "StartTime": 219.906,
+            "EndTime": 224.561,
+            "StartPhraseIterationIndex": 24,
+            "EndPhraseIterationIndex": 24,
+            "IsSolo": false
+          },
+          {
+            "Name": "noguitar",
+            "UIName": "$[6091] No Guitar [1]",
+            "Number": 2,
+            "StartTime": 224.561,
+            "EndTime": 227.332,
+            "StartPhraseIterationIndex": 25,
+            "EndPhraseIterationIndex": 25,
+            "IsSolo": false
+          }
+        ],
+        "ShowlightsXML": "urn:application:xml:bwab1anthem_showlights",
+        "SongAsset": "urn:application:musicgame-song:bwab1anthem_lead",
+        "SongAverageTempo": 206.0,
+        "SongBank": "song_bwab1anthem.bnk",
+        "SongEvent": "Play_bwaB1Anthem",
+        "SongOffset": -7.718,
+        "SongPartition": 0,
+        "SongXml": "urn:application:xml:bwab1anthem_lead",
+        "TargetScore": 100000,
+        "Techniques": {
+          "0": {
+            "2": [
+              7,
+              13
+            ],
+            "1": [
+              11,
+              13
+            ],
+            "5": [
+              7,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "1": {
+            "2": [
+              7,
+              13
+            ],
+            "1": [
+              11,
+              13
+            ],
+            "5": [
+              7,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "2": {
+            "2": [
+              7,
+              13
+            ],
+            "1": [
+              11,
+              13
+            ],
+            "5": [
+              7,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "3": {
+            "2": [
+              7
+            ],
+            "5": [
+              7,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "4": {
+            "2": [
+              7
+            ],
+            "5": [
+              7,
+              12,
+              13,
+              14,
+              15
+            ]
+          },
+          "5": {
+            "2": [
+              7
+            ],
+            "5": [
+              7
+            ]
+          },
+          "6": {
+            "2": [
+              7
+            ],
+            "5": [
+              7
+            ]
+          },
+          "7": {
+            "2": [
+              7
+            ],
+            "5": [
+              7
+            ]
+          },
+          "8": {
+            "2": [
+              7
+            ],
+            "5": [
+              7
+            ]
+          }
+        },
+        "Tone_A": "Dirty",
+        "Tone_B": "Clean",
+        "Tone_Base": "Dirty",
+        "Tone_C": "",
+        "Tone_D": "",
+        "Tone_Multiplayer": "",
+        "Tones": [
+          {
+            "GearList": {
+              "Rack1": {
+                "Type": "Racks",
+                "KnobValues": {
+                  "Rack_StudioEQ_BassFreq": 485.0,
+                  "Rack_StudioEQ_HiMidFreq": 1.2,
+                  "Rack_StudioEQ_TrebleFreq": 3.4,
+                  "Rack_StudioEQ_LoMidFreq": 180.0,
+                  "Rack_StudioEQ_Treble": 2.0,
+                  "Rack_StudioEQ_LoMidQ": 0.0,
+                  "Rack_StudioEQ_Bass": 0.0,
+                  "Rack_StudioEQ_HiMid": 2.0,
+                  "Rack_StudioEQ_LoMid": -1.0,
+                  "Rack_StudioEQ_HiMidQ": 0.0
+                },
+                "Key": "Rack_StudioEQ"
+              },
+              "Amp": {
+                "Type": "Amps",
+                "KnobValues": {
+                  "Amp_CA100_Pres": 44.0,
+                  "Amp_CA100_Bass": 22.0,
+                  "Amp_CA100_Gain": 55.0,
+                  "Amp_CA100_Mid": 77.0,
+                  "Amp_CA100_Treble": 88.0
+                },
+                "Key": "Amp_CA100"
+              },
+              "Cabinet": {
+                "Type": "Cabinets",
+                "KnobValues": {},
+                "Key": "Cab_Marshall1960a_57_Edge"
+              },
+              "PrePedal1": {
+                "Type": "Pedals",
+                "KnobValues": {
+                  "Pedal_EQ5_5700": 1.0,
+                  "Pedal_EQ5_2200": 2.0,
+                  "Pedal_EQ5_63": -2.0,
+                  "Pedal_EQ5_250": -3.0,
+                  "Pedal_EQ5_750": 0.0
+                },
+                "Key": "Pedal_EQ5",
+                "Category": "30785"
+              }
+            },
+            "IsCustom": true,
+            "Volume": "-22.5",
+            "ToneDescriptors": [
+              "$[35722]DISTORTION"
+            ],
+            "Key": "Dirty",
+            "NameSeparator": " - ",
+            "Name": "Dirty",
+            "SortOrder": 45.0
+          },
+          {
+            "GearList": {
+              "Rack1": {
+                "Type": "Racks",
+                "KnobValues": {
+                  "Rack_StudioEQ_BassFreq": 485.0,
+                  "Rack_StudioEQ_HiMidFreq": 1.7,
+                  "Rack_StudioEQ_TrebleFreq": 2.2,
+                  "Rack_StudioEQ_LoMidFreq": 260.0,
+                  "Rack_StudioEQ_Treble": 1.0,
+                  "Rack_StudioEQ_LoMidQ": 1.0,
+                  "Rack_StudioEQ_Bass": 0.0,
+                  "Rack_StudioEQ_HiMid": 1.0,
+                  "Rack_StudioEQ_LoMid": -2.0,
+                  "Rack_StudioEQ_HiMidQ": 0.0
+                },
+                "Key": "Rack_StudioEQ"
+              },
+              "Rack2": {
+                "Type": "Racks",
+                "KnobValues": {
+                  "Rack_StudioChorus_LoFilter": 77.0,
+                  "Rack_StudioChorus_Mix": 11.0,
+                  "Rack_StudioChorus_Depth": 88.0,
+                  "Rack_StudioChorus_HiFilter": 22.0,
+                  "Rack_StudioChorus_Delay": 44.0,
+                  "Rack_StudioChorus_Rate": 0.3,
+                  "Rack_StudioChorus_Stereo": 100.0
+                },
+                "Key": "Rack_StudioChorus",
+                "Category": "30788"
+              },
+              "Amp": {
+                "Type": "Amps",
+                "KnobValues": {
+                  "Amp_CA85_Mid": 44.0,
+                  "Amp_CA85_Bass": 33.0,
+                  "Amp_CA85_Treble": 77.0,
+                  "Amp_CA85_Gain": 33.0
+                },
+                "Key": "Amp_CA85"
+              },
+              "Cabinet": {
+                "Type": "Cabinets",
+                "KnobValues": {},
+                "Key": "Cab_CA112C_57_Edge"
+              },
+              "PostPedal1": {
+                "Type": "Pedals",
+                "KnobValues": {
+                  "Pedal_EQ5_5700": 1.0,
+                  "Pedal_EQ5_2200": 2.0,
+                  "Pedal_EQ5_63": 1.0,
+                  "Pedal_EQ5_250": -2.0,
+                  "Pedal_EQ5_750": -1.0
+                },
+                "Key": "Pedal_EQ5",
+                "Category": "30785"
+              }
+            },
+            "IsCustom": true,
+            "Volume": "-16",
+            "ToneDescriptors": [
+              "$[35720]CLEAN"
+            ],
+            "Key": "Clean",
+            "NameSeparator": " - ",
+            "Name": "Clean",
+            "SortOrder": 36.0
+          }
+        ],
+        "SongVolume": -9.2,
+        "PreviewVolume": -8.3,
+        "AlbumArt": "urn:image:dds:album_bwab1anthem",
+        "AlbumName": "Enema of the State",
+        "AlbumNameSort": "Enema of the State",
+        "ArrangementName": "Lead",
+        "ArtistName": "blink-182",
+        "ArtistNameSort": "Blink 182",
+        "CapoFret": 0.0,
+        "CentOffset": 0.0,
+        "DLC": true,
+        "DLCKey": "bwaB1Anthem",
+        "DNA_Chords": 0.0,
+        "DNA_Riffs": 0.0,
+        "DNA_Solo": 0.0,
+        "EasyMastery": 0.345022624,
+        "LeaderboardChallengeRating": 0,
+        "ManifestUrn": "urn:database:json-db:bwab1anthem_lead",
+        "MasterID_RDV": 72128119,
+        "MediumMastery": 0.864253394,
+        "NotesEasy": 305.0,
+        "NotesHard": 884.0,
+        "NotesMedium": 764.0,
+        "Shipping": true,
+        "SKU": "",
+        "SongDiffEasy": 0.697658049,
+        "SongDiffHard": 0.50551616,
+        "SongDiffMed": 0.873788113,
+        "SongDifficulty": 0.50551616,
+        "SongKey": "bwaB1Anthem",
+        "SongLength": 227.332,
+        "SongName": "Anthem",
+        "SongNameSort": "Anthem",
+        "SongYear": 1999,
+        "Tuning": {
+          "string0": 0,
+          "string1": 0,
+          "string2": 0,
+          "string3": 0,
+          "string4": 0,
+          "string5": 0
+        },
+        "PersistentID": "A38B3EAFB9044CEE867F8F7E6BE4650D"
+      }
+    }
+  },
+  "ModelName": "RSEnumerable_Song",
+  "IterationVersion": 2,
+  "InsertRoot": "Static.Songs.Entries"
+}

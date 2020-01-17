@@ -15,12 +15,12 @@ import {
 import {
     PSARC, SNG, DDS,
     WEM, WAAPI, GENERIC, BNK,
-    Song2014,
+    Song2014, MANIFEST,
 } from '../src/index'
 import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
-import { ArrangmentType, ShowLights, Vocals, Platform } from '../src/types/common';
+import { ArrangementType, ShowLights, Vocals, Platform, ArrangementTypeInt, Arrangement, Manifest, ManifestTone, ManifestToneReviver } from '../src/types/common';
 import { maskPrinter } from '../src/types/constants';
 import { getUuid } from '../src/aggregategraphwriter';
 
@@ -490,6 +490,7 @@ async function genericTests() {
                 "rhythm": 2,
                 "bass": 1,
                 "vocals": 1,
+                "showlights": 0,
             }
             const f = await GENERIC.generateAggregateGraph("/tmp", "psarcjsTest", details, 0);
             const data = await promises.readFile(f);
@@ -502,6 +503,7 @@ async function genericTests() {
                 "rhythm": 2,
                 "bass": 1,
                 "vocals": 1,
+                "showlights": 0,
             }
             const f = await GENERIC.generateAggregateGraph("/tmp", "psarcjsTest", details, 1);
             const data = await promises.readFile(f);
@@ -511,8 +513,14 @@ async function genericTests() {
         it("generate xblock", async () => {
 
             const f = await GENERIC.generateXBlock([
-                { persistentID: getUuid().toLowerCase().replace(/-/g, ""), arrangementType: ArrangmentType.BASS },
-                { persistentID: getUuid().toLowerCase().replace(/-/g, ""), arrangementType: ArrangmentType.VOCALS },
+                {
+                    persistentID: getUuid().toLowerCase().replace(/-/g, ""),
+                    arrangementType: ArrangementType.BASS,
+                },
+                {
+                    persistentID: getUuid().toLowerCase().replace(/-/g, ""),
+                    arrangementType: ArrangementType.VOCALS,
+                },
             ], "psarcjsTest", "/tmp/");
             const data = await promises.readFile(f);
             expect(data).to.be.of.length.greaterThan(0);
@@ -618,7 +626,7 @@ async function song2014Tests() {
                     unpitchedSlides: 0, bends: 0, tapping: 0, vibrato: 0, fretHandMutes: 0,
                     slapPop: 0, twoFingerPicking: 0, fifthsAndOctaves: 0, syncopation: 0,
                     bassPick: 0, sustain: 1, pathLead: 0, pathRhythm: 0, pathBass: 1,
-                    Metronome: 0, routeMask: 0,
+                    routeMask: 0, Metronome: 0,
                 },
                 phrases: [],
                 phraseIterations: [],
@@ -842,7 +850,7 @@ async function song2014Tests() {
 
 async function psarcGenerateTests() {
     describe("psarcjs: PSARC: generate tests ", async () => {
-        it("psracjs: generate directory", async () => {
+        it("psarcjs: generate directory", async () => {
             const dir = "/tmp";
             const xml = 'test/xml/atmaink_bass.xml';
             const parsed: Song2014 = await Song2014.fromXML(xml);
@@ -862,10 +870,11 @@ async function psarcGenerateTests() {
                     }
                 },
                 arrDetails: {
-                    [ArrangmentType.LEAD]: 0,
-                    [ArrangmentType.RHYTHM]: 0,
-                    [ArrangmentType.BASS]: 1,
-                    [ArrangmentType.VOCALS]: 0,
+                    [ArrangementType.LEAD]: 0,
+                    [ArrangementType.RHYTHM]: 0,
+                    [ArrangementType.BASS]: 1,
+                    [ArrangementType.VOCALS]: 0,
+                    [ArrangementType.SHOWLIGHTS]: 1,
                 },
                 dds: {
                     '256': 'test/dds/album_poster_256.dds',
@@ -878,23 +887,160 @@ async function psarcGenerateTests() {
                 },
                 songs: {
                     arrangements: {
-                        [ArrangmentType.LEAD]: [],
-                        [ArrangmentType.RHYTHM]: [],
-                        [ArrangmentType.BASS]: [xml],
-                        [ArrangmentType.VOCALS]: [],
-                        [ArrangmentType.SHOWLIGHTS]: [slights],
+                        [ArrangementType.LEAD]: [],
+                        [ArrangementType.RHYTHM]: [],
+                        [ArrangementType.BASS]: [xml],
+                        [ArrangementType.VOCALS]: [],
+                        [ArrangementType.SHOWLIGHTS]: [slights],
                     },
                     sngs: {
-                        [ArrangmentType.LEAD]: [],
-                        [ArrangmentType.RHYTHM]: [],
-                        [ArrangmentType.BASS]: [sngFile],
-                        [ArrangmentType.VOCALS]: [],
+                        [ArrangementType.LEAD]: [],
+                        [ArrangementType.RHYTHM]: [],
+                        [ArrangementType.BASS]: [sngFile],
+                        [ArrangementType.VOCALS]: [],
                     }
                 }
             })
-            throw new Error('ad');
+            throw new Error('forced error');
         })
     })
+}
+
+export interface ManifestTestInfo {
+    xml: string;
+    json: string;
+    tones: string;
+    pid: string;
+    tag: string;
+    songName: string;
+    albumName: string;
+    year: number;
+    scrollSpeed: number;
+}
+async function manifestTests() {
+    const leads: ManifestTestInfo[] = [];
+    const rhythms: ManifestTestInfo[] = [];
+    const basss: ManifestTestInfo[] = [];
+    leads.push({
+        xml: 'test/blinktest/bwab1anthem_lead.xml',
+        json: 'test/blinktest/bwab1anthem_lead.json',
+        tones: "test/blinktest/bwab1anthem_lead_tones.json",
+        pid: "A38B3EAFB9044CEE867F8F7E6BE4650D",
+        tag: 'bwaB1Anthem',
+        songName: 'Anthem',
+        albumName: 'Enema of the State',
+        year: 1999,
+        scrollSpeed: 13
+    });
+    rhythms.push({
+        xml: 'test/blinktest/bwab1anthem_rhythm.xml',
+        json: 'test/blinktest/bwab1anthem_rhythm.json',
+        tones: "test/blinktest/bwab1anthem_rhythm_tones.json",
+        pid: "3C55FEF5B38D4EC797AD307C1520B415",
+        tag: 'bwaB1Anthem',
+        songName: 'Anthem',
+        albumName: 'Enema of the State',
+        year: 1999,
+        scrollSpeed: 13
+    });
+    basss.push({
+        xml: 'test/blinktest/bwab1anthem_bass.xml',
+        json: 'test/blinktest/bwab1anthem_bass.json',
+        tones: "test/blinktest/bwab1anthem_bass_tones.json",
+        pid: "D0F7AB64FB614C228EAE84160C28BF91",
+        tag: 'bwaB1Anthem',
+        songName: 'Anthem',
+        albumName: 'Enema of the State',
+        year: 1999,
+        scrollSpeed: 13
+    });
+
+    const vocals: ManifestTestInfo = {
+        xml: 'test/blinktest/bwab1anthem_vocals.xml',
+        json: 'test/blinktest/bwab1anthem_vocals.json',
+        tones: "",
+        pid: "3EEA95820F8E4F738651AE628EF72A57",
+        tag: 'bwaB1Anthem',
+        songName: 'Anthem',
+        albumName: 'Enema of the State',
+        year: 1999,
+        scrollSpeed: 13
+    }
+
+    describe("psarcjs: MANIFEST: generate tests", async () => {
+        (forEach(leads.concat(rhythms).concat(basss)) as any)
+            .it(`psarcjs: generate arrangement json`, async function (lead: ManifestTestInfo) {
+                //@ts-ignore
+                this.timeout(15000);
+                const xml = lead.xml;
+                const left = lead.json;
+                const tones = lead.tones;
+                const pid = lead.pid;
+                const parsed: Song2014 = await Song2014.fromXML(xml);
+                const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest");
+                const sng = new SNG(sngFile);
+                await sng.parse();
+                const tonesObj: ManifestTone[] = JSON.parse(await promises.readFile(tones), ManifestToneReviver);
+                const arr = new Arrangement(parsed.song, sng, {
+                    tag: lead.tag,
+                    sortOrder: 0,
+                    volume: -9.2,
+                    previewVolume: -8.3,
+                    bassPicked: lead.xml.endsWith("_bass.xml"),
+                    represent: true,
+                    details: {
+                        [ArrangementType.LEAD]: leads.length,
+                        [ArrangementType.RHYTHM]: leads.length,
+                        [ArrangementType.BASS]: leads.length,
+                        [ArrangementType.VOCALS]: leads.length,
+                        [ArrangementType.SHOWLIGHTS]: leads.length,
+                    },
+                    tones: tonesObj,
+                    info: {
+                        songName: "Anthem",
+                        albumName: "Enema of the State",
+                        persistentID: pid,
+                        year: 1999,
+                        currentPartition: 0,
+                        scrollSpeed: 13,
+                    }
+                });
+                const json = await MANIFEST.generateJSON("/tmp", "psarcjs_test", arr);
+
+                const genObj = JSON.parse(await promises.readFile(json));
+                const leftObj = JSON.parse(await promises.readFile(left))
+
+                const lattr = genObj.Entries[pid].Attributes;
+                const rattr = leftObj.Entries[pid].Attributes;
+                /* force some fields */
+                rattr.SKU = "RS2";
+
+                let excludes = ["MasterID_PS3", "MasterID_RDV", "MasterID_XBox360", "Score_PNV", "SongDiffEasy", "SongDiffHard", "SongDiffMed", "SongDifficulty"];
+
+                expect(lattr["Score_PNV"]).to.be.closeTo(rattr["Score_PNV"], 0.0001)
+                expect(lattr["SongDiffEasy"]).to.be.closeTo(rattr["SongDiffEasy"], 0.0001)
+                expect(lattr["SongDiffMed"]).to.be.closeTo(rattr["SongDiffMed"], 0.0001)
+                expect(lattr["SongDiffHard"]).to.be.closeTo(rattr["SongDiffHard"], 0.0001)
+                expect(lattr["SongDifficulty"]).to.be.closeTo(rattr["SongDifficulty"], 0.0001)
+                expect(lattr).excluding(excludes).to.be.deep.equal(rattr);
+            })
+
+        it("psarcjs: generate vocals json", async () => {
+            //@ts-ignore
+            this.timeout(15000);
+            const xml = vocals.xml;
+            const left = vocals.json;
+            const pid = vocals.pid;
+
+            const parsed: Vocals[] = await Vocals.fromXML(xml);
+            const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest");
+            const sng = new SNG(sngFile);
+            await sng.parse();
+
+        })
+    });
+
+
 }
 
 const sngs = "test/sng/";
@@ -918,7 +1064,8 @@ async function fn() {
         await waapiTests();
     }
     */
-    await psarcGenerateTests();
+    //await psarcGenerateTests();
+    await manifestTests();
 }
 
 fn();

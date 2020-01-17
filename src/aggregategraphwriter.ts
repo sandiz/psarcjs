@@ -1,6 +1,6 @@
 import { join } from "path";
 import { promises } from "fs";
-import { ArrangementDetails, Platform } from "./types/common";
+import { ArrangementDetails, Platform, ArrangementType } from "./types/common";
 
 export enum TagType {
     tag = "tag",
@@ -87,10 +87,12 @@ export async function generate(dir: string, tag: string, details: ArrangementDet
     const fileName = `${tag}_aggregategraph.nt`;
     const file = join(dir, fileName);
     let data = "";
-    data += addJSON(tag, details);
+    const dupDetails = { ...details };
+    delete (dupDetails[ArrangementType.SHOWLIGHTS])
+    data += addJSON(tag, dupDetails);
     data += addHSAN(tag);
     data += addXML(tag, details);
-    data += addSNG(tag, details, platform)
+    data += addSNG(tag, dupDetails, platform)
     data += addDDS(tag);
     data += addBNK(tag, platform);
     data += addXBLOCK(tag);
@@ -151,6 +153,7 @@ function addXML(tag: string, details: ArrangementDetails): string {
         }
     }
     /* add showlights */
+    /*
     const arr = "showlights";
     var xml = new GraphItemLLID();
     xml.name = `${tag}_${arr}`;
@@ -160,6 +163,7 @@ function addXML(tag: string, details: ArrangementDetails): string {
     xml.logpath = `${xml.canonical}/${xml.name}.xml`;
     xml.llid = getUuid().split("").map((v, index) => (index > 8 && v != '-') ? 0 : v).join("");
     data += xml.serialize();
+    */
     return data;
 }
 function addSNG(tag: string, details: ArrangementDetails, platform: Platform): string {

@@ -776,7 +776,7 @@ var GENERIC = /** @class */ (function () {
                                 $: {
                                     id: item.persistentID,
                                     modelName: "RSEnumerable_Song",
-                                    name: tag + "_" + toTitleCase(item.arrangementType),
+                                    name: tag + "_" + exports.toTitleCase(item.arrangementType),
                                     iterations: 0,
                                 },
                                 properties: {
@@ -804,6 +804,47 @@ var GENERIC = /** @class */ (function () {
     return GENERIC;
 }());
 exports.GENERIC = GENERIC;
+var MANIFEST = /** @class */ (function () {
+    function MANIFEST() {
+    }
+    MANIFEST.generateJSON = function (dir, tag, arr) {
+        return __awaiter(this, void 0, void 0, function () {
+            var obj, allKeys, json, path;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        obj = {
+                            entries: (_a = {},
+                                _a[arr.header.persistentID] = {
+                                    attributes: __assign(__assign({}, arr.main), arr.header)
+                                },
+                                _a),
+                            modelName: "RSEnumerable_Song",
+                            iterationVersion: 2,
+                            insertRoot: "Static.Songs.Entries",
+                        };
+                        allKeys = Object.keys(arr.main).concat(Object.keys(arr.header));
+                        json = JSON.stringify(obj, function (k, v) { return common_1.ManifestReplacer(allKeys, k, v); }, "  ");
+                        path = path_1.join(dir, tag + "_" + arr.arrType + ".json");
+                        return [4 /*yield*/, fs_1.promises.writeFile(path, json)];
+                    case 1:
+                        _b.sent();
+                        return [2 /*return*/, path];
+                }
+            });
+        });
+    };
+    MANIFEST.generateHSAN = function (arr) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
+    return MANIFEST;
+}());
+exports.MANIFEST = MANIFEST;
 var Song2014 = /** @class */ (function () {
     function Song2014(song) {
         this.song = song;
@@ -1008,7 +1049,7 @@ var Song2014 = /** @class */ (function () {
     return Song2014;
 }());
 exports.Song2014 = Song2014;
-var toTitleCase = function (str) {
+exports.toTitleCase = function (str) {
     return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 };
 var objectMap = function (object, mapFn) {
@@ -1028,4 +1069,5 @@ module.exports = {
     Song2014: Song2014,
     SongEbeat: song2014_1.SongEbeat,
     SongNote: song2014_1.SongNote,
+    MANIFEST: MANIFEST,
 };

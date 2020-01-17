@@ -1,0 +1,129 @@
+[
+    {
+        "GearList": {
+            "Rack1": {
+                "Type": "Racks",
+                "KnobValues": {
+                    "Rack_StudioEQ_BassFreq": 485.0,
+                    "Rack_StudioEQ_HiMidFreq": 1.2,
+                    "Rack_StudioEQ_TrebleFreq": 3.4,
+                    "Rack_StudioEQ_LoMidFreq": 180.0,
+                    "Rack_StudioEQ_Treble": 2.0,
+                    "Rack_StudioEQ_LoMidQ": 0.0,
+                    "Rack_StudioEQ_Bass": 0.0,
+                    "Rack_StudioEQ_HiMid": 2.0,
+                    "Rack_StudioEQ_LoMid": -1.0,
+                    "Rack_StudioEQ_HiMidQ": 0.0
+                },
+                "Key": "Rack_StudioEQ"
+            },
+            "Amp": {
+                "Type": "Amps",
+                "KnobValues": {
+                    "Amp_CA100_Pres": 44.0,
+                    "Amp_CA100_Bass": 22.0,
+                    "Amp_CA100_Gain": 55.0,
+                    "Amp_CA100_Mid": 77.0,
+                    "Amp_CA100_Treble": 88.0
+                },
+                "Key": "Amp_CA100"
+            },
+            "Cabinet": {
+                "Type": "Cabinets",
+                "KnobValues": {},
+                "Key": "Cab_Marshall1960a_57_Edge"
+            },
+            "PrePedal1": {
+                "Type": "Pedals",
+                "KnobValues": {
+                    "Pedal_EQ5_5700": 1.0,
+                    "Pedal_EQ5_2200": 2.0,
+                    "Pedal_EQ5_63": -2.0,
+                    "Pedal_EQ5_250": -3.0,
+                    "Pedal_EQ5_750": 0.0
+                },
+                "Key": "Pedal_EQ5",
+                "Category": "30785"
+            }
+        },
+        "IsCustom": true,
+        "Volume": "-22.5",
+        "ToneDescriptors": [
+            "$[35722]DISTORTION"
+        ],
+        "Key": "Dirty",
+        "NameSeparator": " - ",
+        "Name": "Dirty",
+        "SortOrder": 45.0
+    },
+    {
+        "GearList": {
+            "Rack1": {
+                "Type": "Racks",
+                "KnobValues": {
+                    "Rack_StudioEQ_BassFreq": 485.0,
+                    "Rack_StudioEQ_HiMidFreq": 1.7,
+                    "Rack_StudioEQ_TrebleFreq": 2.2,
+                    "Rack_StudioEQ_LoMidFreq": 260.0,
+                    "Rack_StudioEQ_Treble": 1.0,
+                    "Rack_StudioEQ_LoMidQ": 1.0,
+                    "Rack_StudioEQ_Bass": 0.0,
+                    "Rack_StudioEQ_HiMid": 1.0,
+                    "Rack_StudioEQ_LoMid": -2.0,
+                    "Rack_StudioEQ_HiMidQ": 0.0
+                },
+                "Key": "Rack_StudioEQ"
+            },
+            "Rack2": {
+                "Type": "Racks",
+                "KnobValues": {
+                    "Rack_StudioChorus_LoFilter": 77.0,
+                    "Rack_StudioChorus_Mix": 11.0,
+                    "Rack_StudioChorus_Depth": 88.0,
+                    "Rack_StudioChorus_HiFilter": 22.0,
+                    "Rack_StudioChorus_Delay": 44.0,
+                    "Rack_StudioChorus_Rate": 0.3,
+                    "Rack_StudioChorus_Stereo": 100.0
+                },
+                "Key": "Rack_StudioChorus",
+                "Category": "30788"
+            },
+            "Amp": {
+                "Type": "Amps",
+                "KnobValues": {
+                    "Amp_CA85_Mid": 44.0,
+                    "Amp_CA85_Bass": 33.0,
+                    "Amp_CA85_Treble": 77.0,
+                    "Amp_CA85_Gain": 33.0
+                },
+                "Key": "Amp_CA85"
+            },
+            "Cabinet": {
+                "Type": "Cabinets",
+                "KnobValues": {},
+                "Key": "Cab_CA112C_57_Edge"
+            },
+            "PostPedal1": {
+                "Type": "Pedals",
+                "KnobValues": {
+                    "Pedal_EQ5_5700": 1.0,
+                    "Pedal_EQ5_2200": 2.0,
+                    "Pedal_EQ5_63": 1.0,
+                    "Pedal_EQ5_250": -2.0,
+                    "Pedal_EQ5_750": -1.0
+                },
+                "Key": "Pedal_EQ5",
+                "Category": "30785"
+            }
+        },
+        "IsCustom": true,
+        "Volume": "-16",
+        "ToneDescriptors": [
+            "$[35720]CLEAN"
+        ],
+        "Key": "Clean",
+        "NameSeparator": " - ",
+        "Name": "Clean",
+        "SortOrder": 36.0
+    }
+]

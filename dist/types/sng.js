@@ -122,7 +122,7 @@ var CHORDTEMPLATES = /** @class */ (function () {
             fingers[4] = item.finger4;
             fingers[5] = item.finger5;
             for (var i = 0; i < 6; i++) {
-                notes[i] = getMidiNote(Object.values(tuning), i, frets[i], arrangement == common_1.ArrangmentType.BASS, capo, true);
+                notes[i] = getMidiNote(Object.values(tuning), i, frets[i], arrangement == common_1.ArrangementType.BASS, capo, true);
             }
             return {
                 mask: mask,
@@ -1144,3 +1144,4 @@ function getNoteCount(PH, levels, Level) {
     });
     return count;
 }
+exports.getNoteCount = getNoteCount;

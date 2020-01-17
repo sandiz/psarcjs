@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -120,17 +131,19 @@ var GraphItemLLID = /** @class */ (function () {
 exports.GraphItemLLID = GraphItemLLID;
 function generate(dir, tag, details, platform) {
     return __awaiter(this, void 0, void 0, function () {
-        var fileName, file, data;
+        var fileName, file, data, dupDetails;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     fileName = tag + "_aggregategraph.nt";
                     file = path_1.join(dir, fileName);
                     data = "";
-                    data += addJSON(tag, details);
+                    dupDetails = __assign({}, details);
+                    delete (dupDetails[common_1.ArrangementType.SHOWLIGHTS]);
+                    data += addJSON(tag, dupDetails);
                     data += addHSAN(tag);
                     data += addXML(tag, details);
-                    data += addSNG(tag, details, platform);
+                    data += addSNG(tag, dupDetails, platform);
                     data += addDDS(tag);
                     data += addBNK(tag, platform);
                     data += addXBLOCK(tag);
@@ -183,9 +196,9 @@ function addXML(tag, details) {
         var type = keys[i];
         if (count > 0) {
             for (var j = 1; j <= count; j += 1) {
-                var arr_1 = type;
+                var arr = type;
                 var xml = new GraphItemLLID();
-                xml.name = tag + "_" + arr_1 + (j > 1 ? j : "");
+                xml.name = tag + "_" + arr + (j > 1 ? j : "");
                 xml.canonical = "/songs/arr";
                 xml.tags = [TagValue.Application, TagValue.XML];
                 xml.relpath = xml.canonical + "/" + xml.name + ".xml";
@@ -196,15 +209,17 @@ function addXML(tag, details) {
         }
     }
     /* add showlights */
-    var arr = "showlights";
+    /*
+    const arr = "showlights";
     var xml = new GraphItemLLID();
-    xml.name = tag + "_" + arr;
-    xml.canonical = "/songs/arr";
+    xml.name = `${tag}_${arr}`;
+    xml.canonical = `/songs/arr`;
     xml.tags = [TagValue.Application, TagValue.XML];
-    xml.relpath = xml.canonical + "/" + xml.name + ".xml";
-    xml.logpath = xml.canonical + "/" + xml.name + ".xml";
-    xml.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");
+    xml.relpath = `${xml.canonical}/${xml.name}.xml`;
+    xml.logpath = `${xml.canonical}/${xml.name}.xml`;
+    xml.llid = getUuid().split("").map((v, index) => (index > 8 && v != '-') ? 0 : v).join("");
     data += xml.serialize();
+    */
     return data;
 }
 function addSNG(tag, details, platform) {
