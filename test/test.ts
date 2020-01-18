@@ -1125,7 +1125,6 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
-    /*
     await psarcTests();
     await sngTests();
     await song2014Tests();
@@ -1142,7 +1141,6 @@ async function fn() {
     }
 
     await manifestTests();
-    */
     await psarcGenerateTests();
 }
 

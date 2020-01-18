@@ -443,7 +443,8 @@ const packedParser = (len: number): Parser<SNGTypes.PackedSNG> => new Parser()
     })
     .buffer("signature", {
         length: 56,
-    })
+    });
+
 export class SNG {
     public sngFile: string;
     public rawData: Buffer | null = null;      /* sng file data, can be encrypted or decrypted */
@@ -560,7 +561,6 @@ export class WEM {
         return WEMParser.WEMDATA.parse(data);
     }
 }
-
 
 export class BNK {
     static async validate(bnkFile: string) {
@@ -733,7 +733,6 @@ export class MANIFEST {
         return path;
     }
 }
-
 
 export class Song2014 {
     song: ISong2014;
