@@ -36,6 +36,13 @@ export interface ToolkitInfo {
     version: string;
 }
 
+export interface Toolkit {
+    author: string,
+    comment: string,
+    version: string,
+    tk: ToolkitInfo,
+}
+
 export enum Platform { Windows, Mac }
 
 export type Arrangements = { [persistentID: string]: object };
@@ -172,12 +179,19 @@ export class Attributes {
     public songVolume: number = 0;
     public previewVolume: number = 0;
 }
-export interface ArrangementPart {
-    persistentID: string;
-    arrangementType: ArrangementType;
+
+export interface ArrangementInfo {
+    songName: string,
+    albumName: string,
+    persistentID?: string,
+    year?: number,
+    currentPartition: number,
+    scrollSpeed: number,
+    volume: number,
+    previewVolume: number,
 }
 
-interface ArrangementOptions {
+export interface ArrangementOptions {
     tag: string,
     sortOrder: number,
     volume: number,
@@ -186,15 +200,9 @@ interface ArrangementOptions {
     represent?: boolean,
     details: ArrangementDetails,
     tones: ManifestTone[],
-    info?: {
-        songName: string,
-        albumName: string,
-        persistentID?: string,
-        year?: number,
-        currentPartition: number,
-        scrollSpeed: number,
-    }
+    info?: ArrangementInfo,
 }
+export type MetaArrangement = Arrangement | VocalArrangement;
 /* represents an arrangment in psarc */
 export class Arrangement {
     public song2014: ISong2014;
@@ -1146,7 +1154,7 @@ export interface PSARCOptions {
         preview: { wem: string, bnk: string },
     },
     songs: {
-        arrangements: {
+        xmls: {
             [ArrangementType.LEAD]: string[],
             [ArrangementType.BASS]: string[],
             [ArrangementType.RHYTHM]: string[],
@@ -1158,6 +1166,14 @@ export interface PSARCOptions {
             [ArrangementType.BASS]: string[],
             [ArrangementType.RHYTHM]: string[],
             [ArrangementType.VOCALS]: string[],
-        }
+        },
+        manifests: {
+            [ArrangementType.LEAD]: string[],
+            [ArrangementType.BASS]: string[],
+            [ArrangementType.RHYTHM]: string[],
+            [ArrangementType.VOCALS]: string[]
+        },
+        hsan: string,
+        arrangements: (Arrangement | VocalArrangement)[]
     }
 }

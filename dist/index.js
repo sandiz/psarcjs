@@ -252,166 +252,370 @@ var PSARC = /** @class */ (function () {
             });
         });
     };
-    PSARC.generateDirectory = function (dir, options) {
+    PSARC.generateDirectory = function (dir, tag, files, arrInfo, toolkit) {
         return __awaiter(this, void 0, void 0, function () {
-            var name, root, exists, fm, gfxassets, audio, songsarr, arrKeys, i, key, arr, j, oneIdx, xml, dest, songsbin, binKeys, i, key, sng, j, oneIdx, xml, dest, gamex;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        console.log(options);
+            var info, _getFiles, _getVocalSNG, leadFiles, rhythmFiles, bassFiles, vocalFiles, allArrs, hsan, details, options, name, root, exists, fm, gfxassets, audio, songsarr, arrKeys, i, key, arr, j, oneIdx, xml, dest_1, songsbin, binKeys, i, key, sng, j, oneIdx, sngFile, dest_2, manifestDir, manifestKeys, i, key, manifest, j, oneIdx, json, dest_3, dest, gamex;
+            var _a, _b, _c, _e;
+            var _this = this;
+            return __generator(this, function (_f) {
+                switch (_f.label) {
+                    case 0: 
+                    /* validate dds */
+                    return [4 /*yield*/, Promise.all(Object.keys(files.dds).map(function (key) {
+                            var dds1 = new DDS(files.dds[key]);
+                            return dds1.validate();
+                        }))
+                        /* validate wem */
+                    ];
+                    case 1:
+                        /* validate dds */
+                        _f.sent();
+                        /* validate wem */
+                        return [4 /*yield*/, WEM.validate(files.wem.main.wem)];
+                    case 2:
+                        /* validate wem */
+                        _f.sent();
+                        return [4 /*yield*/, WEM.validate(files.wem.preview.wem)];
+                    case 3:
+                        _f.sent();
+                        /* validate bnk */
+                        return [4 /*yield*/, BNK.validate(files.wem.main.bnk)];
+                    case 4:
+                        /* validate bnk */
+                        _f.sent();
+                        return [4 /*yield*/, BNK.validate(files.wem.preview.bnk)];
+                    case 5:
+                        _f.sent();
+                        info = function (index) { arrInfo.currentPartition = index; return arrInfo; };
+                        _getFiles = function (xml, tones, index) { return __awaiter(_this, void 0, void 0, function () {
+                            var parsed, sngFile, sng, tonesObj, _a, _b, arr, json;
+                            return __generator(this, function (_c) {
+                                switch (_c.label) {
+                                    case 0: return [4 /*yield*/, Song2014.fromXML(xml)];
+                                    case 1:
+                                        parsed = _c.sent();
+                                        return [4 /*yield*/, parsed.generateSNG("/tmp/", tag)];
+                                    case 2:
+                                        sngFile = _c.sent();
+                                        sng = new SNG(sngFile);
+                                        return [4 /*yield*/, sng.parse()];
+                                    case 3:
+                                        _c.sent();
+                                        _b = (_a = JSON).parse;
+                                        return [4 /*yield*/, fs_1.promises.readFile(tones)];
+                                    case 4: return [4 /*yield*/, (_c.sent()).toString()];
+                                    case 5:
+                                        tonesObj = _b.apply(_a, [_c.sent(), common_1.ManifestToneReviver]);
+                                        arr = new common_1.Arrangement(parsed.song, sng, {
+                                            tag: tag,
+                                            sortOrder: index,
+                                            volume: arrInfo.volume,
+                                            previewVolume: arrInfo.previewVolume,
+                                            bassPicked: xml.endsWith("_bass.xml"),
+                                            represent: index === 0,
+                                            details: details,
+                                            tones: tonesObj,
+                                            info: info(index),
+                                        });
+                                        return [4 /*yield*/, MANIFEST.generateJSON("/tmp/", tag, arr)];
+                                    case 6:
+                                        json = _c.sent();
+                                        return [2 /*return*/, {
+                                                sng: sngFile,
+                                                manifest: json,
+                                                arrangement: arr,
+                                            }];
+                                }
+                            });
+                        }); };
+                        _getVocalSNG = function (xml, index) { return __awaiter(_this, void 0, void 0, function () {
+                            var parsed, sngFile, arr, json;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, common_1.Vocals.fromXML(xml)];
+                                    case 1:
+                                        parsed = _a.sent();
+                                        return [4 /*yield*/, common_1.Vocals.generateSNG("/tmp/", tag, parsed)];
+                                    case 2:
+                                        sngFile = _a.sent();
+                                        arr = new common_1.VocalArrangement({
+                                            tag: tag,
+                                            sortOrder: index,
+                                            volume: arrInfo.volume,
+                                            previewVolume: arrInfo.previewVolume,
+                                            bassPicked: false,
+                                            represent: true,
+                                            details: details,
+                                            tones: [],
+                                            info: info(index),
+                                        });
+                                        return [4 /*yield*/, MANIFEST.generateJSON("/tmp", tag, arr)];
+                                    case 3:
+                                        json = _a.sent();
+                                        return [2 /*return*/, {
+                                                sng: sngFile,
+                                                manifest: json,
+                                                arrangement: arr,
+                                            }];
+                                }
+                            });
+                        }); };
+                        return [4 /*yield*/, Promise.all(files.xml[common_1.ArrangementType.LEAD].map(function (xml, index) { return _getFiles(xml, files.tones[common_1.ArrangementType.LEAD][index], index); }))];
+                    case 6:
+                        leadFiles = _f.sent();
+                        return [4 /*yield*/, Promise.all(files.xml[common_1.ArrangementType.RHYTHM].map(function (xml, index) { return _getFiles(xml, files.tones[common_1.ArrangementType.RHYTHM][index], index); }))];
+                    case 7:
+                        rhythmFiles = _f.sent();
+                        return [4 /*yield*/, Promise.all(files.xml[common_1.ArrangementType.BASS].map(function (xml, index) { return _getFiles(xml, files.tones[common_1.ArrangementType.BASS][index], index); }))];
+                    case 8:
+                        bassFiles = _f.sent();
+                        return [4 /*yield*/, Promise.all(files.xml[common_1.ArrangementType.VOCALS].map(function (xml, index) { return _getVocalSNG(xml, index); }))];
+                    case 9:
+                        vocalFiles = _f.sent();
+                        allArrs = leadFiles.map(function (item) { return item.arrangement; }).concat(rhythmFiles.map(function (item) { return item.arrangement; })).concat(bassFiles.map(function (item) { return item.arrangement; }));
+                        allArrs.concat(vocalFiles.map(function (item) { return item.arrangement; }));
+                        return [4 /*yield*/, MANIFEST.generateHSAN(dir, tag, allArrs)];
+                    case 10:
+                        hsan = _f.sent();
+                        details = (_a = {},
+                            _a[common_1.ArrangementType.LEAD] = leadFiles.length,
+                            _a[common_1.ArrangementType.RHYTHM] = rhythmFiles.length,
+                            _a[common_1.ArrangementType.BASS] = bassFiles.length,
+                            _a[common_1.ArrangementType.VOCALS] = vocalFiles.length,
+                            _a[common_1.ArrangementType.SHOWLIGHTS] = files.xml[common_1.ArrangementType.SHOWLIGHTS].length,
+                            _a);
+                        options = {
+                            tag: tag,
+                            platform: common_1.Platform.Mac,
+                            toolkit: toolkit,
+                            arrDetails: details,
+                            dds: files.dds,
+                            audio: files.wem,
+                            songs: {
+                                xmls: (_b = {},
+                                    _b[common_1.ArrangementType.LEAD] = files.xml[common_1.ArrangementType.LEAD],
+                                    _b[common_1.ArrangementType.RHYTHM] = files.xml[common_1.ArrangementType.RHYTHM],
+                                    _b[common_1.ArrangementType.BASS] = files.xml[common_1.ArrangementType.BASS],
+                                    _b[common_1.ArrangementType.VOCALS] = files.xml[common_1.ArrangementType.VOCALS],
+                                    _b[common_1.ArrangementType.SHOWLIGHTS] = files.xml[common_1.ArrangementType.SHOWLIGHTS],
+                                    _b),
+                                sngs: (_c = {},
+                                    _c[common_1.ArrangementType.LEAD] = leadFiles.map(function (item) { return item.sng; }),
+                                    _c[common_1.ArrangementType.RHYTHM] = rhythmFiles.map(function (item) { return item.sng; }),
+                                    _c[common_1.ArrangementType.BASS] = bassFiles.map(function (item) { return item.sng; }),
+                                    _c[common_1.ArrangementType.VOCALS] = vocalFiles.map(function (item) { return item.sng; }),
+                                    _c),
+                                manifests: (_e = {},
+                                    _e[common_1.ArrangementType.LEAD] = leadFiles.map(function (item) { return item.manifest; }),
+                                    _e[common_1.ArrangementType.RHYTHM] = rhythmFiles.map(function (item) { return item.manifest; }),
+                                    _e[common_1.ArrangementType.BASS] = bassFiles.map(function (item) { return item.manifest; }),
+                                    _e[common_1.ArrangementType.VOCALS] = vocalFiles.map(function (item) { return item.manifest; }),
+                                    _e),
+                                hsan: hsan,
+                                arrangements: allArrs,
+                            }
+                        };
                         name = "" + options.tag + (options.platform == common_1.Platform.Mac ? '_m' : '_p');
                         root = path_1.join(dir, name);
                         return [4 /*yield*/, PSARC.existsAsync(root)];
-                    case 1:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 3];
+                    case 11:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 13];
                         return [4 /*yield*/, fs_1.promises.mkdir(root)];
-                    case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [4 /*yield*/, GENERIC.generateToolkit(root, options.toolkit.author, options.toolkit.comment, options.toolkit.version, options.toolkit.tk)];
-                    case 4:
-                        _a.sent();
+                    case 12:
+                        _f.sent();
+                        _f.label = 13;
+                    case 13: return [4 /*yield*/, GENERIC.generateToolkit(root, options.toolkit.author, options.toolkit.comment, options.toolkit.version, options.toolkit.tk)];
+                    case 14:
+                        _f.sent();
                         return [4 /*yield*/, GENERIC.generateAppid(root)];
-                    case 5:
-                        _a.sent();
+                    case 15:
+                        _f.sent();
                         return [4 /*yield*/, GENERIC.generateAggregateGraph(root, options.tag, options.arrDetails, options.platform)];
-                    case 6:
-                        _a.sent();
+                    case 16:
+                        _f.sent();
                         fm = path_1.join(root, "flatmodels/rs");
                         return [4 /*yield*/, PSARC.existsAsync(fm)];
-                    case 7:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 9];
+                    case 17:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 19];
                         return [4 /*yield*/, fs_extra_1.mkdirp(fm)];
-                    case 8:
-                        _a.sent();
-                        _a.label = 9;
-                    case 9: return [4 /*yield*/, fs_1.promises.copyFile("data/flatmodels/rsenumerable_root.flat", path_1.join(fm, "rsenumerable_root.flat"))];
-                    case 10:
-                        _a.sent();
+                    case 18:
+                        _f.sent();
+                        _f.label = 19;
+                    case 19: return [4 /*yield*/, fs_1.promises.copyFile("data/flatmodels/rsenumerable_root.flat", path_1.join(fm, "rsenumerable_root.flat"))];
+                    case 20:
+                        _f.sent();
                         return [4 /*yield*/, fs_1.promises.copyFile("data/flatmodels/rsenumerable_song.flat", path_1.join(fm, "rsenumerable_song.flat"))];
-                    case 11:
-                        _a.sent();
+                    case 21:
+                        _f.sent();
                         gfxassets = path_1.join(root, "gfxassets/album_art");
                         return [4 /*yield*/, PSARC.existsAsync(gfxassets)];
-                    case 12:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 14];
+                    case 22:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 24];
                         return [4 /*yield*/, fs_extra_1.mkdirp(gfxassets)];
-                    case 13:
-                        _a.sent();
-                        _a.label = 14;
-                    case 14: return [4 /*yield*/, fs_1.promises.copyFile(options.dds[256], path_1.join(gfxassets, "album_" + options.tag + "_256.dds"))];
-                    case 15:
-                        _a.sent();
+                    case 23:
+                        _f.sent();
+                        _f.label = 24;
+                    case 24: return [4 /*yield*/, fs_1.promises.copyFile(options.dds[256], path_1.join(gfxassets, "album_" + options.tag + "_256.dds"))];
+                    case 25:
+                        _f.sent();
                         return [4 /*yield*/, fs_1.promises.copyFile(options.dds[128], path_1.join(gfxassets, "album_" + options.tag + "_128.dds"))];
-                    case 16:
-                        _a.sent();
+                    case 26:
+                        _f.sent();
                         return [4 /*yield*/, fs_1.promises.copyFile(options.dds[64], path_1.join(gfxassets, "album_" + options.tag + "_64.dds"))];
-                    case 17:
-                        _a.sent();
+                    case 27:
+                        _f.sent();
                         audio = path_1.join(root, "audio", options.platform === common_1.Platform.Mac ? "mac" : "windows");
                         return [4 /*yield*/, PSARC.existsAsync(audio)];
-                    case 18:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 20];
+                    case 28:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 30];
                         return [4 /*yield*/, fs_extra_1.mkdirp(audio)];
-                    case 19:
-                        _a.sent();
-                        _a.label = 20;
-                    case 20: return [4 /*yield*/, fs_1.promises.copyFile(options.audio.main.wem, path_1.join(audio, path_1.basename(options.audio.main.wem)))];
-                    case 21:
-                        _a.sent();
+                    case 29:
+                        _f.sent();
+                        _f.label = 30;
+                    case 30: return [4 /*yield*/, fs_1.promises.copyFile(options.audio.main.wem, path_1.join(audio, path_1.basename(options.audio.main.wem)))];
+                    case 31:
+                        _f.sent();
                         return [4 /*yield*/, fs_1.promises.copyFile(options.audio.preview.wem, path_1.join(audio, path_1.basename(options.audio.preview.wem)))];
-                    case 22:
-                        _a.sent();
+                    case 32:
+                        _f.sent();
                         return [4 /*yield*/, fs_1.promises.copyFile(options.audio.main.bnk, path_1.join(audio, "song_" + options.tag + ".bnk"))];
-                    case 23:
-                        _a.sent();
+                    case 33:
+                        _f.sent();
                         return [4 /*yield*/, fs_1.promises.copyFile(options.audio.preview.bnk, path_1.join(audio, "song_" + options.tag + "_preview.bnk"))];
-                    case 24:
-                        _a.sent();
+                    case 34:
+                        _f.sent();
                         songsarr = path_1.join(root, "songs/arr");
                         return [4 /*yield*/, PSARC.existsAsync(songsarr)];
-                    case 25:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 27];
+                    case 35:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 37];
                         return [4 /*yield*/, fs_extra_1.mkdirp(songsarr)];
-                    case 26:
-                        _a.sent();
-                        _a.label = 27;
-                    case 27:
-                        arrKeys = Object.keys(options.songs.arrangements);
+                    case 36:
+                        _f.sent();
+                        _f.label = 37;
+                    case 37:
+                        arrKeys = Object.keys(options.songs.xmls);
                         i = 0;
-                        _a.label = 28;
-                    case 28:
-                        if (!(i < arrKeys.length)) return [3 /*break*/, 33];
+                        _f.label = 38;
+                    case 38:
+                        if (!(i < arrKeys.length)) return [3 /*break*/, 43];
                         key = arrKeys[i];
-                        arr = options.songs.arrangements[key];
+                        arr = options.songs.xmls[key];
                         j = 0;
-                        _a.label = 29;
-                    case 29:
-                        if (!(j < arr.length)) return [3 /*break*/, 32];
+                        _f.label = 39;
+                    case 39:
+                        if (!(j < arr.length)) return [3 /*break*/, 42];
                         oneIdx = j + 1;
                         xml = arr[j];
-                        dest = path_1.join(songsarr, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".xml");
-                        return [4 /*yield*/, fs_1.promises.copyFile(xml, dest)];
-                    case 30:
-                        _a.sent();
-                        _a.label = 31;
-                    case 31:
+                        dest_1 = path_1.join(songsarr, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".xml");
+                        return [4 /*yield*/, fs_1.promises.copyFile(xml, dest_1)];
+                    case 40:
+                        _f.sent();
+                        _f.label = 41;
+                    case 41:
                         j += 1;
-                        return [3 /*break*/, 29];
-                    case 32:
+                        return [3 /*break*/, 39];
+                    case 42:
                         i += 1;
-                        return [3 /*break*/, 28];
-                    case 33:
+                        return [3 /*break*/, 38];
+                    case 43:
                         songsbin = path_1.join(root, "songs/bin", options.platform == common_1.Platform.Mac ? "macos" : "generic");
                         return [4 /*yield*/, PSARC.existsAsync(songsbin)];
-                    case 34:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 36];
+                    case 44:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 46];
                         return [4 /*yield*/, fs_extra_1.mkdirp(songsbin)];
-                    case 35:
-                        _a.sent();
-                        _a.label = 36;
-                    case 36:
+                    case 45:
+                        _f.sent();
+                        _f.label = 46;
+                    case 46:
                         binKeys = Object.keys(options.songs.sngs);
                         i = 0;
-                        _a.label = 37;
-                    case 37:
-                        if (!(i < binKeys.length)) return [3 /*break*/, 42];
+                        _f.label = 47;
+                    case 47:
+                        if (!(i < binKeys.length)) return [3 /*break*/, 52];
                         key = binKeys[i];
                         sng = options.songs.sngs[key];
                         j = 0;
-                        _a.label = 38;
-                    case 38:
-                        if (!(j < sng.length)) return [3 /*break*/, 41];
+                        _f.label = 48;
+                    case 48:
+                        if (!(j < sng.length)) return [3 /*break*/, 51];
                         oneIdx = j + 1;
-                        xml = sng[j];
-                        dest = path_1.join(songsbin, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".sng");
-                        return [4 /*yield*/, fs_1.promises.copyFile(xml, dest)];
-                    case 39:
-                        _a.sent();
-                        _a.label = 40;
-                    case 40:
+                        sngFile = sng[j];
+                        dest_2 = path_1.join(songsbin, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".sng");
+                        return [4 /*yield*/, fs_extra_1.move(sngFile, dest_2, {
+                                overwrite: true,
+                            })];
+                    case 49:
+                        _f.sent();
+                        _f.label = 50;
+                    case 50:
                         j += 1;
-                        return [3 /*break*/, 38];
-                    case 41:
+                        return [3 /*break*/, 48];
+                    case 51:
                         i += 1;
-                        return [3 /*break*/, 37];
-                    case 42:
+                        return [3 /*break*/, 47];
+                    case 52:
+                        manifestDir = path_1.join(root, "manifests", "songs_dlc_" + options.tag);
+                        return [4 /*yield*/, PSARC.existsAsync(manifestDir)];
+                    case 53:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 55];
+                        return [4 /*yield*/, fs_extra_1.mkdirp(manifestDir)];
+                    case 54:
+                        _f.sent();
+                        _f.label = 55;
+                    case 55:
+                        manifestKeys = Object.keys(options.songs.manifests);
+                        i = 0;
+                        _f.label = 56;
+                    case 56:
+                        if (!(i < manifestKeys.length)) return [3 /*break*/, 61];
+                        key = manifestKeys[i];
+                        manifest = options.songs.manifests[key];
+                        j = 0;
+                        _f.label = 57;
+                    case 57:
+                        if (!(j < manifest.length)) return [3 /*break*/, 60];
+                        oneIdx = j + 1;
+                        json = manifest[j];
+                        dest_3 = path_1.join(manifestDir, options.tag + "_" + key + (oneIdx > 1 ? "" + oneIdx : "") + ".json");
+                        return [4 /*yield*/, fs_extra_1.move(json, dest_3, {
+                                overwrite: true,
+                            })];
+                    case 58:
+                        _f.sent();
+                        _f.label = 59;
+                    case 59:
+                        j += 1;
+                        return [3 /*break*/, 57];
+                    case 60:
+                        i += 1;
+                        return [3 /*break*/, 56];
+                    case 61:
+                        dest = path_1.join(manifestDir, "songs_dlc_" + options.tag + ".hsan");
+                        return [4 /*yield*/, fs_extra_1.move(options.songs.hsan, dest, {
+                                overwrite: true,
+                            })];
+                    case 62:
+                        _f.sent();
                         gamex = path_1.join(root, "gamexblocks/nsongs");
                         return [4 /*yield*/, PSARC.existsAsync(gamex)];
-                    case 43:
-                        exists = _a.sent();
-                        if (!!exists) return [3 /*break*/, 45];
+                    case 63:
+                        exists = _f.sent();
+                        if (!!exists) return [3 /*break*/, 65];
                         return [4 /*yield*/, fs_extra_1.mkdirp(gamex)];
-                    case 44:
-                        _a.sent();
-                        _a.label = 45;
-                    case 45: return [2 /*return*/];
+                    case 64:
+                        _f.sent();
+                        _f.label = 65;
+                    case 65: return [4 /*yield*/, GENERIC.generateXBlock(options.songs.arrangements, options.tag, gamex)];
+                    case 66:
+                        _f.sent();
+                        return [2 /*return*/];
                 }
             });
         });
@@ -737,12 +941,13 @@ var GENERIC = /** @class */ (function () {
                             "urn:audio:wwise-sound-bank:", "urn:audio:wwise-sound-bank:"
                         ];
                         getValue = function (item, index, tag, arr) {
+                            var _a;
                             switch (item) {
                                 case "Header":
                                     return ptypePrefix[index] + "songs_dlc_" + tag;
                                 case "SngAsset":
                                 case "Manifest":
-                                    return "" + ptypePrefix[index] + tag + "_" + arr.arrangementType;
+                                    return "" + ptypePrefix[index] + tag + "_" + ((_a = arr.header) === null || _a === void 0 ? void 0 : _a.arrangementName.toLowerCase());
                                 case "AlbumArtSmall":
                                     return ptypePrefix[index] + "album_" + tag + "_64";
                                 case "AlbumArtMedium":
@@ -772,11 +977,12 @@ var GENERIC = /** @class */ (function () {
                             };
                         }); };
                         entities = arrs.map(function (item) {
+                            var _a, _b, _c;
                             return {
                                 $: {
-                                    id: item.persistentID,
+                                    id: (_a = item.header) === null || _a === void 0 ? void 0 : _a.persistentID,
                                     modelName: "RSEnumerable_Song",
-                                    name: tag + "_" + exports.toTitleCase(item.arrangementType),
+                                    name: tag + "_" + exports.toTitleCase((_c = (_b = item.header) === null || _b === void 0 ? void 0 : _b.arrangementName.toLowerCase(), (_c !== null && _c !== void 0 ? _c : ''))),
                                     iterations: 0,
                                 },
                                 properties: {
@@ -833,7 +1039,7 @@ var MANIFEST = /** @class */ (function () {
                         };
                         allKeys = arr instanceof common_1.Arrangement ? Object.keys(arr.main).concat(Object.keys(header)) : Object.keys(arr);
                         json = JSON.stringify(obj, function (k, v) { return common_1.ManifestReplacer(allKeys, k, v); }, "  ");
-                        path = path_1.join(dir, tag + "_" + arr.arrType + ".json");
+                        path = path_1.join(dir, tag + "_" + (arr instanceof common_1.Arrangement ? arr.arrType : "vocals") + ".json");
                         return [4 /*yield*/, fs_1.promises.writeFile(path, json)];
                     case 1:
                         _b.sent();

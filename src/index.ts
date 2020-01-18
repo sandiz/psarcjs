@@ -1,5 +1,5 @@
-import { promises, exists, read } from 'fs';
-import { mkdirp } from 'fs-extra';
+import { promises, exists } from 'fs';
+import { mkdirp, move } from 'fs-extra';
 import { Parser } from 'binary-parser';
 import * as xml2js from 'xml2js';
 
@@ -17,7 +17,7 @@ import { generate } from './aggregategraphwriter';
 
 import {
     BOM, Arrangements, ArrangementDetails,
-    Platform, Arrangement, ToolkitInfo, PSARCOptions, ArrangementPart, Manifest, ManifestReplacer, VocalArrangement, HSANManifest, AttributesHeader, VocalAttributesHeader, ArrangementType,
+    Platform, Arrangement, ToolkitInfo, PSARCOptions, Manifest, ManifestReplacer, VocalArrangement, HSANManifest, ArrangementType, MetaArrangement, ArrangementInfo, ManifestTone, ManifestToneReviver, Vocals, Toolkit,
 } from "./types/common";
 
 import {
@@ -174,8 +174,153 @@ export class PSARC {
             })
         })
     }
-    static async generateDirectory(dir: string, options: PSARCOptions) {
-        console.log(options);
+
+
+    static async generateDirectory(
+        dir: string,
+        tag: string,
+        files: {
+            xml: {
+                [ArrangementType.LEAD]: string[],
+                [ArrangementType.RHYTHM]: string[],
+                [ArrangementType.BASS]: string[],
+                [ArrangementType.SHOWLIGHTS]: string[],
+                [ArrangementType.VOCALS]: string[],
+            },
+            tones: {
+                [ArrangementType.LEAD]: string[],
+                [ArrangementType.RHYTHM]: string[],
+                [ArrangementType.BASS]: string[],
+            },
+            dds: {
+                '256': string,
+                '128': string,
+                '64': string,
+            },
+            wem: {
+                main: { wem: string, bnk: string },
+                preview: { wem: string, bnk: string },
+            }
+        },
+        arrInfo: ArrangementInfo,
+        toolkit: Toolkit
+    ) {
+        /* validate dds */
+        await Promise.all(Object.keys(files.dds).map(key => {
+            const dds1 = new DDS(files.dds[key as keyof typeof files.dds]);
+            return dds1.validate();
+        }))
+        /* validate wem */
+        await WEM.validate(files.wem.main.wem);
+        await WEM.validate(files.wem.preview.wem);
+
+        /* validate bnk */
+        await BNK.validate(files.wem.main.bnk);
+        await BNK.validate(files.wem.preview.bnk);
+
+        const info = (index: number): ArrangementInfo => { arrInfo.currentPartition = index; return arrInfo; }
+
+        const _getFiles = async (xml: string, tones: string, index: number): Promise<{ sng: string, manifest: string, arrangement: Arrangement }> => {
+            const parsed: Song2014 = await Song2014.fromXML(xml);
+            const sngFile = await parsed.generateSNG("/tmp/", tag);
+            const sng = new SNG(sngFile);
+            await sng.parse();
+            const tonesObj: ManifestTone[] = JSON.parse(await (await promises.readFile(tones)).toString(), ManifestToneReviver);
+
+            const arr = new Arrangement(parsed.song, sng, {
+                tag: tag,
+                sortOrder: index,
+                volume: arrInfo.volume,
+                previewVolume: arrInfo.previewVolume,
+                bassPicked: xml.endsWith("_bass.xml"),
+                represent: index === 0,
+                details: details,
+                tones: tonesObj,
+                info: info(index),
+            });
+            const json = await MANIFEST.generateJSON("/tmp/", tag, arr);
+
+            return {
+                sng: sngFile,
+                manifest: json,
+                arrangement: arr,
+            };
+        }
+
+        const _getVocalSNG = async (xml: string, index: number): Promise<{ sng: string, manifest: string, arrangement: VocalArrangement }> => {
+            const parsed: Vocals[] = await Vocals.fromXML(xml);
+            const sngFile = await Vocals.generateSNG("/tmp/", tag, parsed);
+            const arr = new VocalArrangement({
+                tag: tag,
+                sortOrder: index,
+                volume: arrInfo.volume,
+                previewVolume: arrInfo.previewVolume,
+                bassPicked: false,
+                represent: true,
+                details: details,
+                tones: [],
+                info: info(index),
+            });
+            const json = await MANIFEST.generateJSON("/tmp", tag, arr);
+            return {
+                sng: sngFile,
+                manifest: json,
+                arrangement: arr,
+            };
+        }
+
+        const leadFiles =
+            await Promise.all(files.xml[ArrangementType.LEAD].map((xml, index) => _getFiles(xml, files.tones[ArrangementType.LEAD][index], index)));
+        const rhythmFiles =
+            await Promise.all(files.xml[ArrangementType.RHYTHM].map((xml, index) => _getFiles(xml, files.tones[ArrangementType.RHYTHM][index], index)));
+        const bassFiles =
+            await Promise.all(files.xml[ArrangementType.BASS].map((xml, index) => _getFiles(xml, files.tones[ArrangementType.BASS][index], index)));
+        const vocalFiles =
+            await Promise.all(files.xml[ArrangementType.VOCALS].map((xml, index) => _getVocalSNG(xml, index)));
+
+        const allArrs: (Arrangement | VocalArrangement)[] = leadFiles.map(item => item.arrangement).concat(rhythmFiles.map(item => item.arrangement)).concat(bassFiles.map(item => item.arrangement));
+        allArrs.concat(vocalFiles.map(item => item.arrangement));
+
+        const hsan = await MANIFEST.generateHSAN(dir, tag, allArrs);
+        const details: ArrangementDetails = {
+            [ArrangementType.LEAD]: leadFiles.length,
+            [ArrangementType.RHYTHM]: rhythmFiles.length,
+            [ArrangementType.BASS]: bassFiles.length,
+            [ArrangementType.VOCALS]: vocalFiles.length,
+            [ArrangementType.SHOWLIGHTS]: files.xml[ArrangementType.SHOWLIGHTS].length,
+        };
+        const options: PSARCOptions = {
+            tag: tag,
+            platform: Platform.Mac,
+            toolkit,
+            arrDetails: details,
+            dds: files.dds,
+            audio: files.wem,
+            songs: {
+                xmls: {
+                    [ArrangementType.LEAD]: files.xml[ArrangementType.LEAD],
+                    [ArrangementType.RHYTHM]: files.xml[ArrangementType.RHYTHM],
+                    [ArrangementType.BASS]: files.xml[ArrangementType.BASS],
+                    [ArrangementType.VOCALS]: files.xml[ArrangementType.VOCALS],
+                    [ArrangementType.SHOWLIGHTS]: files.xml[ArrangementType.SHOWLIGHTS],
+                },
+                sngs: {
+                    [ArrangementType.LEAD]: leadFiles.map(item => item.sng),
+                    [ArrangementType.RHYTHM]: rhythmFiles.map(item => item.sng),
+                    [ArrangementType.BASS]: bassFiles.map(item => item.sng),
+                    [ArrangementType.VOCALS]: vocalFiles.map(item => item.sng),
+                },
+                manifests: {
+                    [ArrangementType.LEAD]: leadFiles.map(item => item.manifest),
+                    [ArrangementType.RHYTHM]: rhythmFiles.map(item => item.manifest),
+                    [ArrangementType.BASS]: bassFiles.map(item => item.manifest),
+                    [ArrangementType.VOCALS]: vocalFiles.map(item => item.manifest),
+                },
+                hsan: hsan,
+                arrangements: allArrs,
+            }
+        }
+        /* Options are ready, generate and move files now */
         /*
             toolkit.version -- DONE
             appid.appid
@@ -225,10 +370,10 @@ export class PSARC {
         const songsarr = join(root, "songs/arr");
         exists = await PSARC.existsAsync(songsarr);
         if (!exists) await mkdirp(songsarr);
-        const arrKeys = Object.keys(options.songs.arrangements);
+        const arrKeys = Object.keys(options.songs.xmls);
         for (let i = 0; i < arrKeys.length; i += 1) {
-            const key = arrKeys[i] as keyof typeof options.songs.arrangements;
-            const arr = options.songs.arrangements[key];
+            const key = arrKeys[i] as keyof typeof options.songs.xmls;
+            const arr = options.songs.xmls[key];
             for (let j = 0; j < arr.length; j += 1) {
                 const oneIdx = j + 1;
                 const xml = arr[j];
@@ -246,18 +391,39 @@ export class PSARC {
             const sng = options.songs.sngs[key];
             for (let j = 0; j < sng.length; j += 1) {
                 const oneIdx = j + 1;
-                const xml = sng[j];
+                const sngFile = sng[j];
                 const dest = join(songsbin, `${options.tag}_${key}${oneIdx > 1 ? `${oneIdx}` : ""}.sng`);
-                await promises.copyFile(xml, dest);
+                await move(sngFile, dest, {
+                    overwrite: true,
+                });
             }
         }
 
-
+        const manifestDir = join(root, "manifests", `songs_dlc_${options.tag}`);
+        exists = await PSARC.existsAsync(manifestDir);
+        if (!exists) await mkdirp(manifestDir);
+        const manifestKeys = Object.keys(options.songs.manifests);
+        for (let i = 0; i < manifestKeys.length; i += 1) {
+            const key = manifestKeys[i] as keyof typeof options.songs.manifests;
+            const manifest = options.songs.manifests[key];
+            for (let j = 0; j < manifest.length; j += 1) {
+                const oneIdx = j + 1;
+                const json = manifest[j];
+                const dest = join(manifestDir, `${options.tag}_${key}${oneIdx > 1 ? `${oneIdx}` : ""}.json`);
+                await move(json, dest, {
+                    overwrite: true,
+                });
+            }
+        }
+        let dest = join(manifestDir, `songs_dlc_${options.tag}.hsan`);
+        await move(options.songs.hsan, dest, {
+            overwrite: true,
+        });
 
         const gamex = join(root, "gamexblocks/nsongs");
         exists = await PSARC.existsAsync(gamex);
         if (!exists) await mkdirp(gamex);
-        //await GENERIC.generateXBlock([], options.tag, gamex);
+        await GENERIC.generateXBlock(options.songs.arrangements, options.tag, gamex);
     }
 
     static async packDirectory(dir: string, platform: Platform) {
@@ -436,7 +602,7 @@ export class GENERIC {
         return await generate(dir, tag, arrDetails, platform);
     }
 
-    static async generateXBlock(arrs: ArrangementPart[], tag: string, dir: string) {
+    static async generateXBlock(arrs: Partial<MetaArrangement>[], tag: string, dir: string) {
         const f = join(dir, `${tag}.xblock`);
         const ptypes = [
             "Header", "Manifest", "SngAsset",
@@ -448,13 +614,13 @@ export class GENERIC {
             "urn:image:dds:", "urn:image:dds:", "", "urn:application:xml:",
             "urn:audio:wwise-sound-bank:", "urn:audio:wwise-sound-bank:"
         ]
-        const getValue = (item: string, index: number, tag: string, arr: ArrangementPart) => {
+        const getValue = (item: string, index: number, tag: string, arr: Partial<MetaArrangement>) => {
             switch (item) {
                 case "Header":
                     return `${ptypePrefix[index]}songs_dlc_${tag}`;
                 case "SngAsset":
                 case "Manifest":
-                    return `${ptypePrefix[index]}${tag}_${arr.arrangementType}`;
+                    return `${ptypePrefix[index]}${tag}_${arr.header?.arrangementName.toLowerCase()}`;
                 case "AlbumArtSmall":
                     return `${ptypePrefix[index]}album_${tag}_64`;
                 case "AlbumArtMedium":
@@ -471,7 +637,7 @@ export class GENERIC {
                     return "";
             }
         }
-        const property = (arr: ArrangementPart) => ptypes.map((item, index) => {
+        const property = (arr: Partial<MetaArrangement>) => ptypes.map((item, index) => {
             return {
                 $: {
                     name: item
@@ -487,9 +653,9 @@ export class GENERIC {
         const entities = arrs.map(item => {
             return {
                 $: {
-                    id: item.persistentID,
+                    id: item.header?.persistentID,
                     modelName: "RSEnumerable_Song",
-                    name: `${tag}_${toTitleCase(item.arrangementType)}`,
+                    name: `${tag}_${toTitleCase(item.header?.arrangementName.toLowerCase() ?? '')}`,
                     iterations: 0,
                 },
                 properties: {
@@ -536,7 +702,7 @@ export class MANIFEST {
         };
         const allKeys = arr instanceof Arrangement ? Object.keys(arr.main).concat(Object.keys(header)) : Object.keys(arr);
         const json = JSON.stringify(obj, (k, v) => ManifestReplacer(allKeys, k, v), "  ");
-        const path = join(dir, `${tag}_${arr.arrType}.json`);
+        const path = join(dir, `${tag}_${arr instanceof Arrangement ? arr.arrType : "vocals"}.json`);
         await promises.writeFile(path, json);
         return path;
     }

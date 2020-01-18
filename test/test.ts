@@ -20,8 +20,7 @@ import {
 import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
-import { ArrangementType, ShowLights, Vocals, Platform, ArrangementTypeInt, Arrangement, Manifest, ManifestTone, ManifestToneReviver, VocalArrangement } from '../src/types/common';
-import { maskPrinter } from '../src/types/constants';
+import { ArrangementType, ShowLights, Vocals, Arrangement, ManifestTone, ManifestToneReviver, VocalArrangement, ArrangementInfo, AttributesHeader, Toolkit } from '../src/types/common';
 import { getUuid } from '../src/aggregategraphwriter';
 
 use(Chaifs);
@@ -511,15 +510,18 @@ async function genericTests() {
             //console.log(data.toString());
         })
         it("generate xblock", async () => {
-
+            const _header = (h: ArrangementType, pid: string) => {
+                const f = new AttributesHeader();
+                f.arrangementName = h;
+                f.persistentID = pid;
+                return f;
+            }
             const f = await GENERIC.generateXBlock([
                 {
-                    persistentID: getUuid().toLowerCase().replace(/-/g, ""),
-                    arrangementType: ArrangementType.BASS,
+                    header: _header(ArrangementType.BASS, getUuid().toLowerCase().replace(/-/g, ""))
                 },
                 {
-                    persistentID: getUuid().toLowerCase().replace(/-/g, ""),
-                    arrangementType: ArrangementType.VOCALS,
+                    header: _header(ArrangementType.VOCALS, getUuid().toLowerCase().replace(/-/g, ""))
                 },
             ], "psarcjsTest", "/tmp/");
             const data = await promises.readFile(f);
@@ -858,58 +860,66 @@ async function song2014Tests() {
 async function psarcGenerateTests() {
     describe("psarcjs: PSARC: generate tests ", async () => {
         it("psarcjs: generate directory", async () => {
-            const dir = "/tmp";
-            const xml = 'test/xml/atmaink_bass.xml';
-            const parsed: Song2014 = await Song2014.fromXML(xml);
-            const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest");
+            const dir = "/tmp/";
+            const tag = "psarcjs_test";
 
-            const slights = "test/xml/atmaink_showlights.xml";
-            await PSARC.generateDirectory(dir, {
-                tag: "psarcjs_test",
-                platform: Platform.Mac,
-                toolkit: {
-                    author: 'psarcjs_author',
-                    comment: 'psarcjs_comment',
-                    version: '1',
-                    tk: {
-                        name: 'application_using_psarcjs',
-                        version: "0.0.1"
-                    }
-                },
-                arrDetails: {
-                    [ArrangementType.LEAD]: 0,
-                    [ArrangementType.RHYTHM]: 0,
-                    [ArrangementType.BASS]: 1,
-                    [ArrangementType.VOCALS]: 0,
-                    [ArrangementType.SHOWLIGHTS]: 1,
-                },
-                dds: {
-                    '256': 'test/dds/album_poster_256.dds',
-                    '128': 'test/dds/album_poster_128.dds',
-                    '64': 'test/dds/album_poster_64.dds',
-                },
-                audio: {
-                    main: { wem: 'test/wem/180976557.wem', bnk: 'test/bnk/song_atmaink.bnk' },
-                    preview: { wem: 'test/wem/1563725178.wem', bnk: 'test/bnk/song_atmaink_preview.bnk' }
-                },
-                songs: {
-                    arrangements: {
-                        [ArrangementType.LEAD]: [],
-                        [ArrangementType.RHYTHM]: [],
-                        [ArrangementType.BASS]: [xml],
-                        [ArrangementType.VOCALS]: [],
-                        [ArrangementType.SHOWLIGHTS]: [slights],
-                    },
-                    sngs: {
-                        [ArrangementType.LEAD]: [],
-                        [ArrangementType.RHYTHM]: [],
-                        [ArrangementType.BASS]: [sngFile],
-                        [ArrangementType.VOCALS]: [],
-                    }
+            const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
+            const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
+            const rhythmXMLs = ["test/blinktest/bwab1anthem_rhythm.xml"];
+            const rhythmTones = ["test/blinktest/bwab1anthem_rhythm_tones.json"];
+            const bassXMLs = ["test/blinktest/bwab1anthem_bass.xml"];
+            const bassTones = ["test/blinktest/bwab1anthem_bass_tones.json"];
+            const slightXMLs = ["test/blinktest/bwab1anthem_showlights.xml"];
+            const vocalXMLs = ["test/blinktest/bwab1anthem_vocals.xml"];
+            const info: ArrangementInfo = {
+                songName: "Anthem",
+                albumName: "Enema of the State",
+                year: 1999,
+                currentPartition: 0,
+                scrollSpeed: 13,
+                volume: -9.2,
+                previewVolume: -8.3
+            }
+            const dds = {
+                '256': 'test/dds/album_poster_256.dds',
+                '128': 'test/dds/album_poster_128.dds',
+                '64': 'test/dds/album_poster_64.dds',
+            }
+            const wem = {
+                main: { wem: 'test/blinktest/1224431012.wem', bnk: 'test/blinktest/song_bwab1anthem.bnk' },
+                preview: { wem: 'test/blinktest/376327087.wem', bnk: 'test/blinktest/song_bwab1anthem_preview.bnk' }
+            }
+            const toolkit: Toolkit = {
+                author: 'psarcjs_author',
+                comment: 'psarcjs_comment',
+                version: '1',
+                tk: {
+                    name: 'application_using_psarcjs',
+                    version: "0.0.1"
                 }
-            })
-            throw new Error('forced error');
-        })
+            }
+
+            await PSARC.generateDirectory(
+                dir,
+                tag, {
+                xml: {
+                    [ArrangementType.LEAD]: leadXMLs,
+                    [ArrangementType.RHYTHM]: rhythmXMLs,
+                    [ArrangementType.BASS]: bassXMLs,
+                    [ArrangementType.SHOWLIGHTS]: slightXMLs,
+                    [ArrangementType.VOCALS]: vocalXMLs,
+                },
+                tones: {
+                    [ArrangementType.LEAD]: leadTones,
+                    [ArrangementType.RHYTHM]: rhythmTones,
+                    [ArrangementType.BASS]: bassTones,
+                },
+                dds,
+                wem,
+            },
+                info,
+                toolkit)
+        }).timeout(30000);
     })
 }
 
@@ -1012,6 +1022,8 @@ async function manifestTests() {
                         year: 1999,
                         currentPartition: 0,
                         scrollSpeed: 13,
+                        volume: -9.2,
+                        previewVolume: -8.3
                     }
                 });
                 arrangements.push(arr);
@@ -1062,6 +1074,8 @@ async function manifestTests() {
                     year: 1999,
                     currentPartition: 0,
                     scrollSpeed: 13,
+                    volume: -9.2,
+                    previewVolume: -8.3
                 }
             });
             arrangements.push(arr);
@@ -1111,6 +1125,7 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function fn() {
+    /*
     await psarcTests();
     await sngTests();
     await song2014Tests();
@@ -1126,8 +1141,9 @@ async function fn() {
         await waapiTests();
     }
 
-    //await psarcGenerateTests();
     await manifestTests();
+    */
+    await psarcGenerateTests();
 }
 
 fn();
