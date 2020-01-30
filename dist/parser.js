@@ -47,7 +47,7 @@ var binary_parser_1 = require("binary-parser");
 var aesjs = __importStar(require("aes-js"));
 var zlib = __importStar(require("zlib"));
 var common_1 = require("./types/common");
-var BLOCK_SIZE = Math.pow(2, 16);
+exports.BLOCK_SIZE = Math.pow(2, 16);
 var ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C";
 exports.ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42";
 exports.MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D";
@@ -62,13 +62,22 @@ exports.unzip = function (data) { return new Promise(function (resolve, reject) 
         }
     });
 }); };
-exports.zip = function (data) { return new Promise(function (resolve, reject) {
-    zlib.gzip(data, function (err, res) {
-        if (err)
-            reject(err);
-        resolve(res);
+exports.zip = function (data, level) {
+    if (level === void 0) { level = 9; }
+    return new Promise(function (resolve, reject) {
+        zlib.deflate(data, {
+            level: level,
+            windowBits: 15,
+            memLevel: 8,
+            strategy: 0,
+            chunkSize: 4096,
+        }, function (err, res) {
+            if (err)
+                reject(err);
+            resolve(res);
+        });
     });
-}); };
+};
 exports.mod = function (x, n) { return (x % n + n) % n; };
 function pad(buffer, blocksize) {
     if (blocksize === void 0) { blocksize = 16; }
@@ -84,6 +93,13 @@ function BOMDecrypt(buffer) {
     return aescfb.decrypt(buffer);
 }
 exports.BOMDecrypt = BOMDecrypt;
+function BOMEncrypt(buffer) {
+    var key = aesjs.utils.hex.toBytes(ARC_KEY);
+    var iv = aesjs.utils.hex.toBytes(exports.ARC_IV);
+    var aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
+    return aescfb.encrypt(buffer);
+}
+exports.BOMEncrypt = BOMEncrypt;
 function ENTRYDecrypt(data, key) {
     return __awaiter(this, void 0, void 0, function () {
         var iv, ctr, uintAkey, quanta, aesCtr, decrypted, payload, buf;
@@ -149,6 +165,30 @@ function Decrypt(listing, contents) {
     });
 }
 exports.Decrypt = Decrypt;
+function Encrypt(listing, contents, platform) {
+    return __awaiter(this, void 0, void 0, function () {
+        var data;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    data = contents;
+                    if (!listing.includes("songs/bin/macos")) return [3 /*break*/, 2];
+                    return [4 /*yield*/, ENTRYEncrypt(contents, platform)];
+                case 1:
+                    data = (_a.sent()).buf;
+                    return [3 /*break*/, 4];
+                case 2:
+                    if (!listing.includes("songs/bin/generic")) return [3 /*break*/, 4];
+                    return [4 /*yield*/, ENTRYEncrypt(contents, platform)];
+                case 3:
+                    data = (_a.sent()).buf;
+                    _a.label = 4;
+                case 4: return [2 /*return*/, data];
+            }
+        });
+    });
+}
+exports.Encrypt = Encrypt;
 function readEntry(data, idx, bomentries) {
     return __awaiter(this, void 0, void 0, function () {
         var singlebom, entryoffset, entrylength, zlength, retBuffer, length, i, z, buf, buffer, E_1;
@@ -169,9 +209,9 @@ function readEntry(data, idx, bomentries) {
                     if (length === entrylength) {
                         return [3 /*break*/, 7];
                     }
-                    buf = Buffer.alloc(z === 0 ? BLOCK_SIZE : z);
-                    buffer = data.slice(entryoffset, entryoffset + (z === 0 ? BLOCK_SIZE : z));
-                    entryoffset += (z === 0 ? BLOCK_SIZE : z);
+                    buf = Buffer.alloc(z === 0 ? exports.BLOCK_SIZE : z);
+                    buffer = data.slice(entryoffset, entryoffset + (z === 0 ? exports.BLOCK_SIZE : z));
+                    entryoffset += (z === 0 ? exports.BLOCK_SIZE : z);
                     _a.label = 2;
                 case 2:
                     _a.trys.push([2, 4, , 5]);
@@ -221,14 +261,14 @@ exports.HEADER = new binary_parser_1.Parser()
 });
 exports.ENTRY = new binary_parser_1.Parser()
     .string("md5", {
-    encoding: "ascii",
+    encoding: "hex",
     zeroTerminated: false,
-    length: 16
+    length: 16,
 })
     .uint32("zindex")
     .buffer("length", {
     // type: "uint32be",
-    length: 5
+    length: 5,
 })
     .buffer("offset", {
     //type: "uint32be",

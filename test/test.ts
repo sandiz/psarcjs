@@ -20,7 +20,10 @@ import {
 import {
     SongEbeat, SongNote, ISong2014
 } from '../src/song2014'
-import { ArrangementType, ShowLights, Vocals, Arrangement, ManifestTone, ManifestToneReviver, VocalArrangement, ArrangementInfo, AttributesHeader, Toolkit } from '../src/types/common';
+import {
+    ArrangementType, ShowLights, Vocals, Arrangement, ManifestTone, ManifestToneReviver,
+    VocalArrangement, ArrangementInfo, AttributesHeader, Toolkit, Platform
+} from '../src/types/common';
 import { getUuid } from '../src/aggregategraphwriter';
 
 use(Chaifs);
@@ -861,7 +864,7 @@ async function psarcGenerateTests() {
     describe("psarcjs: PSARC: generate tests ", async () => {
         it("psarcjs: generate directory", async () => {
             const dir = "/tmp/";
-            const tag = "psarcjs_test";
+            const tag = "bwab1anthem";
 
             const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
             const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
@@ -899,7 +902,7 @@ async function psarcGenerateTests() {
                 }
             }
 
-            await PSARC.generateDirectory(
+            const resDir = await PSARC.generateDirectory(
                 dir,
                 tag, {
                 xml: {
@@ -918,7 +921,12 @@ async function psarcGenerateTests() {
                 wem,
             },
                 info,
-                toolkit)
+                toolkit,
+                Platform.Mac,
+            );
+
+            await PSARC.packDirectory(resDir, Platform.Mac);
+            throw new Error("asd");
         }).timeout(30000);
     })
 }
@@ -1124,7 +1132,8 @@ const ddss = "test/dds/";
 const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
-async function fn() {
+async function testMain() {
+    /*
     await psarcTests();
     await sngTests();
     await song2014Tests();
@@ -1141,7 +1150,8 @@ async function fn() {
     }
 
     await manifestTests();
+    */
     await psarcGenerateTests();
 }
 
-fn();
+testMain();

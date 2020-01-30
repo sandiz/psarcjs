@@ -57,6 +57,26 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -69,6 +89,7 @@ var fs_1 = require("fs");
 var fs_extra_1 = require("fs-extra");
 var binary_parser_1 = require("binary-parser");
 var xml2js = __importStar(require("xml2js"));
+var util = __importStar(require("util"));
 var os = __importStar(require("os"));
 var PSARCParser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
@@ -81,6 +102,8 @@ var path_1 = require("path");
 var aggregategraphwriter_1 = require("./aggregategraphwriter");
 var common_1 = require("./types/common");
 var song2014_1 = require("./song2014");
+var readdir = require('fs').promises.readdir;
+var resolve = require('path').resolve;
 var pkgInfo = require("../package.json");
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
@@ -96,6 +119,7 @@ var PSARC = /** @class */ (function () {
     PSARC.prototype.parse = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a, header, paddedbom, decryptedbom, slicedbom, rawlisting;
+            var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -105,6 +129,7 @@ var PSARC = /** @class */ (function () {
                         _a.psarcRawData = _b.sent();
                         if (!this.psarcRawData) return [3 /*break*/, 3];
                         header = PSARCParser.HEADER.parse(this.psarcRawData);
+                        console.log(header);
                         paddedbom = PSARCParser.pad(header.bom);
                         decryptedbom = Buffer.from(PSARCParser.BOMDecrypt(paddedbom));
                         slicedbom = decryptedbom.slice(0, header.bom.length);
@@ -114,6 +139,13 @@ var PSARC = /** @class */ (function () {
                     case 2:
                         rawlisting = _b.sent();
                         this.listing = unescape(rawlisting.toString()).split("\n");
+                        this.BOMEntries.entries.forEach(function (v, i) {
+                            if (i === 0)
+                                v.name = "listing";
+                            else
+                                v.name = _this.listing[i - 1];
+                        });
+                        console.log(this.BOMEntries);
                         _b.label = 3;
                     case 3: return [2 /*return*/];
                 }
@@ -252,7 +284,7 @@ var PSARC = /** @class */ (function () {
             });
         });
     };
-    PSARC.generateDirectory = function (dir, tag, files, arrInfo, toolkit) {
+    PSARC.generateDirectory = function (dir, tag, files, arrInfo, toolkit, platform) {
         return __awaiter(this, void 0, void 0, function () {
             var info, _getFiles, _getVocalSNG, leadFiles, rhythmFiles, bassFiles, vocalFiles, allArrs, hsan, details, options, name, root, exists, fm, gfxassets, audio, songsarr, arrKeys, i, key, arr, j, oneIdx, xml, dest_1, songsbin, binKeys, i, key, sng, j, oneIdx, sngFile, dest_2, manifestDir, manifestKeys, i, key, manifest, j, oneIdx, json, dest_3, dest, gamex;
             var _a, _b, _c, _e;
@@ -372,8 +404,9 @@ var PSARC = /** @class */ (function () {
                         return [4 /*yield*/, Promise.all(files.xml[common_1.ArrangementType.VOCALS].map(function (xml, index) { return _getVocalSNG(xml, index); }))];
                     case 9:
                         vocalFiles = _f.sent();
-                        allArrs = leadFiles.map(function (item) { return item.arrangement; }).concat(rhythmFiles.map(function (item) { return item.arrangement; })).concat(bassFiles.map(function (item) { return item.arrangement; }));
-                        allArrs.concat(vocalFiles.map(function (item) { return item.arrangement; }));
+                        allArrs = [];
+                        allArrs = allArrs.concat(vocalFiles.map(function (item) { return item.arrangement; }));
+                        allArrs = allArrs.concat(leadFiles.map(function (item) { return item.arrangement; }).concat(rhythmFiles.map(function (item) { return item.arrangement; })).concat(bassFiles.map(function (item) { return item.arrangement; })));
                         return [4 /*yield*/, MANIFEST.generateHSAN(dir, tag, allArrs)];
                     case 10:
                         hsan = _f.sent();
@@ -386,7 +419,7 @@ var PSARC = /** @class */ (function () {
                             _a);
                         options = {
                             tag: tag,
-                            platform: common_1.Platform.Mac,
+                            platform: platform,
                             toolkit: toolkit,
                             arrDetails: details,
                             dds: files.dds,
@@ -615,17 +648,149 @@ var PSARC = /** @class */ (function () {
                     case 65: return [4 /*yield*/, GENERIC.generateXBlock(options.songs.arrangements, options.tag, gamex)];
                     case 66:
                         _f.sent();
-                        return [2 /*return*/];
+                        return [2 /*return*/, root];
                 }
             });
         });
     };
     PSARC.packDirectory = function (dir, platform) {
         return __awaiter(this, void 0, void 0, function () {
+            var listingFileName, files, entries, _loop_1, this_1, i, state_1;
+            var _this = this;
             return __generator(this, function (_a) {
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        listingFileName = "NamesBlock.bin";
+                        return [4 /*yield*/, this.getFiles(dir)];
+                    case 1:
+                        files = _a.sent();
+                        entries = [];
+                        files = __spread([listingFileName], files);
+                        _loop_1 = function (i) {
+                            var f, name_1, rawData, _a, blocks_1, origLengths, zippedBlocks, zLengths, totalZLength, item, e_1;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        f = files[i];
+                                        _b.label = 1;
+                                    case 1:
+                                        _b.trys.push([1, 6, , 7]);
+                                        name_1 = f.replace(dir + "/", "");
+                                        if (!(name_1 === listingFileName)) return [3 /*break*/, 2];
+                                        _a = Buffer.from(files
+                                            .slice(1, files.length)
+                                            .map(function (i) { return i.replace(dir + "/", ""); })
+                                            .join("\n"));
+                                        return [3 /*break*/, 4];
+                                    case 2: return [4 /*yield*/, fs_1.promises.readFile(f)];
+                                    case 3:
+                                        _a = _b.sent();
+                                        _b.label = 4;
+                                    case 4:
+                                        rawData = _a;
+                                        blocks_1 = this_1.chunks(rawData, PSARCParser.BLOCK_SIZE);
+                                        origLengths = blocks_1.map(function (i) { return i.length; });
+                                        return [4 /*yield*/, Promise.all(blocks_1.map(function (b, idx) { return __awaiter(_this, void 0, void 0, function () {
+                                                var packed, packedLen, plainLen;
+                                                return __generator(this, function (_a) {
+                                                    switch (_a.label) {
+                                                        case 0: return [4 /*yield*/, PSARCParser.zip(b)];
+                                                        case 1:
+                                                            packed = _a.sent();
+                                                            packedLen = packed.length;
+                                                            plainLen = blocks_1[idx].length;
+                                                            if (packedLen >= plainLen) {
+                                                                return [2 /*return*/, blocks_1[idx]];
+                                                            }
+                                                            else {
+                                                                if (packedLen < PSARCParser.BLOCK_SIZE - 1) {
+                                                                    return [2 /*return*/, packed];
+                                                                }
+                                                                else {
+                                                                    return [2 /*return*/, blocks_1[idx]];
+                                                                }
+                                                            }
+                                                            return [2 /*return*/];
+                                                    }
+                                                });
+                                            }); }))];
+                                    case 5:
+                                        zippedBlocks = _b.sent();
+                                        zLengths = zippedBlocks.map(function (i) { return i.length; });
+                                        totalZLength = zLengths.reduce(function (p, v) { return p + v; });
+                                        item = {
+                                            name: name_1,
+                                            origLengths: origLengths,
+                                            zippedBlocks: zippedBlocks,
+                                            zLengths: zLengths,
+                                            totalZLength: totalZLength,
+                                        };
+                                        entries.push(item);
+                                        return [3 /*break*/, 7];
+                                    case 6:
+                                        e_1 = _b.sent();
+                                        console.log("failed to pack entry", f);
+                                        console.log(e_1);
+                                        return [2 /*return*/, { value: void 0 }];
+                                    case 7: return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
+                        i = 0;
+                        _a.label = 2;
+                    case 2:
+                        if (!(i < files.length)) return [3 /*break*/, 5];
+                        return [5 /*yield**/, _loop_1(i)];
+                    case 3:
+                        state_1 = _a.sent();
+                        if (typeof state_1 === "object")
+                            return [2 /*return*/, state_1.value];
+                        _a.label = 4;
+                    case 4:
+                        i += 1;
+                        return [3 /*break*/, 2];
+                    case 5:
+                        console.log("entries", util.inspect(entries, {
+                            depth: 2,
+                            colors: true,
+                            maxArrayLength: 10,
+                            compact: false,
+                        }));
+                        return [2 /*return*/];
+                }
             });
         });
+    };
+    PSARC.getFiles = function (dir) {
+        return __awaiter(this, void 0, void 0, function () {
+            var dirents, files;
+            var _a;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, readdir(dir, { withFileTypes: true })];
+                    case 1:
+                        dirents = _b.sent();
+                        return [4 /*yield*/, Promise.all(dirents.map(function (dirent) {
+                                var res = resolve(dir, dirent.name);
+                                return dirent.isDirectory() ? _this.getFiles(res) : res;
+                            }))];
+                    case 2:
+                        files = _b.sent();
+                        return [2 /*return*/, (_a = Array.prototype).concat.apply(_a, __spread(files))];
+                }
+            });
+        });
+    };
+    PSARC.chunks = function (buffer, chunkSize) {
+        var result = [];
+        var len = buffer.length;
+        var i = 0;
+        while (i < len) {
+            result.push(buffer.slice(i, i += chunkSize));
+        }
+        return result;
     };
     return PSARC;
 }());
@@ -724,7 +889,7 @@ var SNG = /** @class */ (function () {
     };
     SNG.prototype.unpack = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var p, pData, _a, e_1;
+            var p, pData, _a, e_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -745,8 +910,8 @@ var SNG = /** @class */ (function () {
                         _b.label = 4;
                     case 4: return [3 /*break*/, 6];
                     case 5:
-                        e_1 = _b.sent();
-                        console.log(e_1);
+                        e_2 = _b.sent();
+                        console.log(e_2);
                         this.unpackedData = this.rawData;
                         return [3 /*break*/, 6];
                     case 6: return [3 /*break*/, 8];
@@ -980,7 +1145,7 @@ var GENERIC = /** @class */ (function () {
                             var _a, _b, _c;
                             return {
                                 $: {
-                                    id: (_a = item.header) === null || _a === void 0 ? void 0 : _a.persistentID,
+                                    id: (_a = item.header) === null || _a === void 0 ? void 0 : _a.persistentID.toLowerCase(),
                                     modelName: "RSEnumerable_Song",
                                     name: tag + "_" + exports.toTitleCase((_c = (_b = item.header) === null || _b === void 0 ? void 0 : _b.arrangementName.toLowerCase(), (_c !== null && _c !== void 0 ? _c : ''))),
                                     iterations: 0,
@@ -997,7 +1162,11 @@ var GENERIC = /** @class */ (function () {
                                 }
                             }
                         };
-                        builder = new xml2js.Builder();
+                        builder = new xml2js.Builder({
+                            xmldec: {
+                                version: "1.0",
+                            }
+                        });
                         xml = builder.buildObject(xblock);
                         return [4 /*yield*/, fs_1.promises.writeFile(f, xml)];
                     case 1:
@@ -1196,7 +1365,11 @@ var Song2014 = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        builder = new xml2js.Builder();
+                        builder = new xml2js.Builder({
+                            xmldec: {
+                                version: "1.0",
+                            }
+                        });
                         xml = builder.buildObject({
                             song: __assign({ $: { version: this.song.version }, $comments: [tk.name + " v" + tk.version + " (psarcjs v" + pkgInfo.version + ")"] }, this.xmlize())
                         });

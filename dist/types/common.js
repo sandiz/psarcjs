@@ -938,7 +938,11 @@ var ShowLights = /** @class */ (function () {
                 })
             }
         };
-        var builder = new xml2js.Builder();
+        var builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
         var xml = builder.buildObject(e);
         return xml;
     };
@@ -991,7 +995,11 @@ var Vocals = /** @class */ (function () {
                 })
             }
         };
-        var builder = new xml2js.Builder();
+        var builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
         var xml = builder.buildObject(e);
         return xml;
     };

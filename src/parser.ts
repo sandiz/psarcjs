@@ -3,7 +3,7 @@ import * as aesjs from 'aes-js';
 import * as zlib from 'zlib';
 import { PSARCHEADER, BOM, Platform } from './types/common';
 
-const BLOCK_SIZE = 2 ** 16;
+export const BLOCK_SIZE = 2 ** 16;
 const ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C"
 export const ARC_IV = "E915AA018FEF71FC508132E4BB4CEB42"
 export const MAC_KEY = "9821330E34B91F70D0A48CBD625993126970CEA09192C0E6CDA676CC9838289D"
@@ -20,8 +20,15 @@ export const unzip = (data: Buffer) => new Promise<Buffer>((resolve, reject) => 
     });
 });
 
-export const zip = (data: Buffer) => new Promise<Buffer>((resolve, reject) => {
-    zlib.gzip(data, (err, res) => {
+export const zip = (data: Buffer, level = 9) => new Promise<Buffer>((resolve, reject) => {
+    zlib.deflate(data, {
+        level,
+        windowBits: 15,
+        memLevel: 8,
+        strategy: 0,
+        chunkSize: 4096,
+
+    }, (err, res) => {
         if (err) reject(err)
         resolve(res);
     })
@@ -35,11 +42,18 @@ export function pad(buffer: Buffer, blocksize = 16) {
     return Buffer.concat([buffer, b])
 }
 
-export function BOMDecrypt(buffer: Buffer) {
+export function BOMDecrypt(buffer: Buffer): Uint8Array {
     const key = aesjs.utils.hex.toBytes(ARC_KEY)
     const iv = aesjs.utils.hex.toBytes(ARC_IV)
     const aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
     return aescfb.decrypt(buffer)
+}
+
+export function BOMEncrypt(buffer: Buffer): Uint8Array {
+    const key = aesjs.utils.hex.toBytes(ARC_KEY)
+    const iv = aesjs.utils.hex.toBytes(ARC_IV)
+    const aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
+    return aescfb.encrypt(buffer)
 }
 
 export async function ENTRYDecrypt(data: Buffer, key: string) {
@@ -83,11 +97,23 @@ export async function Decrypt(listing: string, contents: Buffer): Promise<Buffer
     return data
 }
 
+export async function Encrypt(listing: string, contents: Buffer, platform: Platform): Promise<Buffer> {
+    let data = contents;
+    if (listing.includes("songs/bin/macos")) {
+        data = (await ENTRYEncrypt(contents, platform)).buf;
+    }
+    else if (listing.includes("songs/bin/generic")) {
+        data = (await ENTRYEncrypt(contents, platform)).buf;
+    }
+    return data
+}
+
 export async function readEntry(data: Buffer, idx: number, bomentries: BOM) {
     const singlebom = bomentries.entries[idx];
     let entryoffset = singlebom.offset.readUInt32BE(1)
     const entrylength = singlebom.length.readUInt32BE(1)
     const zlength = bomentries.zlength.slice(singlebom.zindex, bomentries.zlength.length)
+    //console.log('entry', "idx", idx, "offset", entryoffset, "len", entrylength, "zi", singlebom.zindex, "zl", zlength);
     let retBuffer = Buffer.alloc(0)
     let length = 0
     for (let i = 0; i < zlength.length; i += 1) {
@@ -136,14 +162,14 @@ export const HEADER: Parser<PSARCHEADER> = new Parser()
 
 export const ENTRY = new Parser()
     .string("md5", {
-        encoding: "ascii",
+        encoding: "hex",
         zeroTerminated: false,
-        length: 16
+        length: 16,
     })
     .uint32("zindex")
     .buffer("length", {
         // type: "uint32be",
-        length: 5
+        length: 5,
     })
     .buffer("offset", {
         //type: "uint32be",

@@ -1,7 +1,8 @@
-import { promises, exists } from 'fs';
+import { promises, exists, Dirent, readFile } from 'fs';
 import { mkdirp, move } from 'fs-extra';
 import { Parser } from 'binary-parser';
 import * as xml2js from 'xml2js';
+import * as crypto from 'crypto';
 
 import * as util from 'util';
 import * as os from 'os';
@@ -31,6 +32,10 @@ import {
     ISong2014, Tuning, SongArrangementProperties,
     TranscriptionTrack, SongLevel,
 } from './song2014';
+
+const { readdir } = require('fs').promises;
+const { resolve } = require('path');
+
 
 const pkgInfo = require("../package.json");
 
@@ -66,6 +71,7 @@ export class PSARC {
 
         if (this.psarcRawData) {
             const header = PSARCParser.HEADER.parse(this.psarcRawData);
+            console.log(header);
             const paddedbom = PSARCParser.pad(header.bom);
             const decryptedbom = Buffer.from(PSARCParser.BOMDecrypt(paddedbom));
             const slicedbom = decryptedbom.slice(0, header.bom.length);
@@ -75,6 +81,15 @@ export class PSARC {
             if (this.BOMEntries) {
                 const rawlisting = await PSARCParser.readEntry(this.psarcRawData, 0, this.BOMEntries);
                 this.listing = unescape(rawlisting.toString()).split("\n");
+                this.BOMEntries.entries.forEach((v, i) => {
+                    if (i === 0) (v as any).name = "listing";
+                    else (v as any).name = this.listing[i - 1];
+                })
+                console.log(this.BOMEntries);
+                /* this.listing.forEach(l => {
+                    const md5 = crypto.createHash('md5', { encoding: 'ascii' }).update(l).digest("hex")
+                    console.log(l, md5);
+                }) */
             }
         }
     }
@@ -203,8 +218,9 @@ export class PSARC {
             }
         },
         arrInfo: ArrangementInfo,
-        toolkit: Toolkit
-    ) {
+        toolkit: Toolkit,
+        platform: Platform
+    ): Promise<string> {
         /* validate dds */
         await Promise.all(Object.keys(files.dds).map(key => {
             const dds1 = new DDS(files.dds[key as keyof typeof files.dds]);
@@ -278,8 +294,9 @@ export class PSARC {
         const vocalFiles =
             await Promise.all(files.xml[ArrangementType.VOCALS].map((xml, index) => _getVocalSNG(xml, index)));
 
-        const allArrs: (Arrangement | VocalArrangement)[] = leadFiles.map(item => item.arrangement).concat(rhythmFiles.map(item => item.arrangement)).concat(bassFiles.map(item => item.arrangement));
-        allArrs.concat(vocalFiles.map(item => item.arrangement));
+        let allArrs: (Arrangement | VocalArrangement)[] = [];
+        allArrs = allArrs.concat(vocalFiles.map(item => item.arrangement));
+        allArrs = allArrs.concat(leadFiles.map(item => item.arrangement).concat(rhythmFiles.map(item => item.arrangement)).concat(bassFiles.map(item => item.arrangement)));
 
         const hsan = await MANIFEST.generateHSAN(dir, tag, allArrs);
         const details: ArrangementDetails = {
@@ -291,7 +308,7 @@ export class PSARC {
         };
         const options: PSARCOptions = {
             tag: tag,
-            platform: Platform.Mac,
+            platform: platform,
             toolkit,
             arrDetails: details,
             dds: files.dds,
@@ -424,10 +441,93 @@ export class PSARC {
         exists = await PSARC.existsAsync(gamex);
         if (!exists) await mkdirp(gamex);
         await GENERIC.generateXBlock(options.songs.arrangements, options.tag, gamex);
+
+        return root;
     }
 
     static async packDirectory(dir: string, platform: Platform) {
+        const listingFileName = "NamesBlock.bin";
+        let files: string[] = await this.getFiles(dir);
+        const entries: {
+            name: string,
+            zippedBlocks: Buffer[],
+            origLengths: number[],
+            zLengths: number[],
+            totalZLength: number,
+        }[] = [];
+        files = [listingFileName, ...files];
+        for (let i = 0; i < files.length; i += 1) {
+            const f = files[i];
+            try {
+                const name = f.replace(dir + "/", "");
+                const rawData = name === listingFileName
+                    ? Buffer.from(
+                        files
+                            .slice(1, files.length)
+                            .map(i => i.replace(dir + "/", ""))
+                            .join("\n")
+                    )
+                    : await promises.readFile(f);
+                const blocks = this.chunks(rawData, PSARCParser.BLOCK_SIZE);
+                const origLengths = blocks.map(i => i.length);
+                const zippedBlocks: Buffer[] = await Promise.all(blocks.map(async (b, idx) => {
+                    const packed = await PSARCParser.zip(b);
+                    const packedLen = packed.length;
+                    const plainLen = blocks[idx].length;
 
+                    if (packedLen >= plainLen) {
+                        return blocks[idx];
+                    }
+                    else {
+                        if (packedLen < PSARCParser.BLOCK_SIZE - 1) {
+                            return packed;
+                        }
+                        else {
+                            return blocks[idx];
+                        }
+                    }
+                }));
+                const zLengths: number[] = zippedBlocks.map(i => i.length);
+
+                const totalZLength = zLengths.reduce((p, v) => p + v);
+                const item = {
+                    name,
+                    origLengths,
+                    zippedBlocks,
+                    zLengths,
+                    totalZLength,
+                }
+                entries.push(item);
+
+            }
+            catch (e) {
+                console.log("failed to pack entry", f);
+                console.log(e);
+                return;
+            }
+        }
+
+    }
+
+    static async  getFiles(dir: string) {
+        const dirents = await readdir(dir, { withFileTypes: true });
+        const files = await Promise.all(dirents.map((dirent: Dirent) => {
+            const res = resolve(dir, dirent.name);
+            return dirent.isDirectory() ? this.getFiles(res) : res;
+        }));
+        return Array.prototype.concat(...files);
+    }
+
+    static chunks(buffer: Buffer, chunkSize: number) {
+        var result = [];
+        var len = buffer.length;
+        var i = 0;
+
+        while (i < len) {
+            result.push(buffer.slice(i, i += chunkSize));
+        }
+
+        return result;
     }
 }
 
@@ -653,7 +753,7 @@ export class GENERIC {
         const entities = arrs.map(item => {
             return {
                 $: {
-                    id: item.header?.persistentID,
+                    id: item.header?.persistentID.toLowerCase(),
                     modelName: "RSEnumerable_Song",
                     name: `${tag}_${toTitleCase(item.header?.arrangementName.toLowerCase() ?? '')}`,
                     iterations: 0,
@@ -671,7 +771,11 @@ export class GENERIC {
             }
         }
 
-        const builder = new xml2js.Builder();
+        const builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
         const xml = builder.buildObject(xblock);
         await promises.writeFile(f, xml);
         return f;
@@ -839,7 +943,11 @@ export class Song2014 {
     }
 
     async generateXML(dir: string, tag: string, tk: ToolkitInfo) {
-        const builder = new xml2js.Builder();
+        const builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
         const xml = builder.buildObject({
             song: {
                 $: { version: this.song.version },

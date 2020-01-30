@@ -1037,7 +1037,11 @@ export class ShowLights {
         }
 
 
-        const builder = new xml2js.Builder();
+        const builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
         const xml = builder.buildObject(e);
         return xml;
     }
@@ -1081,7 +1085,11 @@ export class Vocals {
         }
 
 
-        const builder = new xml2js.Builder();
+        const builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
         const xml = builder.buildObject(e);
         return xml;
     }
