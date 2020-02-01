@@ -19,15 +19,15 @@ export interface PSARCHEADER {
     bom: Buffer,
 }
 
-export interface ENTRY {
+export interface PSARCENTRY {
     md5: string[16],
     zindex: number,
     length: Buffer,
     offset: Buffer,
 }
 
-export interface BOM {
-    entries: ENTRY[],
+export interface PSARCBOM {
+    entries: PSARCENTRY[],
     zlength: number[],
 }
 

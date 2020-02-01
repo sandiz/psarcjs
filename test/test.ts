@@ -2,15 +2,19 @@ const util = require('util');
 const path = require('path');
 const tmp = require('tmp');
 const spawn = require('await-spawn')
+const exec = util.promisify(require('child_process').exec);
 
+import { mkdirp, remove } from 'fs-extra';
 import { expect, use } from 'chai';
 import chaiExclude from 'chai-exclude'
 import assertArrays from 'chai-arrays'
 import forEach from 'mocha-each'
 import Chaifs = require('chai-fs');
+import crypto = require("crypto");
+import xml2js = require("xml2js");
 const promises = require('fs').promises;
 import {
-    join
+    join, parse, basename
 } from 'path';
 import {
     PSARC, SNG, DDS,
@@ -25,6 +29,7 @@ import {
     VocalArrangement, ArrangementInfo, AttributesHeader, Toolkit, Platform
 } from '../src/types/common';
 import { getUuid } from '../src/aggregategraphwriter';
+
 
 use(Chaifs);
 use(chaiExclude);
@@ -397,7 +402,7 @@ async function ddsTests() {
             it('dds validate', async () => {
                 const input = `${ddss}${f2}`;
                 const dds = new DDS(input);
-                const res = await dds.validate();
+                const res = await dds.parse();
                 //console.log(res);
             }).timeout(15000)
         })
@@ -414,7 +419,7 @@ async function wemTests() {
         .describe('psarcjs: WEM: parse %s', async function (f2: string) {
             it('wem validate', async () => {
                 const input = `${wems}${f2}`;
-                const res = await WEM.validate(input);
+                const res = await WEM.parse(input);
 
                 /*console.log(util.inspect(res, {
                     depth: 6,
@@ -446,7 +451,7 @@ async function waapiTests() {
             const f = await WAAPI.convert("/Users/sandi/Downloads/output.wav", "testTag", 1);
             console.log("Generated wem file", f);
 
-            const res = await WEM.validate(f);
+            const res = await WEM.parse(f);
             console.log(util.inspect(res, {
                 depth: 4,
                 colors: true,
@@ -460,7 +465,7 @@ async function waapiTests() {
             const f = await WAAPI.convert("/Users/sandi/Downloads/output.wav", "testTag", 0);
             console.log("Generated wem file", f);
 
-            const res = await WEM.validate(f);
+            const res = await WEM.parse(f);
             console.log(util.inspect(res, {
                 depth: 4,
                 colors: true,
@@ -582,7 +587,7 @@ async function bnkTests() {
         .describe('psarcjs: BNK: parse %s', async function (f2: string) {
             it('bnk validate', async () => {
                 const input = `${bnks}${f2}`;
-                const res = await BNK.validate(input);
+                const res = await BNK.parse(input);
 
                 /*console.log(util.inspect(res, {
                     depth: 6,
@@ -861,11 +866,11 @@ async function song2014Tests() {
 }
 
 async function psarcGenerateTests() {
+    let outDir = "";
+    const dir = "/tmp/";
+    const tag = "bwab1anthem";
     describe("psarcjs: PSARC: generate tests ", async () => {
         it("psarcjs: generate directory", async () => {
-            const dir = "/tmp/";
-            const tag = "bwab1anthem";
-
             const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
             const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
             const rhythmXMLs = ["test/blinktest/bwab1anthem_rhythm.xml"];
@@ -902,7 +907,7 @@ async function psarcGenerateTests() {
                 }
             }
 
-            const resDir = await PSARC.generateDirectory(
+            outDir = await PSARC.generateDirectory(
                 dir,
                 tag, {
                 xml: {
@@ -924,9 +929,90 @@ async function psarcGenerateTests() {
                 toolkit,
                 Platform.Mac,
             );
+        }).timeout(30000);
+        it("psarcjs: pack directory", async () => {
+            const out = `/tmp/${tag}_psarcjs_m.psarc`;
+            await PSARC.packDirectory(outDir, out);
 
-            await PSARC.packDirectory(resDir, Platform.Mac);
-            throw new Error("asd");
+            const psarc = new PSARC(out);
+            await psarc.parse();
+            const files = psarc.getFiles();
+            const meter = files.length
+            const extractedDir = "/tmp/extracted_psarc/psarcjs/";
+            await remove(extractedDir);
+            await mkdirp(extractedDir);
+            for (let i = 0; i < meter; i += 1) {
+                const outfile = join(extractedDir, basename(files[i]));
+                await psarc.extractFile(i, outfile);
+            }
+            const cwd = process.cwd();
+            process.chdir("/tmp/");
+            const { stdout, stderr } = await exec(`pyrocksmith --pack ${outDir}`);
+            expect(stderr).to.be.empty;
+
+            const t = "/tmp/bwab1anthem_m.psarc";
+            const psarc2 = new PSARC(t);
+            await psarc2.parse();
+            const files2 = psarc2.getFiles();
+            const extractedDir2 = "/tmp/extracted_psarc/rstk/";
+            await remove(extractedDir2);
+            await mkdirp(extractedDir2);
+            for (let i = 0; i < files.length; i += 1) {
+                const outfile = join(extractedDir2, basename(files2[i]));
+                await psarc2.extractFile(i, outfile);
+            }
+
+            for (let i = 0; i < meter; i += 1) {
+                const f = files[i];
+                const parsed = parse(f);
+                const lf = join(extractedDir, basename(f));
+                const rf = join(extractedDir2, basename(f));
+                const ld = await promises.readFile(lf);
+                const rd = await promises.readFile(rf);
+
+                switch (parsed.ext) {
+                    case ".appid":
+                        expect(ld).to.be.deep.equal(rd);
+                        break;
+                    case ".wem":
+                        await WEM.parse(lf);
+                        await WEM.parse(rf);
+                        expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
+                        break;
+                    case ".bnk":
+                        await BNK.parse(lf);
+                        await BNK.parse(rf);
+                        expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
+                        break;
+                    case ".version":
+                    case ".nt":
+                        break;
+                    case ".xblock":
+                    case ".xml":
+                        await xml2js.parseStringPromise(ld);
+                        await xml2js.parseStringPromise(rd);
+                        break;
+                    case ".dds":
+                        await new DDS(lf).parse();
+                        await new DDS(rf).parse();
+                        expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
+                        break;
+                    case ".json":
+                    case ".hsan":
+                        JSON.parse(ld);
+                        JSON.parse(rd);
+                        break;
+                    case ".sng":
+                        await new SNG(lf).parse();
+                        await new SNG(rf).parse();
+                        break;
+                    case ".flat":
+                        expect(ld.toString()).to.be.equal(rd.toString());
+                        break;
+                    default:
+                        break;
+                }
+            }
         }).timeout(30000);
     })
 }

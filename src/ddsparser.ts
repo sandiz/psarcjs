@@ -14,8 +14,8 @@ export const HEADER = new Parser()
     .string("MAGIC", {
         encoding: "ascii",
         zeroTerminated: false,
-        //validate: "DDS ",
-        length: 4
+        length: 4,
+        assert: "DDS ",
     })
     .uint32("header_length")
     .uint32("flags")

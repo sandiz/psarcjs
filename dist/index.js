@@ -89,7 +89,7 @@ var fs_1 = require("fs");
 var fs_extra_1 = require("fs-extra");
 var binary_parser_1 = require("binary-parser");
 var xml2js = __importStar(require("xml2js"));
-var util = __importStar(require("util"));
+var crypto = __importStar(require("crypto"));
 var os = __importStar(require("os"));
 var PSARCParser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
@@ -107,8 +107,12 @@ var resolve = require('path').resolve;
 var pkgInfo = require("../package.json");
 var PSARC = /** @class */ (function () {
     function PSARC(file) {
-        this.psarcFile = file;
+        this.psarcFile = "";
         this.psarcRawData = null;
+        if (file instanceof Buffer)
+            this.psarcRawData = file;
+        else
+            this.psarcFile = file;
         this.BOMEntries = null;
         this.listing = [];
     }
@@ -123,20 +127,22 @@ var PSARC = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        if (!(this.psarcRawData == null)) return [3 /*break*/, 2];
                         _a = this;
                         return [4 /*yield*/, fs_1.promises.readFile(this.psarcFile)];
                     case 1:
                         _a.psarcRawData = _b.sent();
-                        if (!this.psarcRawData) return [3 /*break*/, 3];
+                        _b.label = 2;
+                    case 2:
+                        if (!this.psarcRawData) return [3 /*break*/, 4];
                         header = PSARCParser.HEADER.parse(this.psarcRawData);
-                        console.log(header);
                         paddedbom = PSARCParser.pad(header.bom);
                         decryptedbom = Buffer.from(PSARCParser.BOMDecrypt(paddedbom));
                         slicedbom = decryptedbom.slice(0, header.bom.length);
                         this.BOMEntries = PSARCParser.BOM(header.n_entries).parse(slicedbom);
-                        if (!this.BOMEntries) return [3 /*break*/, 3];
+                        if (!this.BOMEntries) return [3 /*break*/, 4];
                         return [4 /*yield*/, PSARCParser.readEntry(this.psarcRawData, 0, this.BOMEntries)];
-                    case 2:
+                    case 3:
                         rawlisting = _b.sent();
                         this.listing = unescape(rawlisting.toString()).split("\n");
                         this.BOMEntries.entries.forEach(function (v, i) {
@@ -145,9 +151,8 @@ var PSARC = /** @class */ (function () {
                             else
                                 v.name = _this.listing[i - 1];
                         });
-                        console.log(this.BOMEntries);
-                        _b.label = 3;
-                    case 3: return [2 /*return*/];
+                        _b.label = 4;
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -295,7 +300,7 @@ var PSARC = /** @class */ (function () {
                     /* validate dds */
                     return [4 /*yield*/, Promise.all(Object.keys(files.dds).map(function (key) {
                             var dds1 = new DDS(files.dds[key]);
-                            return dds1.validate();
+                            return dds1.parse();
                         }))
                         /* validate wem */
                     ];
@@ -303,19 +308,19 @@ var PSARC = /** @class */ (function () {
                         /* validate dds */
                         _f.sent();
                         /* validate wem */
-                        return [4 /*yield*/, WEM.validate(files.wem.main.wem)];
+                        return [4 /*yield*/, WEM.parse(files.wem.main.wem)];
                     case 2:
                         /* validate wem */
                         _f.sent();
-                        return [4 /*yield*/, WEM.validate(files.wem.preview.wem)];
+                        return [4 /*yield*/, WEM.parse(files.wem.preview.wem)];
                     case 3:
                         _f.sent();
                         /* validate bnk */
-                        return [4 /*yield*/, BNK.validate(files.wem.main.bnk)];
+                        return [4 /*yield*/, BNK.parse(files.wem.main.bnk)];
                     case 4:
                         /* validate bnk */
                         _f.sent();
-                        return [4 /*yield*/, BNK.validate(files.wem.preview.bnk)];
+                        return [4 /*yield*/, BNK.parse(files.wem.preview.bnk)];
                     case 5:
                         _f.sent();
                         info = function (index) { arrInfo.currentPartition = index; return arrInfo; };
@@ -333,10 +338,13 @@ var PSARC = /** @class */ (function () {
                                         return [4 /*yield*/, sng.parse()];
                                     case 3:
                                         _c.sent();
+                                        return [4 /*yield*/, sng.pack()];
+                                    case 4:
+                                        _c.sent();
                                         _b = (_a = JSON).parse;
                                         return [4 /*yield*/, fs_1.promises.readFile(tones)];
-                                    case 4: return [4 /*yield*/, (_c.sent()).toString()];
-                                    case 5:
+                                    case 5: return [4 /*yield*/, (_c.sent()).toString()];
+                                    case 6:
                                         tonesObj = _b.apply(_a, [_c.sent(), common_1.ManifestToneReviver]);
                                         arr = new common_1.Arrangement(parsed.song, sng, {
                                             tag: tag,
@@ -350,7 +358,7 @@ var PSARC = /** @class */ (function () {
                                             info: info(index),
                                         });
                                         return [4 /*yield*/, MANIFEST.generateJSON("/tmp/", tag, arr)];
-                                    case 6:
+                                    case 7:
                                         json = _c.sent();
                                         return [2 /*return*/, {
                                                 sng: sngFile,
@@ -653,9 +661,9 @@ var PSARC = /** @class */ (function () {
             });
         });
     };
-    PSARC.packDirectory = function (dir, platform) {
+    PSARC.packDirectory = function (dir, psarcFilename) {
         return __awaiter(this, void 0, void 0, function () {
-            var listingFileName, files, entries, _loop_1, this_1, i, state_1;
+            var listingFileName, files, entries, zLengths, prevOffset, _loop_1, this_1, i, state_1, bNum, headerSize, bom, header, result, ph, i, entry, j;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -665,9 +673,11 @@ var PSARC = /** @class */ (function () {
                     case 1:
                         files = _a.sent();
                         entries = [];
+                        zLengths = [];
                         files = __spread([listingFileName], files);
+                        prevOffset = 0;
                         _loop_1 = function (i) {
-                            var f, name_1, rawData, _a, blocks_1, origLengths, zippedBlocks, zLengths, totalZLength, item, e_1;
+                            var f, name_1, rawData, _a, blocks_1, origLengths, zippedBlocks, localLengths, totalLength, localZLengths, totalZLength, item, e_1;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
                                     case 0:
@@ -688,10 +698,10 @@ var PSARC = /** @class */ (function () {
                                         _b.label = 4;
                                     case 4:
                                         rawData = _a;
-                                        blocks_1 = this_1.chunks(rawData, PSARCParser.BLOCK_SIZE);
+                                        blocks_1 = this_1.chunks(rawData, PSARCParser.BLOCK_SIZE - 1);
                                         origLengths = blocks_1.map(function (i) { return i.length; });
                                         return [4 /*yield*/, Promise.all(blocks_1.map(function (b, idx) { return __awaiter(_this, void 0, void 0, function () {
-                                                var packed, packedLen, plainLen;
+                                                var packed, packedLen, plainLen, blockToReturn;
                                                 return __generator(this, function (_a) {
                                                     switch (_a.label) {
                                                         case 0: return [4 /*yield*/, PSARCParser.zip(b)];
@@ -699,32 +709,40 @@ var PSARC = /** @class */ (function () {
                                                             packed = _a.sent();
                                                             packedLen = packed.length;
                                                             plainLen = blocks_1[idx].length;
+                                                            blockToReturn = null;
                                                             if (packedLen >= plainLen) {
-                                                                return [2 /*return*/, blocks_1[idx]];
+                                                                blockToReturn = blocks_1[idx];
                                                             }
                                                             else {
                                                                 if (packedLen < PSARCParser.BLOCK_SIZE - 1) {
-                                                                    return [2 /*return*/, packed];
+                                                                    blockToReturn = packed;
                                                                 }
                                                                 else {
-                                                                    return [2 /*return*/, blocks_1[idx]];
+                                                                    blockToReturn = blocks_1[idx];
                                                                 }
                                                             }
-                                                            return [2 /*return*/];
+                                                            //console.log(name, "block", idx, isPacked);
+                                                            return [2 /*return*/, blockToReturn];
                                                     }
                                                 });
                                             }); }))];
                                     case 5:
                                         zippedBlocks = _b.sent();
-                                        zLengths = zippedBlocks.map(function (i) { return i.length; });
-                                        totalZLength = zLengths.reduce(function (p, v) { return p + v; });
+                                        localLengths = blocks_1.map(function (i) { return i.length; });
+                                        totalLength = localLengths.reduce(function (p, v) { return p + v; });
+                                        localZLengths = zippedBlocks.map(function (i) { return i.length; });
+                                        totalZLength = localZLengths.reduce(function (p, v) { return p + v; });
                                         item = {
                                             name: name_1,
                                             origLengths: origLengths,
                                             zippedBlocks: zippedBlocks,
-                                            zLengths: zLengths,
-                                            totalZLength: totalZLength,
+                                            zLengths: localZLengths,
+                                            totalLength: totalLength,
+                                            zIndex: zLengths.length,
+                                            offset: prevOffset,
                                         };
+                                        zLengths = zLengths.concat(localZLengths);
+                                        prevOffset += totalZLength;
                                         entries.push(item);
                                         return [3 /*break*/, 7];
                                     case 6:
@@ -751,12 +769,50 @@ var PSARC = /** @class */ (function () {
                         i += 1;
                         return [3 /*break*/, 2];
                     case 5:
-                        console.log("entries", util.inspect(entries, {
-                            depth: 2,
-                            colors: true,
-                            maxArrayLength: 10,
-                            compact: false,
-                        }));
+                        bNum = Math.log(PSARCParser.BLOCK_SIZE) / Math.log(256);
+                        headerSize = PSARCParser.nextBlockSize(((32 + (entries.length * 30) + (zLengths.length * bNum))));
+                        bom = {
+                            entries: entries.map(function (item) {
+                                var lBuffer = Buffer.alloc(5).fill(0);
+                                var oBuffer = Buffer.alloc(5).fill(0);
+                                lBuffer.writeUInt32BE(item.totalLength, 1);
+                                oBuffer.writeUInt32BE(item.offset + headerSize, 1);
+                                //console.log(item.name, item.zIndex, item.totalLength, item.offset + headerSize);
+                                return {
+                                    md5: crypto
+                                        .createHash('md5', { encoding: 'ascii' })
+                                        .update(item.name)
+                                        .digest("hex"),
+                                    zindex: item.zIndex,
+                                    length: lBuffer,
+                                    offset: oBuffer,
+                                };
+                            }),
+                            zlength: zLengths,
+                        };
+                        header = {
+                            MAGIC: 'PSAR',
+                            VERSION: 65540,
+                            COMPRESSION: 'zlib',
+                            header_size: headerSize,
+                            ENTRY_SIZE: 30,
+                            n_entries: entries.length,
+                            BLOCK_SIZE: PSARCParser.BLOCK_SIZE,
+                            ARCHIVE_FLAGS: 4,
+                            bom: Buffer.from(PSARCParser.BOMEncrypt(Buffer.from(PSARCParser.BOM(entries.length).encode(bom)))),
+                        };
+                        result = Buffer.alloc(0);
+                        ph = PSARCParser.HEADER.encode(header);
+                        result = Buffer.concat([ph]);
+                        for (i = 0; i < entries.length; i += 1) {
+                            entry = entries[i];
+                            for (j = 0; j < entry.zippedBlocks.length; j += 1) {
+                                result = Buffer.concat([result, entry.zippedBlocks[j]]);
+                            }
+                        }
+                        return [4 /*yield*/, fs_1.promises.writeFile(psarcFilename, result)];
+                    case 6:
+                        _a.sent();
                         return [2 /*return*/];
                 }
             });
@@ -945,7 +1001,7 @@ var DDS = /** @class */ (function () {
             });
         });
     };
-    DDS.prototype.validate = function () {
+    DDS.prototype.parse = function () {
         return __awaiter(this, void 0, void 0, function () {
             var data;
             return __generator(this, function (_a) {
@@ -978,7 +1034,7 @@ var WEM = /** @class */ (function () {
             });
         });
     };
-    WEM.validate = function (wemFile) {
+    WEM.parse = function (wemFile) {
         return __awaiter(this, void 0, void 0, function () {
             var data;
             return __generator(this, function (_a) {
@@ -997,7 +1053,7 @@ exports.WEM = WEM;
 var BNK = /** @class */ (function () {
     function BNK() {
     }
-    BNK.validate = function (bnkFile) {
+    BNK.parse = function (bnkFile) {
         return __awaiter(this, void 0, void 0, function () {
             var data;
             return __generator(this, function (_a) {

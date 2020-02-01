@@ -79,6 +79,11 @@ exports.zip = function (data, level) {
     });
 };
 exports.mod = function (x, n) { return (x % n + n) % n; };
+function nextBlockSize(blockSize, mutipleOf) {
+    if (mutipleOf === void 0) { mutipleOf = 16; }
+    return Math.ceil(blockSize / mutipleOf) * mutipleOf;
+}
+exports.nextBlockSize = nextBlockSize;
 function pad(buffer, blocksize) {
     if (blocksize === void 0) { blocksize = 16; }
     var size = exports.mod((blocksize - buffer.length), blocksize);
@@ -97,7 +102,7 @@ function BOMEncrypt(buffer) {
     var key = aesjs.utils.hex.toBytes(ARC_KEY);
     var iv = aesjs.utils.hex.toBytes(exports.ARC_IV);
     var aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
-    return aescfb.encrypt(buffer);
+    return aescfb.encrypt(pad(buffer));
 }
 exports.BOMEncrypt = BOMEncrypt;
 function ENTRYDecrypt(data, key) {
@@ -239,15 +244,15 @@ exports.HEADER = new binary_parser_1.Parser()
     .string("MAGIC", {
     encoding: "ascii",
     zeroTerminated: false,
-    //validate: "PSAR",
-    length: 4
+    length: 4,
+    assert: 'PSAR',
 })
     .uint32("VERSION")
     .string("COMPRESSION", {
     encoding: "ascii",
     zeroTerminated: false,
-    //validate: "zlib",
-    length: 4
+    length: 4,
+    assert: 'zlib',
 })
     .uint32("header_size")
     .uint32("ENTRY_SIZE")

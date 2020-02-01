@@ -17,8 +17,8 @@ import { join, basename } from 'path';
 import { generate } from './aggregategraphwriter';
 
 import {
-    BOM, Arrangements, ArrangementDetails,
-    Platform, Arrangement, ToolkitInfo, PSARCOptions, Manifest, ManifestReplacer, VocalArrangement, HSANManifest, ArrangementType, MetaArrangement, ArrangementInfo, ManifestTone, ManifestToneReviver, Vocals, Toolkit,
+    Arrangements, ArrangementDetails,
+    Platform, Arrangement, ToolkitInfo, PSARCOptions, Manifest, ManifestReplacer, VocalArrangement, HSANManifest, ArrangementType, MetaArrangement, ArrangementInfo, ManifestTone, ManifestToneReviver, Vocals, Toolkit, PSARCHEADER, PSARCBOM, PSARCENTRY,
 } from "./types/common";
 
 import {
@@ -52,12 +52,16 @@ export class PSARC {
      */
     public psarcFile: string;
     private psarcRawData: Buffer | null;
-    private BOMEntries: BOM | null;
+    private BOMEntries: PSARCBOM | null;
     private listing: string[];
 
-    constructor(file: string) {
-        this.psarcFile = file;
+    constructor(file: string | Buffer) {
+        this.psarcFile = "";
         this.psarcRawData = null;
+        if (file instanceof Buffer)
+            this.psarcRawData = file;
+        else
+            this.psarcFile = file;
         this.BOMEntries = null;
         this.listing = [];
     }
@@ -66,12 +70,12 @@ export class PSARC {
      * before calling any other member functions
      */
     public async parse(): Promise<void> {
-        this.psarcRawData = await promises.readFile(this.psarcFile);
+        if (this.psarcRawData == null)
+            this.psarcRawData = await promises.readFile(this.psarcFile);
         //console.log("parsing psarc:", this.psarcFile, "size:", (this.psarcRawData.length / (1024 * 1024)).toFixed(2), "mb");
 
         if (this.psarcRawData) {
             const header = PSARCParser.HEADER.parse(this.psarcRawData);
-            console.log(header);
             const paddedbom = PSARCParser.pad(header.bom);
             const decryptedbom = Buffer.from(PSARCParser.BOMDecrypt(paddedbom));
             const slicedbom = decryptedbom.slice(0, header.bom.length);
@@ -81,15 +85,10 @@ export class PSARC {
             if (this.BOMEntries) {
                 const rawlisting = await PSARCParser.readEntry(this.psarcRawData, 0, this.BOMEntries);
                 this.listing = unescape(rawlisting.toString()).split("\n");
-                this.BOMEntries.entries.forEach((v, i) => {
+                this.BOMEntries.entries.forEach((v: PSARCENTRY, i: number) => {
                     if (i === 0) (v as any).name = "listing";
                     else (v as any).name = this.listing[i - 1];
                 })
-                console.log(this.BOMEntries);
-                /* this.listing.forEach(l => {
-                    const md5 = crypto.createHash('md5', { encoding: 'ascii' }).update(l).digest("hex")
-                    console.log(l, md5);
-                }) */
             }
         }
     }
@@ -224,15 +223,15 @@ export class PSARC {
         /* validate dds */
         await Promise.all(Object.keys(files.dds).map(key => {
             const dds1 = new DDS(files.dds[key as keyof typeof files.dds]);
-            return dds1.validate();
+            return dds1.parse();
         }))
         /* validate wem */
-        await WEM.validate(files.wem.main.wem);
-        await WEM.validate(files.wem.preview.wem);
+        await WEM.parse(files.wem.main.wem);
+        await WEM.parse(files.wem.preview.wem);
 
         /* validate bnk */
-        await BNK.validate(files.wem.main.bnk);
-        await BNK.validate(files.wem.preview.bnk);
+        await BNK.parse(files.wem.main.bnk);
+        await BNK.parse(files.wem.preview.bnk);
 
         const info = (index: number): ArrangementInfo => { arrInfo.currentPartition = index; return arrInfo; }
 
@@ -445,7 +444,7 @@ export class PSARC {
         return root;
     }
 
-    static async packDirectory(dir: string, platform: Platform) {
+    static async packDirectory(dir: string, psarcFilename: string) {
         const listingFileName = "NamesBlock.bin";
         let files: string[] = await this.getFiles(dir);
         const entries: {
@@ -453,9 +452,13 @@ export class PSARC {
             zippedBlocks: Buffer[],
             origLengths: number[],
             zLengths: number[],
-            totalZLength: number,
+            totalLength: number,
+            zIndex: number,
+            offset: number,
         }[] = [];
+        let zLengths: number[] = [];
         files = [listingFileName, ...files];
+        let prevOffset = 0;
         for (let i = 0; i < files.length; i += 1) {
             const f = files[i];
             try {
@@ -468,37 +471,43 @@ export class PSARC {
                             .join("\n")
                     )
                     : await promises.readFile(f);
-                const blocks = this.chunks(rawData, PSARCParser.BLOCK_SIZE);
+                const blocks = this.chunks(rawData, PSARCParser.BLOCK_SIZE - 1);
                 const origLengths = blocks.map(i => i.length);
                 const zippedBlocks: Buffer[] = await Promise.all(blocks.map(async (b, idx) => {
                     const packed = await PSARCParser.zip(b);
                     const packedLen = packed.length;
                     const plainLen = blocks[idx].length;
-
+                    let blockToReturn: Buffer | null = null;
                     if (packedLen >= plainLen) {
-                        return blocks[idx];
+                        blockToReturn = blocks[idx];
                     }
                     else {
                         if (packedLen < PSARCParser.BLOCK_SIZE - 1) {
-                            return packed;
+                            blockToReturn = packed;
                         }
                         else {
-                            return blocks[idx];
+                            blockToReturn = blocks[idx];
                         }
                     }
+                    //console.log(name, "block", idx, isPacked);
+                    return blockToReturn;
                 }));
-                const zLengths: number[] = zippedBlocks.map(i => i.length);
-
-                const totalZLength = zLengths.reduce((p, v) => p + v);
+                const localLengths: number[] = blocks.map(i => i.length);
+                const totalLength = localLengths.reduce((p, v) => p + v);
+                const localZLengths: number[] = zippedBlocks.map(i => i.length);
+                const totalZLength = localZLengths.reduce((p, v) => p + v);
                 const item = {
                     name,
                     origLengths,
                     zippedBlocks,
-                    zLengths,
-                    totalZLength,
+                    zLengths: localZLengths,
+                    totalLength,
+                    zIndex: zLengths.length,
+                    offset: prevOffset,
                 }
+                zLengths = zLengths.concat(localZLengths);
+                prevOffset += totalZLength;
                 entries.push(item);
-
             }
             catch (e) {
                 console.log("failed to pack entry", f);
@@ -506,7 +515,59 @@ export class PSARC {
                 return;
             }
         }
+        /*
+        console.log(entries.map(i => {
+            return {
+                name: i.name,
+                lens: i.zLengths,
+                zIndex: i.zIndex,
+                offset: i.offset,
+            }
+        }));
+        */
+        const bNum = Math.log(PSARCParser.BLOCK_SIZE) / Math.log(256);
+        const headerSize = PSARCParser.nextBlockSize(((32 + (entries.length * 30) + (zLengths.length * bNum))));
+        const bom: PSARCBOM = {
+            entries: entries.map(item => {
+                const lBuffer: Buffer = Buffer.alloc(5).fill(0);
+                const oBuffer: Buffer = Buffer.alloc(5).fill(0);
+                lBuffer.writeUInt32BE(item.totalLength, 1);
+                oBuffer.writeUInt32BE(item.offset + headerSize, 1);
+                //console.log(item.name, item.zIndex, item.totalLength, item.offset + headerSize);
+                return {
+                    md5: crypto
+                        .createHash('md5', { encoding: 'ascii' })
+                        .update(item.name)
+                        .digest("hex"),
+                    zindex: item.zIndex,
+                    length: lBuffer,
+                    offset: oBuffer,
+                }
+            }),
+            zlength: zLengths,
+        }
+        const header: PSARCHEADER = {
+            MAGIC: 'PSAR',
+            VERSION: 65540,
+            COMPRESSION: 'zlib',
+            header_size: headerSize,
+            ENTRY_SIZE: 30,
+            n_entries: entries.length,
+            BLOCK_SIZE: PSARCParser.BLOCK_SIZE,
+            ARCHIVE_FLAGS: 4,
+            bom: Buffer.from(PSARCParser.BOMEncrypt(Buffer.from((PSARCParser.BOM(entries.length) as any).encode(bom)))),
+        }
 
+        let result: Buffer = Buffer.alloc(0);
+        const ph: Buffer = (PSARCParser.HEADER as any).encode(header);
+        result = Buffer.concat([ph]);
+        for (let i = 0; i < entries.length; i += 1) {
+            const entry = entries[i];
+            for (let j = 0; j < entry.zippedBlocks.length; j += 1) {
+                result = Buffer.concat([result, entry.zippedBlocks[j]]);
+            }
+        }
+        await promises.writeFile(psarcFilename, result);
     }
 
     static async  getFiles(dir: string) {
@@ -643,7 +704,7 @@ export class DDS {
         return this.ddsFiles;
     }
 
-    public async validate(): Promise<object> {
+    public async parse(): Promise<object> {
         const data = await promises.readFile(this.imageFile);
         return DDSParser.HEADER.parse(data);
     }
@@ -656,14 +717,14 @@ export class WEM {
         return wemFile;
     }
 
-    static async validate(wemFile: string) {
+    static async parse(wemFile: string) {
         const data = await promises.readFile(wemFile);
         return WEMParser.WEMDATA.parse(data);
     }
 }
 
 export class BNK {
-    static async validate(bnkFile: string) {
+    static async parse(bnkFile: string) {
         const data = await promises.readFile(bnkFile);
         return BNKParser.BNKDATA.parse(data);
     }

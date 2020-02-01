@@ -1,7 +1,7 @@
 import { Parser } from 'binary-parser';
 import * as aesjs from 'aes-js';
 import * as zlib from 'zlib';
-import { PSARCHEADER, BOM, Platform } from './types/common';
+import { PSARCHEADER, PSARCBOM, Platform, PSARCENTRY } from './types/common';
 
 export const BLOCK_SIZE = 2 ** 16;
 const ARC_KEY = "C53DB23870A1A2F71CAE64061FDD0E1157309DC85204D4C5BFDF25090DF2572C"
@@ -36,6 +36,9 @@ export const zip = (data: Buffer, level = 9) => new Promise<Buffer>((resolve, re
 
 export const mod = (x: number, n: number) => (x % n + n) % n
 
+export function nextBlockSize(blockSize: number, mutipleOf = 16) {
+    return Math.ceil(blockSize / mutipleOf) * mutipleOf;
+}
 export function pad(buffer: Buffer, blocksize = 16) {
     const size = mod((blocksize - buffer.length), blocksize)
     const b = Buffer.alloc(size)
@@ -53,7 +56,7 @@ export function BOMEncrypt(buffer: Buffer): Uint8Array {
     const key = aesjs.utils.hex.toBytes(ARC_KEY)
     const iv = aesjs.utils.hex.toBytes(ARC_IV)
     const aescfb = new aesjs.ModeOfOperation.cfb(key, iv, 16);
-    return aescfb.encrypt(buffer)
+    return aescfb.encrypt(pad(buffer))
 }
 
 export async function ENTRYDecrypt(data: Buffer, key: string) {
@@ -108,7 +111,7 @@ export async function Encrypt(listing: string, contents: Buffer, platform: Platf
     return data
 }
 
-export async function readEntry(data: Buffer, idx: number, bomentries: BOM) {
+export async function readEntry(data: Buffer, idx: number, bomentries: PSARCBOM) {
     const singlebom = bomentries.entries[idx];
     let entryoffset = singlebom.offset.readUInt32BE(1)
     const entrylength = singlebom.length.readUInt32BE(1)
@@ -139,15 +142,15 @@ export const HEADER: Parser<PSARCHEADER> = new Parser()
     .string("MAGIC", {
         encoding: "ascii",
         zeroTerminated: false,
-        //validate: "PSAR",
-        length: 4
+        length: 4,
+        assert: 'PSAR',
     })
     .uint32("VERSION")
     .string("COMPRESSION", {
         encoding: "ascii",
         zeroTerminated: false,
-        //validate: "zlib",
-        length: 4
+        length: 4,
+        assert: 'zlib',
     })
     .uint32("header_size")
     .uint32("ENTRY_SIZE")
@@ -160,7 +163,7 @@ export const HEADER: Parser<PSARCHEADER> = new Parser()
         }
     })
 
-export const ENTRY = new Parser()
+export const ENTRY: Parser<PSARCENTRY> = new Parser()
     .string("md5", {
         encoding: "hex",
         zeroTerminated: false,
@@ -176,7 +179,7 @@ export const ENTRY = new Parser()
         length: 5
     })
 
-export function BOM(entries: number) {
+export function BOM(entries: number): Parser<PSARCBOM> {
     return new Parser()
         .array("entries", {
             type: ENTRY,
