@@ -1,3 +1,208 @@
+import { promises } from "fs";
+import * as xml2js from 'xml2js';
+import { join } from "path";
+import { ToolkitInfo } from "./types/common";
+import * as SNGTypes from './types/sng';
+import * as SNGParser from './sngparser';
+import { SNG } from "./sng";
+
+const pkgInfo = require("../package.json");
+
+export class Song2014 {
+    song: ISong2014;
+
+    constructor(song: ISong2014) {
+        this.song = song;
+    }
+
+    static async fromXML(xmlFile: string): Promise<Song2014> {
+        const data = await promises.readFile(xmlFile);
+        const parsed = await xml2js.parseStringPromise(data);
+        const song = parsed.song;
+
+        const ret: ISong2014 = {
+            version: song.$.version,
+            title: getS(song.title),
+            arrangement: getS(song.arrangement).toLowerCase(),
+            part: getI(song.part),
+            offset: getF(song.offset),
+            centOffset: getF(song.centOffset),
+            songLength: getF(song.songLength),
+            startBeat: getF(song.startBeat),
+            averageTempo: getF(song.averageTempo),
+            tuning: objectMap(song.tuning[0].$, (item: string) => parseInt(item, 10)) as Tuning,
+            capo: getI(song.capo),
+            artistName: getS(song.artistName),
+            artistNameSort: getS(song.artistNameSort),
+            albumName: getS(song.albumName),
+            albumNameSort: getS(song.albumNameSort),
+            albumYear: getS(song.albumYear),
+            crowdSpeed: getS(song.crowdSpeed),
+            lastConversionDateTime: getS(song.lastConversionDateTime),
+            arrangementProperties: objectMap(song.arrangementProperties[0].$, (item: string) => parseInt(item, 10)) as SongArrangementProperties,
+            phrases: SongPhrase.fromXML(song.phrases),
+            phraseIterations: SongPhraseIteration.fromXML(song.phraseIterations),
+            newLinkedDiffs: SongNewLinkedDiff.fromXML(song.newLinkedDiffs),
+            linkedDiffs: SongLinkedDiff.fromXML(song.linkedDiffs),
+            phraseProperties: SongPhraseProperty.fromXML(song.phraseProperties),
+            chordTemplates: SongChordTemplate.fromXML(song.chordTemplates),
+            fretHandMuteTemplates: [],
+            ebeats: SongEbeat.fromXML(song.ebeats),
+            tonebase: getS(song.tonebase),
+            tonea: getS(song.tonea),
+            toneb: getS(song.toneb),
+            tonec: getS(song.tonec),
+            toned: getS(song.toned),
+            tones: SongTone.fromXML(song.tones),
+            sections: SongSection.fromXML(song.sections),
+            events: SongEvent.fromXML(song.events),
+            controls: SongPhraseProperty.fromXML(song.controls),
+            transcriptionTrack: TranscriptionTrack.fromXML(song.transcriptionTrack),
+            levels: SongLevel.fromXML(song.levels),
+        }
+        return new Song2014(ret);
+    }
+
+    xmlize() {
+        const { version, ...rest } = this.song;
+        rest.tuning = { $: { ...rest.tuning } } as any;
+        rest.arrangementProperties = { $: { ...rest.arrangementProperties } } as any;
+
+        const _d = (obj: any[], child: string) => {
+            return {
+                $: { count: obj.length },
+                [child]: obj.map(item => {
+                    return { $: { ...item } }
+                })
+            }
+        }
+        rest.ebeats = _d(rest.ebeats, "ebeat") as any;
+        rest.phrases = _d(rest.phrases, "phrase") as any;
+        rest.phraseIterations = _d(rest.phraseIterations, "phraseIteration") as any;
+        rest.newLinkedDiffs = _d(rest.newLinkedDiffs, "newLinkedDiff") as any;
+        rest.linkedDiffs = _d(rest.linkedDiffs, "linkedDiff") as any;
+        rest.phraseProperties = _d(rest.phraseProperties, "phraseProperty") as any;
+        rest.chordTemplates = _d(rest.chordTemplates, "chordTemplate") as any;
+        rest.fretHandMuteTemplates = _d(rest.fretHandMuteTemplates, "fretHandMuteTemplate") as any;
+        rest.sections = _d(rest.sections, "section") as any;
+        rest.events = _d(rest.events, "event") as any;
+        rest.transcriptionTrack = {
+            $: { difficulty: rest.transcriptionTrack.difficulty },
+            notes: _d(rest.transcriptionTrack.notes, "note"),
+            chords: _d(rest.transcriptionTrack.chords, "chord"),
+            fretHandMutes: _d(rest.transcriptionTrack.fretHandMutes, "fretHandMute"),
+            anchors: _d(rest.transcriptionTrack.anchors, "anchor"),
+            handShapes: _d(rest.transcriptionTrack.handShapes, "handShape"),
+        } as any;
+        rest.levels = {
+            $: { count: rest.levels.length },
+            level: rest.levels.map(item => {
+                return {
+                    $: { difficulty: item.difficulty },
+                    notes: _d(item.notes, "note"),
+                    chords: _d(item.chords, "chord"),
+                    anchors: _d(item.anchors, "anchor"),
+                    handShapes: _d(item.handShapes, "handShape"),
+                }
+            })
+        } as any;
+
+        return {
+            ...rest,
+        };
+    }
+
+    async generateXML(dir: string, tag: string, tk: ToolkitInfo) {
+        const builder = new xml2js.Builder({
+            xmldec: {
+                version: "1.0",
+            }
+        });
+        const xml = builder.buildObject({
+            song: {
+                $: { version: this.song.version },
+                $comments: [`${tk.name} v${tk.version} (psarcjs v${pkgInfo.version})`],
+                ...this.xmlize(),
+            }
+        });
+        const fileName = `${tag}_${this.song.arrangement}.xml`
+        const file = join(dir, fileName);
+        await promises.writeFile(file, xml);
+        return file;
+    }
+
+    async generateSNG(dir: string, tag: string) {
+        const fileName = `${tag}_${this.song.arrangement}.sng`;
+
+        const toneObj = {
+            tonebase: this.song.tonebase, tonea: this.song.tonea,
+            toneb: this.song.toneb, tonec: this.song.tonec, toned: this.song.toned,
+        }
+
+        const dnas = SNGTypes.DNA.fromDNA(this.song.events);
+        const chordTemplates = SNGTypes.CHORDTEMPLATES.fromSongChordTemplate(this.song.chordTemplates, this.song.tuning, this.song.arrangement, this.song.capo);
+        const phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
+        const levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations,
+            chordTemplates, phraseIterations, this.song.phrases);
+        const chordNotes: SNGTypes.CHORDNOTES[] = SNGTypes.getChordNotes();
+        const sngFormat: SNGTypes.SNGFORMAT = {
+            beats_length: this.song.ebeats.length,
+            beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
+            phrases_length: this.song.phrases.length,
+            phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
+            chord_templates_length: this.song.chordTemplates.length,
+            chordTemplates,
+            chord_notes_length: chordNotes.length,
+            chordNotes: chordNotes,
+            vocals_length: 0,
+            vocals: [],
+            symbols_length: 0,
+            symbols: {
+                header: [],
+                texture: [],
+                definition: [],
+            },
+            phrase_iter_length: this.song.phraseIterations.length,
+            phraseIterations,
+            phrase_extra_info_length: 0,
+            phraseExtraInfos: [],
+            new_linked_diffs_length: this.song.newLinkedDiffs.length,
+            newLinkedDiffs: SNGTypes.NEWLINKEDDIFFS.fromNewLinkedDiffs(this.song.newLinkedDiffs),
+            actions_length: 0,
+            actions: [],
+            events_length: this.song.events.length,
+            events: SNGTypes.EVENTS.fromEvents(this.song.events),
+            tone_length: this.song.tones.length,
+            tone: SNGTypes.TONE.fromTone(this.song.tones, toneObj),
+            dna_length: dnas.length,
+            dna: dnas,
+            sections_length: this.song.sections.length,
+            sections: SNGTypes.SECTIONS.fromSections(
+                this.song.sections, this.song.phraseIterations, this.song.phrases,
+                this.song.levels, this.song.chordTemplates, this.song.songLength),
+            levels_length: levels.length,
+            levels,
+            metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
+        };
+        const _validate2 = (struct: any, data: any | undefined) => {
+            if (data)
+                struct.parse(struct.encode(data));
+        }
+        _validate2(SNGParser.SNGDATA, sngFormat);
+
+        const path = join(dir, fileName);
+        //await promises.writeFile(path, (SNGParser.SNGDATA as any).encode(sngFormat))
+        const buf = (SNGParser.SNGDATA as any).encode(sngFormat);
+        const sng = new SNG(path);
+        sng.rawData = buf;
+        sng.unpackedData = buf;
+        await sng.pack();
+
+        await promises.writeFile(path, sng.packedData);
+        return path;
+    }
+}
+
 
 export class SongEbeat {
     time: number = 0;

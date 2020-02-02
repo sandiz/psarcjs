@@ -77,11 +77,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
 var xml2js = __importStar(require("xml2js"));
 var path_1 = require("path");
-var __1 = require("..");
+var sng_1 = require("../sng");
+var common_1 = require("../common");
 var song2014_1 = require("../song2014");
 var aggregategraphwriter_1 = require("../aggregategraphwriter");
 var bnkparser_1 = require("../bnkparser");
-var sng_1 = require("./sng");
+var sng_2 = require("./sng");
 var sngparser_1 = require("../sngparser");
 var Platform;
 (function (Platform) {
@@ -226,7 +227,7 @@ var Arrangement = /** @class */ (function () {
         this.main = new Attributes();
         this.arrType = ArrangementType[song.arrangement.toUpperCase()];
         this.main.arrangementType = ArrangementTypeInt[song.arrangement.toUpperCase()];
-        this.header.arrangementName = __1.toTitleCase(song.arrangement);
+        this.header.arrangementName = common_1.toTitleCase(song.arrangement);
         var masterID = this.main.arrangementType == ArrangementTypeInt.VOCALS ? -1 : bnkparser_1.getRandomInt();
         var pID = (_b = (_a = options.info) === null || _a === void 0 ? void 0 : _a.persistentID, (_b !== null && _b !== void 0 ? _b : aggregategraphwriter_1.getUuid().replace(/-/g, "").toUpperCase()));
         var dlcName = options.tag.toLowerCase();
@@ -249,7 +250,7 @@ var Arrangement = /** @class */ (function () {
         this.header.masterID_RDV = masterID;
         this.main.arrangementSort = options.sortOrder;
         this.main.blockAsset = xblockUrn;
-        this.main.fullName = options.tag + "_" + __1.toTitleCase(this.arrType);
+        this.main.fullName = options.tag + "_" + common_1.toTitleCase(this.arrType);
         this.main.masterID_PS3 = masterID;
         this.main.masterID_XBox360 = masterID;
         this.main.previewBankPath = "song_" + dlcName + "_preview.bnk";
@@ -275,9 +276,9 @@ var Arrangement = /** @class */ (function () {
         this.header.dnaChords = (_e = (_d = (_c = sng.sng) === null || _c === void 0 ? void 0 : _c.dna) === null || _d === void 0 ? void 0 : _d.filter(function (item) { return item.id === DNAId.Chord; }).length, (_e !== null && _e !== void 0 ? _e : 0));
         this.header.dnaRiffs = (_h = (_g = (_f = sng.sng) === null || _f === void 0 ? void 0 : _f.dna) === null || _g === void 0 ? void 0 : _g.filter(function (item) { return item.id === DNAId.Riff; }).length, (_h !== null && _h !== void 0 ? _h : 0));
         this.header.dnaSolo = (_l = (_k = (_j = sng.sng) === null || _j === void 0 ? void 0 : _j.dna) === null || _k === void 0 ? void 0 : _k.filter(function (item) { return item.id === DNAId.Solo; }).length, (_l !== null && _l !== void 0 ? _l : 0));
-        this.header.notesEasy = sng.sng && sng.sng.phraseIterations && sng.sng.levels ? sng_1.getNoteCount(sng.sng.phraseIterations, sng.sng.levels, 0) : 0;
-        this.header.notesMedium = sng.sng && sng.sng.phraseIterations && sng.sng.levels ? sng_1.getNoteCount(sng.sng.phraseIterations, sng.sng.levels, 1) : 0;
-        this.header.notesHard = sng.sng && sng.sng.phraseIterations && sng.sng.levels ? sng_1.getNoteCount(sng.sng.phraseIterations, sng.sng.levels, 2) : 0;
+        this.header.notesEasy = sng.sng && sng.sng.phraseIterations && sng.sng.levels ? sng_2.getNoteCount(sng.sng.phraseIterations, sng.sng.levels, 0) : 0;
+        this.header.notesMedium = sng.sng && sng.sng.phraseIterations && sng.sng.levels ? sng_2.getNoteCount(sng.sng.phraseIterations, sng.sng.levels, 1) : 0;
+        this.header.notesHard = sng.sng && sng.sng.phraseIterations && sng.sng.levels ? sng_2.getNoteCount(sng.sng.phraseIterations, sng.sng.levels, 2) : 0;
         this.header.easyMastery = parseFloat((this.header.notesEasy / this.header.notesHard).toFixed(9));
         this.header.mediumMastery = parseFloat((this.header.notesMedium / this.header.notesHard).toFixed(9));
         this.main.arrangementProperties = song.arrangementProperties;
@@ -760,7 +761,7 @@ var VocalArrangement = /** @class */ (function () {
         var albumUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Image, aggregategraphwriter_1.TagValue.DDS, "album_" + options.tag.toLowerCase());
         var jsonUrn = URN_TEMPLATE(aggregategraphwriter_1.TagValue.Database, aggregategraphwriter_1.TagValue.JsonDB, dlcName + "_" + this.arrType);
         this.main.blockAsset = xblockUrn;
-        this.main.fullName = options.tag + "_" + __1.toTitleCase(this.arrType);
+        this.main.fullName = options.tag + "_" + common_1.toTitleCase(this.arrType);
         this.main.previewBankPath = "song_" + dlcName + "_preview.bnk";
         this.main.showlightsXML = showlightUrn;
         this.main.songAsset = songSngUrn;
@@ -875,7 +876,7 @@ exports.ManifestReplacer = function (allKeys, key, value) {
             for (var k in value) {
                 if (Object.hasOwnProperty.call(value, k)) {
                     if (k.startsWith("dna")) {
-                        var newK = "DNA_" + __1.toTitleCase(k.split("dna")[1]);
+                        var newK = "DNA_" + common_1.toTitleCase(k.split("dna")[1]);
                         replacement[newK] = value[k];
                     }
                     else if (["Tuning", "ArrangementProperties"].includes(key)) {
@@ -1020,7 +1021,7 @@ var Vocals = /** @class */ (function () {
                             chord_notes_length: 0,
                             chordNotes: [],
                             vocals_length: vocals.length,
-                            vocals: sng_1.VOCALS.fromVocals(vocals),
+                            vocals: sng_2.VOCALS.fromVocals(vocals),
                             symbols_length: 0,
                             symbols: {
                                 header: [],
@@ -1045,12 +1046,12 @@ var Vocals = /** @class */ (function () {
                             sections: [],
                             levels_length: 0,
                             levels: [],
-                            metadata: new sng_1.METADATA(),
+                            metadata: new sng_2.METADATA(),
                         };
                         sngparser_1.SNGDATA.parse(sngparser_1.SNGDATA.encode(sngFormat));
                         path = path_1.join(dir, fileName);
                         buf = sngparser_1.SNGDATA.encode(sngFormat);
-                        sng = new __1.SNG(path);
+                        sng = new sng_1.SNG(path);
                         sng.rawData = buf;
                         sng.unpackedData = buf;
                         return [4 /*yield*/, sng.pack()];

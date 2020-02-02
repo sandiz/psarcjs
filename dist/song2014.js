@@ -10,6 +10,42 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -37,7 +73,229 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var fs_1 = require("fs");
+var xml2js = __importStar(require("xml2js"));
+var path_1 = require("path");
+var SNGTypes = __importStar(require("./types/sng"));
+var SNGParser = __importStar(require("./sngparser"));
+var sng_1 = require("./sng");
+var pkgInfo = require("../package.json");
+var Song2014 = /** @class */ (function () {
+    function Song2014(song) {
+        this.song = song;
+    }
+    Song2014.fromXML = function (xmlFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var data, parsed, song, ret;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fs_1.promises.readFile(xmlFile)];
+                    case 1:
+                        data = _a.sent();
+                        return [4 /*yield*/, xml2js.parseStringPromise(data)];
+                    case 2:
+                        parsed = _a.sent();
+                        song = parsed.song;
+                        ret = {
+                            version: song.$.version,
+                            title: exports.getS(song.title),
+                            arrangement: exports.getS(song.arrangement).toLowerCase(),
+                            part: exports.getI(song.part),
+                            offset: exports.getF(song.offset),
+                            centOffset: exports.getF(song.centOffset),
+                            songLength: exports.getF(song.songLength),
+                            startBeat: exports.getF(song.startBeat),
+                            averageTempo: exports.getF(song.averageTempo),
+                            tuning: objectMap(song.tuning[0].$, function (item) { return parseInt(item, 10); }),
+                            capo: exports.getI(song.capo),
+                            artistName: exports.getS(song.artistName),
+                            artistNameSort: exports.getS(song.artistNameSort),
+                            albumName: exports.getS(song.albumName),
+                            albumNameSort: exports.getS(song.albumNameSort),
+                            albumYear: exports.getS(song.albumYear),
+                            crowdSpeed: exports.getS(song.crowdSpeed),
+                            lastConversionDateTime: exports.getS(song.lastConversionDateTime),
+                            arrangementProperties: objectMap(song.arrangementProperties[0].$, function (item) { return parseInt(item, 10); }),
+                            phrases: SongPhrase.fromXML(song.phrases),
+                            phraseIterations: SongPhraseIteration.fromXML(song.phraseIterations),
+                            newLinkedDiffs: SongNewLinkedDiff.fromXML(song.newLinkedDiffs),
+                            linkedDiffs: SongLinkedDiff.fromXML(song.linkedDiffs),
+                            phraseProperties: SongPhraseProperty.fromXML(song.phraseProperties),
+                            chordTemplates: SongChordTemplate.fromXML(song.chordTemplates),
+                            fretHandMuteTemplates: [],
+                            ebeats: SongEbeat.fromXML(song.ebeats),
+                            tonebase: exports.getS(song.tonebase),
+                            tonea: exports.getS(song.tonea),
+                            toneb: exports.getS(song.toneb),
+                            tonec: exports.getS(song.tonec),
+                            toned: exports.getS(song.toned),
+                            tones: SongTone.fromXML(song.tones),
+                            sections: SongSection.fromXML(song.sections),
+                            events: SongEvent.fromXML(song.events),
+                            controls: SongPhraseProperty.fromXML(song.controls),
+                            transcriptionTrack: TranscriptionTrack.fromXML(song.transcriptionTrack),
+                            levels: SongLevel.fromXML(song.levels),
+                        };
+                        return [2 /*return*/, new Song2014(ret)];
+                }
+            });
+        });
+    };
+    Song2014.prototype.xmlize = function () {
+        var _a = this.song, version = _a.version, rest = __rest(_a, ["version"]);
+        rest.tuning = { $: __assign({}, rest.tuning) };
+        rest.arrangementProperties = { $: __assign({}, rest.arrangementProperties) };
+        var _d = function (obj, child) {
+            var _a;
+            return _a = {
+                    $: { count: obj.length }
+                },
+                _a[child] = obj.map(function (item) {
+                    return { $: __assign({}, item) };
+                }),
+                _a;
+        };
+        rest.ebeats = _d(rest.ebeats, "ebeat");
+        rest.phrases = _d(rest.phrases, "phrase");
+        rest.phraseIterations = _d(rest.phraseIterations, "phraseIteration");
+        rest.newLinkedDiffs = _d(rest.newLinkedDiffs, "newLinkedDiff");
+        rest.linkedDiffs = _d(rest.linkedDiffs, "linkedDiff");
+        rest.phraseProperties = _d(rest.phraseProperties, "phraseProperty");
+        rest.chordTemplates = _d(rest.chordTemplates, "chordTemplate");
+        rest.fretHandMuteTemplates = _d(rest.fretHandMuteTemplates, "fretHandMuteTemplate");
+        rest.sections = _d(rest.sections, "section");
+        rest.events = _d(rest.events, "event");
+        rest.transcriptionTrack = {
+            $: { difficulty: rest.transcriptionTrack.difficulty },
+            notes: _d(rest.transcriptionTrack.notes, "note"),
+            chords: _d(rest.transcriptionTrack.chords, "chord"),
+            fretHandMutes: _d(rest.transcriptionTrack.fretHandMutes, "fretHandMute"),
+            anchors: _d(rest.transcriptionTrack.anchors, "anchor"),
+            handShapes: _d(rest.transcriptionTrack.handShapes, "handShape"),
+        };
+        rest.levels = {
+            $: { count: rest.levels.length },
+            level: rest.levels.map(function (item) {
+                return {
+                    $: { difficulty: item.difficulty },
+                    notes: _d(item.notes, "note"),
+                    chords: _d(item.chords, "chord"),
+                    anchors: _d(item.anchors, "anchor"),
+                    handShapes: _d(item.handShapes, "handShape"),
+                };
+            })
+        };
+        return __assign({}, rest);
+    };
+    Song2014.prototype.generateXML = function (dir, tag, tk) {
+        return __awaiter(this, void 0, void 0, function () {
+            var builder, xml, fileName, file;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        builder = new xml2js.Builder({
+                            xmldec: {
+                                version: "1.0",
+                            }
+                        });
+                        xml = builder.buildObject({
+                            song: __assign({ $: { version: this.song.version }, $comments: [tk.name + " v" + tk.version + " (psarcjs v" + pkgInfo.version + ")"] }, this.xmlize())
+                        });
+                        fileName = tag + "_" + this.song.arrangement + ".xml";
+                        file = path_1.join(dir, fileName);
+                        return [4 /*yield*/, fs_1.promises.writeFile(file, xml)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/, file];
+                }
+            });
+        });
+    };
+    Song2014.prototype.generateSNG = function (dir, tag) {
+        return __awaiter(this, void 0, void 0, function () {
+            var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, chordNotes, sngFormat, _validate2, path, buf, sng;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        fileName = tag + "_" + this.song.arrangement + ".sng";
+                        toneObj = {
+                            tonebase: this.song.tonebase, tonea: this.song.tonea,
+                            toneb: this.song.toneb, tonec: this.song.tonec, toned: this.song.toned,
+                        };
+                        dnas = SNGTypes.DNA.fromDNA(this.song.events);
+                        chordTemplates = SNGTypes.CHORDTEMPLATES.fromSongChordTemplate(this.song.chordTemplates, this.song.tuning, this.song.arrangement, this.song.capo);
+                        phraseIterations = SNGTypes.PHRASEITERATIONS.fromPhraseIterations(this.song.phraseIterations, this.song.phrases, this.song.songLength);
+                        levels = SNGTypes.LEVELS.fromLevels(this.song.levels, this.song.phraseIterations, chordTemplates, phraseIterations, this.song.phrases);
+                        chordNotes = SNGTypes.getChordNotes();
+                        sngFormat = {
+                            beats_length: this.song.ebeats.length,
+                            beats: SNGTypes.BEATS.fromSongEBeat(this.song.ebeats, this.song.phraseIterations),
+                            phrases_length: this.song.phrases.length,
+                            phrases: SNGTypes.PHRASES.fromSongPhrase(this.song.phrases, this.song.phraseIterations),
+                            chord_templates_length: this.song.chordTemplates.length,
+                            chordTemplates: chordTemplates,
+                            chord_notes_length: chordNotes.length,
+                            chordNotes: chordNotes,
+                            vocals_length: 0,
+                            vocals: [],
+                            symbols_length: 0,
+                            symbols: {
+                                header: [],
+                                texture: [],
+                                definition: [],
+                            },
+                            phrase_iter_length: this.song.phraseIterations.length,
+                            phraseIterations: phraseIterations,
+                            phrase_extra_info_length: 0,
+                            phraseExtraInfos: [],
+                            new_linked_diffs_length: this.song.newLinkedDiffs.length,
+                            newLinkedDiffs: SNGTypes.NEWLINKEDDIFFS.fromNewLinkedDiffs(this.song.newLinkedDiffs),
+                            actions_length: 0,
+                            actions: [],
+                            events_length: this.song.events.length,
+                            events: SNGTypes.EVENTS.fromEvents(this.song.events),
+                            tone_length: this.song.tones.length,
+                            tone: SNGTypes.TONE.fromTone(this.song.tones, toneObj),
+                            dna_length: dnas.length,
+                            dna: dnas,
+                            sections_length: this.song.sections.length,
+                            sections: SNGTypes.SECTIONS.fromSections(this.song.sections, this.song.phraseIterations, this.song.phrases, this.song.levels, this.song.chordTemplates, this.song.songLength),
+                            levels_length: levels.length,
+                            levels: levels,
+                            metadata: SNGTypes.METADATA.fromSong2014(this.song, phraseIterations, levels),
+                        };
+                        _validate2 = function (struct, data) {
+                            if (data)
+                                struct.parse(struct.encode(data));
+                        };
+                        _validate2(SNGParser.SNGDATA, sngFormat);
+                        path = path_1.join(dir, fileName);
+                        buf = SNGParser.SNGDATA.encode(sngFormat);
+                        sng = new sng_1.SNG(path);
+                        sng.rawData = buf;
+                        sng.unpackedData = buf;
+                        return [4 /*yield*/, sng.pack()];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, fs_1.promises.writeFile(path, sng.packedData)];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, path];
+                }
+            });
+        });
+    };
+    return Song2014;
+}());
+exports.Song2014 = Song2014;
 var SongEbeat = /** @class */ (function () {
     function SongEbeat() {
         this.time = 0;

@@ -17,18 +17,21 @@ import {
     join, parse, basename
 } from 'path';
 import {
-    PSARC, SNG, DDS,
-    WEM, WAAPI, GENERIC, BNK,
-    Song2014, MANIFEST,
-} from '../src/index'
-import {
-    SongEbeat, SongNote, ISong2014
+    SongEbeat, SongNote, ISong2014, Song2014
 } from '../src/song2014'
 import {
     ArrangementType, ShowLights, Vocals, Arrangement, ManifestTone, ManifestToneReviver,
     VocalArrangement, ArrangementInfo, AttributesHeader, Toolkit, Platform
 } from '../src/types/common';
 import { getUuid } from '../src/aggregategraphwriter';
+import { PSARC } from '../src/psarc';
+import { SNG } from '../src/sng';
+import { DDS } from '../src/dds';
+import { WEM } from '../src/wem';
+import { BNK } from '../src/bnk';
+import { GENERIC } from '../src/generic';
+import { MANIFEST } from '../src/manifest';
+import { WAAPI } from '../src/waapi';
 
 
 use(Chaifs);
@@ -1231,7 +1234,6 @@ const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function testMain() {
     await psarcTests();
-    /*
     await sngTests();
     await song2014Tests();
 
@@ -1247,7 +1249,6 @@ async function testMain() {
     }
 
     await manifestTests();
-    */
     await psarcGenerateTests();
 }
 

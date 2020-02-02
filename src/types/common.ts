@@ -1,7 +1,8 @@
 import { promises } from 'fs';
 import * as xml2js from 'xml2js';
 import { join } from 'path';
-import { SNG, toTitleCase } from '..';
+import { SNG } from '../sng';
+import { toTitleCase } from '../common'
 import { ISong2014, Tuning, SongArrangementProperties, SongNote, SongChord } from '../song2014';
 import { TagValue, getUuid } from '../aggregategraphwriter';
 import { getRandomInt } from '../bnkparser';
