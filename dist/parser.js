@@ -107,16 +107,18 @@ function BOMEncrypt(buffer) {
 exports.BOMEncrypt = BOMEncrypt;
 function ENTRYDecrypt(data, key) {
     return __awaiter(this, void 0, void 0, function () {
-        var iv, ctr, uintAkey, quanta, aesCtr, decrypted, payload, buf;
+        var magic, iv, ctr, uintAkey, quanta, aesCtr, decrypted, length, payload, buf;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    magic = Buffer.from(data.slice(0, 4)).readInt32LE(0).toString(16);
                     iv = new Uint8Array(data.slice(8, 24));
                     ctr = Buffer.from(iv).readUInt32BE(0);
                     uintAkey = aesjs.utils.hex.toBytes(key);
                     quanta = data.slice(24, data.length - 56);
                     aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
                     decrypted = aesCtr.decrypt(pad(quanta));
+                    length = new Uint32Array(decrypted.slice(0, 4));
                     payload = decrypted.slice(4, data.length);
                     return [4 /*yield*/, exports.unzip(Buffer.from(payload))];
                 case 1:
@@ -196,7 +198,7 @@ function Encrypt(listing, contents, platform) {
 exports.Encrypt = Encrypt;
 function readEntry(data, idx, bomentries) {
     return __awaiter(this, void 0, void 0, function () {
-        var singlebom, entryoffset, entrylength, zlength, retBuffer, length, i, z, buf, buffer, E_1;
+        var singlebom, entryoffset, entrylength, zlength, retBuffer, length, i, z, buf, buffer, e_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -225,7 +227,7 @@ function readEntry(data, idx, bomentries) {
                     buffer = _a.sent();
                     return [3 /*break*/, 5];
                 case 4:
-                    E_1 = _a.sent();
+                    e_1 = _a.sent();
                     return [3 /*break*/, 5];
                 case 5:
                     retBuffer = Buffer.concat([retBuffer, buffer]);

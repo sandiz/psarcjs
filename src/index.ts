@@ -452,6 +452,7 @@ export class PSARC {
             zippedBlocks: Buffer[],
             origLengths: number[],
             zLengths: number[],
+            modZLengths: number[],
             totalLength: number,
             zIndex: number,
             offset: number,
@@ -461,9 +462,10 @@ export class PSARC {
         let prevOffset = 0;
         for (let i = 0; i < files.length; i += 1) {
             const f = files[i];
+            const isSNG = f.endsWith(".sng");
             try {
                 const name = f.replace(dir + "/", "");
-                const rawData = name === listingFileName
+                let rawData = name === listingFileName
                     ? Buffer.from(
                         files
                             .slice(1, files.length)
@@ -471,24 +473,34 @@ export class PSARC {
                             .join("\n")
                     )
                     : await promises.readFile(f);
-                const blocks = this.chunks(rawData, PSARCParser.BLOCK_SIZE - 1);
+                if (isSNG) {
+                    let magic = Buffer.from(rawData.slice(0, 4)).readInt32LE(0)
+                    let ph = Buffer.from(rawData.slice(4, 8)).readInt32LE(0)
+                    if (magic == 0x4A && ph == 3) {
+                        //console.log("packed sng")
+                    }
+                    else {
+                        //console.log("unpacked sng");
+                        var s = new SNG(f);
+                        await s.parse();
+                        await s.pack();
+                        if (s.packedData) {
+                            rawData = s.packedData;
+                        }
+                    }
+                }
+                const blocks = this.chunks(rawData, PSARCParser.BLOCK_SIZE);
                 const origLengths = blocks.map(i => i.length);
                 const zippedBlocks: Buffer[] = await Promise.all(blocks.map(async (b, idx) => {
                     const packed = await PSARCParser.zip(b);
                     const packedLen = packed.length;
                     const plainLen = blocks[idx].length;
                     let blockToReturn: Buffer | null = null;
-                    if (packedLen >= plainLen) {
+
+                    if (packedLen < plainLen)
+                        blockToReturn = packed;
+                    else
                         blockToReturn = blocks[idx];
-                    }
-                    else {
-                        if (packedLen < PSARCParser.BLOCK_SIZE - 1) {
-                            blockToReturn = packed;
-                        }
-                        else {
-                            blockToReturn = blocks[idx];
-                        }
-                    }
                     //console.log(name, "block", idx, isPacked);
                     return blockToReturn;
                 }));
@@ -496,16 +508,18 @@ export class PSARC {
                 const totalLength = localLengths.reduce((p, v) => p + v);
                 const localZLengths: number[] = zippedBlocks.map(i => i.length);
                 const totalZLength = localZLengths.reduce((p, v) => p + v);
+                const modZLengths = localZLengths.map(i => i % PSARCParser.BLOCK_SIZE);
                 const item = {
                     name,
                     origLengths,
                     zippedBlocks,
                     zLengths: localZLengths,
+                    modZLengths,
                     totalLength,
                     zIndex: zLengths.length,
                     offset: prevOffset,
                 }
-                zLengths = zLengths.concat(localZLengths);
+                zLengths = zLengths.concat(modZLengths);
                 prevOffset += totalZLength;
                 entries.push(item);
             }
@@ -515,18 +529,25 @@ export class PSARC {
                 return;
             }
         }
-        /*
+
+        const bNum = Math.log(PSARCParser.BLOCK_SIZE) / Math.log(256);
+        const headerSize = ((32 + (entries.length * 30) + (zLengths.length * bNum)));
+        /*console.log(headerSize)
         console.log(entries.map(i => {
             return {
+                md5: crypto
+                    .createHash('md5', { encoding: 'ascii' })
+                    .update(i.name)
+                    .digest("hex"),
                 name: i.name,
-                lens: i.zLengths,
+                lens: i.modZLengths,
+                length: i.origLengths.reduce((p, v) => p + v),
+                zLength: i.zLengths.reduce((p, v) => p + v),
                 zIndex: i.zIndex,
-                offset: i.offset,
+                offset: i.offset + headerSize,
             }
         }));
         */
-        const bNum = Math.log(PSARCParser.BLOCK_SIZE) / Math.log(256);
-        const headerSize = PSARCParser.nextBlockSize(((32 + (entries.length * 30) + (zLengths.length * bNum))));
         const bom: PSARCBOM = {
             entries: entries.map(item => {
                 const lBuffer: Buffer = Buffer.alloc(5).fill(0);
@@ -546,6 +567,9 @@ export class PSARC {
             }),
             zlength: zLengths,
         }
+        const bomBuffer: Buffer = (PSARCParser.BOM(entries.length) as any).encode(bom)
+        const bomEncrypted = Buffer.from(PSARCParser.BOMEncrypt(bomBuffer)).slice(0, bomBuffer.length);
+        //console.log("bom", bomBuffer.length, "bomenc", bomEncrypted.length)
         const header: PSARCHEADER = {
             MAGIC: 'PSAR',
             VERSION: 65540,
@@ -555,7 +579,7 @@ export class PSARC {
             n_entries: entries.length,
             BLOCK_SIZE: PSARCParser.BLOCK_SIZE,
             ARCHIVE_FLAGS: 4,
-            bom: Buffer.from(PSARCParser.BOMEncrypt(Buffer.from((PSARCParser.BOM(entries.length) as any).encode(bom)))),
+            bom: bomEncrypted,
         }
 
         let result: Buffer = Buffer.alloc(0);
@@ -640,7 +664,8 @@ export class SNG {
             const compressed = await PSARCParser.zip(this.unpackedData);
             await PSARCParser.unzip(compressed);
             const q: Parser<SNGTypes.UnpackedSNG> = new Parser()
-                .int32("uncompressedLength")
+                .endianess("little")
+                .uint32("uncompressedLength")
                 .buffer("compressedData", {
                     length: compressed.length,
                 });

@@ -60,6 +60,7 @@ export function BOMEncrypt(buffer: Buffer): Uint8Array {
 }
 
 export async function ENTRYDecrypt(data: Buffer, key: string) {
+    const magic = Buffer.from(data.slice(0, 4)).readInt32LE(0).toString(16);
     const iv = new Uint8Array(data.slice(8, 24));
     const ctr = Buffer.from(iv).readUInt32BE(0);
     const uintAkey = aesjs.utils.hex.toBytes(key)
@@ -67,9 +68,10 @@ export async function ENTRYDecrypt(data: Buffer, key: string) {
 
     const aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
     const decrypted = aesCtr.decrypt(pad(quanta));
-    //const length = new Uint32Array(decrypted.slice(0, 4))
+    const length = new Uint32Array(decrypted.slice(0, 4))
     let payload = decrypted.slice(4, data.length)
     let buf: Buffer = await unzip(Buffer.from(payload))
+
     return buf;
 }
 
@@ -130,7 +132,8 @@ export async function readEntry(data: Buffer, idx: number, bomentries: PSARCBOM)
         try {
             buffer = await unzip(buffer)
         }
-        catch (E) {
+        catch (e) {
+            //console.log("failed to read entry for index", idx, e);
         }
         retBuffer = Buffer.concat([retBuffer, buffer])
         length += buffer.length

@@ -338,13 +338,10 @@ var PSARC = /** @class */ (function () {
                                         return [4 /*yield*/, sng.parse()];
                                     case 3:
                                         _c.sent();
-                                        return [4 /*yield*/, sng.pack()];
-                                    case 4:
-                                        _c.sent();
                                         _b = (_a = JSON).parse;
                                         return [4 /*yield*/, fs_1.promises.readFile(tones)];
-                                    case 5: return [4 /*yield*/, (_c.sent()).toString()];
-                                    case 6:
+                                    case 4: return [4 /*yield*/, (_c.sent()).toString()];
+                                    case 5:
                                         tonesObj = _b.apply(_a, [_c.sent(), common_1.ManifestToneReviver]);
                                         arr = new common_1.Arrangement(parsed.song, sng, {
                                             tag: tag,
@@ -358,7 +355,7 @@ var PSARC = /** @class */ (function () {
                                             info: info(index),
                                         });
                                         return [4 /*yield*/, MANIFEST.generateJSON("/tmp/", tag, arr)];
-                                    case 7:
+                                    case 6:
                                         json = _c.sent();
                                         return [2 /*return*/, {
                                                 sng: sngFile,
@@ -663,7 +660,7 @@ var PSARC = /** @class */ (function () {
     };
     PSARC.packDirectory = function (dir, psarcFilename) {
         return __awaiter(this, void 0, void 0, function () {
-            var listingFileName, files, entries, zLengths, prevOffset, _loop_1, this_1, i, state_1, bNum, headerSize, bom, header, result, ph, i, entry, j;
+            var listingFileName, files, entries, zLengths, prevOffset, _loop_1, this_1, s, i, state_1, bNum, headerSize, bom, bomBuffer, bomEncrypted, header, result, ph, i, entry, j;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -677,14 +674,15 @@ var PSARC = /** @class */ (function () {
                         files = __spread([listingFileName], files);
                         prevOffset = 0;
                         _loop_1 = function (i) {
-                            var f, name_1, rawData, _a, blocks_1, origLengths, zippedBlocks, localLengths, totalLength, localZLengths, totalZLength, item, e_1;
+                            var f, isSNG, name_1, rawData, _a, magic, ph_1, blocks_1, origLengths, zippedBlocks, localLengths, totalLength, localZLengths, totalZLength, modZLengths, item, e_1;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
                                     case 0:
                                         f = files[i];
+                                        isSNG = f.endsWith(".sng");
                                         _b.label = 1;
                                     case 1:
-                                        _b.trys.push([1, 6, , 7]);
+                                        _b.trys.push([1, 10, , 11]);
                                         name_1 = f.replace(dir + "/", "");
                                         if (!(name_1 === listingFileName)) return [3 /*break*/, 2];
                                         _a = Buffer.from(files
@@ -698,7 +696,26 @@ var PSARC = /** @class */ (function () {
                                         _b.label = 4;
                                     case 4:
                                         rawData = _a;
-                                        blocks_1 = this_1.chunks(rawData, PSARCParser.BLOCK_SIZE - 1);
+                                        if (!isSNG) return [3 /*break*/, 8];
+                                        magic = Buffer.from(rawData.slice(0, 4)).readInt32LE(0);
+                                        ph_1 = Buffer.from(rawData.slice(4, 8)).readInt32LE(0);
+                                        if (!(magic == 0x4A && ph_1 == 3)) return [3 /*break*/, 5];
+                                        return [3 /*break*/, 8];
+                                    case 5:
+                                        //console.log("unpacked sng");
+                                        s = new SNG(f);
+                                        return [4 /*yield*/, s.parse()];
+                                    case 6:
+                                        _b.sent();
+                                        return [4 /*yield*/, s.pack()];
+                                    case 7:
+                                        _b.sent();
+                                        if (s.packedData) {
+                                            rawData = s.packedData;
+                                        }
+                                        _b.label = 8;
+                                    case 8:
+                                        blocks_1 = this_1.chunks(rawData, PSARCParser.BLOCK_SIZE);
                                         origLengths = blocks_1.map(function (i) { return i.length; });
                                         return [4 /*yield*/, Promise.all(blocks_1.map(function (b, idx) { return __awaiter(_this, void 0, void 0, function () {
                                                 var packed, packedLen, plainLen, blockToReturn;
@@ -710,47 +727,42 @@ var PSARC = /** @class */ (function () {
                                                             packedLen = packed.length;
                                                             plainLen = blocks_1[idx].length;
                                                             blockToReturn = null;
-                                                            if (packedLen >= plainLen) {
+                                                            if (packedLen < plainLen)
+                                                                blockToReturn = packed;
+                                                            else
                                                                 blockToReturn = blocks_1[idx];
-                                                            }
-                                                            else {
-                                                                if (packedLen < PSARCParser.BLOCK_SIZE - 1) {
-                                                                    blockToReturn = packed;
-                                                                }
-                                                                else {
-                                                                    blockToReturn = blocks_1[idx];
-                                                                }
-                                                            }
                                                             //console.log(name, "block", idx, isPacked);
                                                             return [2 /*return*/, blockToReturn];
                                                     }
                                                 });
                                             }); }))];
-                                    case 5:
+                                    case 9:
                                         zippedBlocks = _b.sent();
                                         localLengths = blocks_1.map(function (i) { return i.length; });
                                         totalLength = localLengths.reduce(function (p, v) { return p + v; });
                                         localZLengths = zippedBlocks.map(function (i) { return i.length; });
                                         totalZLength = localZLengths.reduce(function (p, v) { return p + v; });
+                                        modZLengths = localZLengths.map(function (i) { return i % PSARCParser.BLOCK_SIZE; });
                                         item = {
                                             name: name_1,
                                             origLengths: origLengths,
                                             zippedBlocks: zippedBlocks,
                                             zLengths: localZLengths,
+                                            modZLengths: modZLengths,
                                             totalLength: totalLength,
                                             zIndex: zLengths.length,
                                             offset: prevOffset,
                                         };
-                                        zLengths = zLengths.concat(localZLengths);
+                                        zLengths = zLengths.concat(modZLengths);
                                         prevOffset += totalZLength;
                                         entries.push(item);
-                                        return [3 /*break*/, 7];
-                                    case 6:
+                                        return [3 /*break*/, 11];
+                                    case 10:
                                         e_1 = _b.sent();
                                         console.log("failed to pack entry", f);
                                         console.log(e_1);
                                         return [2 /*return*/, { value: void 0 }];
-                                    case 7: return [2 /*return*/];
+                                    case 11: return [2 /*return*/];
                                 }
                             });
                         };
@@ -770,7 +782,7 @@ var PSARC = /** @class */ (function () {
                         return [3 /*break*/, 2];
                     case 5:
                         bNum = Math.log(PSARCParser.BLOCK_SIZE) / Math.log(256);
-                        headerSize = PSARCParser.nextBlockSize(((32 + (entries.length * 30) + (zLengths.length * bNum))));
+                        headerSize = ((32 + (entries.length * 30) + (zLengths.length * bNum)));
                         bom = {
                             entries: entries.map(function (item) {
                                 var lBuffer = Buffer.alloc(5).fill(0);
@@ -790,6 +802,8 @@ var PSARC = /** @class */ (function () {
                             }),
                             zlength: zLengths,
                         };
+                        bomBuffer = PSARCParser.BOM(entries.length).encode(bom);
+                        bomEncrypted = Buffer.from(PSARCParser.BOMEncrypt(bomBuffer)).slice(0, bomBuffer.length);
                         header = {
                             MAGIC: 'PSAR',
                             VERSION: 65540,
@@ -799,7 +813,7 @@ var PSARC = /** @class */ (function () {
                             n_entries: entries.length,
                             BLOCK_SIZE: PSARCParser.BLOCK_SIZE,
                             ARCHIVE_FLAGS: 4,
-                            bom: Buffer.from(PSARCParser.BOMEncrypt(Buffer.from(PSARCParser.BOM(entries.length).encode(bom)))),
+                            bom: bomEncrypted,
                         };
                         result = Buffer.alloc(0);
                         ph = PSARCParser.HEADER.encode(header);
@@ -915,7 +929,8 @@ var SNG = /** @class */ (function () {
                     case 2:
                         _a.sent();
                         q = new binary_parser_1.Parser()
-                            .int32("uncompressedLength")
+                            .endianess("little")
+                            .uint32("uncompressedLength")
                             .buffer("compressedData", {
                             length: compressed.length,
                         });

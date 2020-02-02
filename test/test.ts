@@ -40,6 +40,7 @@ async function psarcTests() {
     describe('psarcjs: PSARC: test.psarc', function () {
         const file = "test/psarc/test.psarc";
         const json = "manifests/songs_dlc_butitrainedsong/butitrainedsong_lead.json";
+        const sng = "songs/bin/macos/butitrainedsong_lead.sng"
         let psarc: PSARC;
         before(async () => {
             psarc = await getPSARC(file);
@@ -55,11 +56,13 @@ async function psarcTests() {
         });
         it('extract file from psarc: expect json', async function () {
             await extractFile(psarc, json);
+            await extractFile(psarc, sng);
         });
     });
     describe('psarcjs: PSARC: test2.psarc', function () {
         const file = "test/psarc/test2.psarc";
         const json = "manifests/songs_dlc_witchcraftsong/witchcraftsong_lead.json";
+        const sng = "songs/bin/macos/witchcraftsong_lead.sng";
         let psarc: PSARC;
         before(async () => {
             psarc = await getPSARC(file);
@@ -75,6 +78,7 @@ async function psarcTests() {
         });
         it('extract file from psarc: export json', async function () {
             await extractFile(psarc, json);
+            await extractFile(psarc, sng);
         });
     });
 }
@@ -371,8 +375,14 @@ async function extractFile(psarc: PSARC, file: string) {
     expect(idx).to.be.greaterThan(-1);
     if (idx != -1) {
         await psarc.extractFile(idx, tmpfile.name);
-        //@ts-ignore
-        expect(tmpfile.name).to.be.a.file().with.json;
+        if (file.endsWith("json")) {
+            //@ts-ignore
+            expect(tmpfile.name).to.be.a.file().with.json;
+        }
+        else if (file.endsWith("sng")) {
+            //@ts-ignore
+            await new SNG(tmpfile.name).parse();
+        }
     }
     tmpfile.removeCallback();
 }
@@ -866,10 +876,11 @@ async function song2014Tests() {
 }
 
 async function psarcGenerateTests() {
-    let outDir = "";
+    let outDir = "/tmp/bwab1anthem_m";
     const dir = "/tmp/";
     const tag = "bwab1anthem";
     describe("psarcjs: PSARC: generate tests ", async () => {
+        /*
         it("psarcjs: generate directory", async () => {
             const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
             const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
@@ -930,6 +941,7 @@ async function psarcGenerateTests() {
                 Platform.Mac,
             );
         }).timeout(30000);
+        */
         it("psarcjs: pack directory", async () => {
             const out = `/tmp/${tag}_psarcjs_m.psarc`;
             await PSARC.packDirectory(outDir, out);
@@ -1219,8 +1231,8 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function testMain() {
-    /*
     await psarcTests();
+    /*
     await sngTests();
     await song2014Tests();
 
