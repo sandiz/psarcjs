@@ -224,6 +224,7 @@ export class PSARC {
             const sngFile = await parsed.generateSNG("/tmp/", tag);
             const sng = new SNG(sngFile);
             await sng.parse();
+            await sng.pack();
             const tonesObj: ManifestTone[] = JSON.parse(await (await promises.readFile(tones)).toString(), ManifestToneReviver);
 
             const arr = new Arrangement(parsed.song, sng, {
@@ -461,10 +462,10 @@ export class PSARC {
                     let magic = Buffer.from(rawData.slice(0, 4)).readInt32LE(0)
                     let ph = Buffer.from(rawData.slice(4, 8)).readInt32LE(0)
                     if (magic == 0x4A && ph == 3) {
-                        //console.log("packed sng")
+                        console.log("packdir", "packed sng", f)
                     }
                     else {
-                        //console.log("unpacked sng");
+                        console.log("packdir", "unpacked sng", f);
                         var s = new SNG(f);
                         await s.parse();
                         await s.pack();

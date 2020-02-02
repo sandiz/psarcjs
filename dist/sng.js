@@ -71,6 +71,7 @@ var SNG = /** @class */ (function () {
         this.sng = null;
         this.packedSNG = null;
         this.sngFile = file;
+        console.log("sngFile", this.sngFile);
         if (platform)
             this.platform = platform;
         else
@@ -155,12 +156,14 @@ var SNG = /** @class */ (function () {
                         _b.trys.push([1, 5, , 6]);
                         pData = p.parse(this.rawData);
                         if (!(pData.magic == 0x4A)) return [3 /*break*/, 3];
+                        console.log("packed sng", this.sngFile);
                         _a = this;
                         return [4 /*yield*/, PSARCParser.ENTRYDecrypt(this.rawData, this.platform == common_1.Platform.Mac ? PSARCParser.MAC_KEY : PSARCParser.WIN_KEY)];
                     case 2:
                         _a.unpackedData = _b.sent();
                         return [3 /*break*/, 4];
                     case 3:
+                        console.trace("unpacked sng", this.sngFile);
                         this.unpackedData = this.rawData;
                         _b.label = 4;
                     case 4: return [3 /*break*/, 6];

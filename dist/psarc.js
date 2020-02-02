@@ -311,10 +311,13 @@ var PSARC = /** @class */ (function () {
                                         return [4 /*yield*/, sng.parse()];
                                     case 3:
                                         _c.sent();
+                                        return [4 /*yield*/, sng.pack()];
+                                    case 4:
+                                        _c.sent();
                                         _b = (_a = JSON).parse;
                                         return [4 /*yield*/, fs_1.promises.readFile(tones)];
-                                    case 4: return [4 /*yield*/, (_c.sent()).toString()];
-                                    case 5:
+                                    case 5: return [4 /*yield*/, (_c.sent()).toString()];
+                                    case 6:
                                         tonesObj = _b.apply(_a, [_c.sent(), common_1.ManifestToneReviver]);
                                         arr = new common_1.Arrangement(parsed.song, sng, {
                                             tag: tag,
@@ -328,7 +331,7 @@ var PSARC = /** @class */ (function () {
                                             info: info(index),
                                         });
                                         return [4 /*yield*/, manifest_1.MANIFEST.generateJSON("/tmp/", tag, arr)];
-                                    case 6:
+                                    case 7:
                                         json = _c.sent();
                                         return [2 /*return*/, {
                                                 sng: sngFile,
@@ -673,9 +676,10 @@ var PSARC = /** @class */ (function () {
                                         magic = Buffer.from(rawData.slice(0, 4)).readInt32LE(0);
                                         ph_1 = Buffer.from(rawData.slice(4, 8)).readInt32LE(0);
                                         if (!(magic == 0x4A && ph_1 == 3)) return [3 /*break*/, 5];
+                                        console.log("packdir", "packed sng", f);
                                         return [3 /*break*/, 8];
                                     case 5:
-                                        //console.log("unpacked sng");
+                                        console.log("packdir", "unpacked sng", f);
                                         s = new sng_1.SNG(f);
                                         return [4 /*yield*/, s.parse()];
                                     case 6:

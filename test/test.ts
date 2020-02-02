@@ -883,7 +883,7 @@ async function psarcGenerateTests() {
     const dir = "/tmp/";
     const tag = "bwab1anthem";
     describe("psarcjs: PSARC: generate tests ", async () => {
-        it("psarcjs: generate directory", async () => {
+        it("generate directory", async () => {
             const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
             const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
             const rhythmXMLs = ["test/blinktest/bwab1anthem_rhythm.xml"];
@@ -944,7 +944,7 @@ async function psarcGenerateTests() {
             );
         }).timeout(30000);
 
-        it("psarcjs: pack directory", async () => {
+        it("pack directory", async () => {
             const out = `/tmp/${tag}_psarcjs_m.psarc`;
             await PSARC.packDirectory(outDir, out);
 
@@ -957,6 +957,7 @@ async function psarcGenerateTests() {
             await mkdirp(extractedDir);
             for (let i = 0; i < meter; i += 1) {
                 const outfile = join(extractedDir, basename(files[i]));
+                //console.log("extracting psarcjs psarc file", outfile);
                 await psarc.extractFile(i, outfile);
             }
             const cwd = process.cwd();
@@ -973,6 +974,7 @@ async function psarcGenerateTests() {
             await mkdirp(extractedDir2);
             for (let i = 0; i < files.length; i += 1) {
                 const outfile = join(extractedDir2, basename(files2[i]));
+                //console.log("extracting pyrocksmith psarc file", outfile);
                 await psarc2.extractFile(i, outfile);
             }
 
@@ -1017,8 +1019,12 @@ async function psarcGenerateTests() {
                         JSON.parse(rd);
                         break;
                     case ".sng":
-                        await new SNG(lf).parse();
-                        await new SNG(rf).parse();
+                        const lsng = new SNG(lf);
+                        const rsng = new SNG(rf);
+                        await lsng.parse();
+                        await rsng.parse();
+                        if (lsng.sng && rsng.sng)
+                            expect(lsng.sng).to.be.deep.equal(rsng.sng);
                         break;
                     case ".flat":
                         expect(ld.toString()).to.be.equal(rd.toString());
@@ -1096,7 +1102,7 @@ async function manifestTests() {
     const arrangements: (Arrangement | VocalArrangement)[] = [];
     describe("psarcjs: MANIFEST: generate tests", async () => {
         (forEach(leads.concat(rhythms).concat(basss)) as any)
-            .it(`psarcjs: generate arrangement json`, async function (lead: ManifestTestInfo) {
+            .it(`generate arrangement json`, async function (lead: ManifestTestInfo) {
                 //@ts-ignore
                 this.timeout(15000);
                 const xml = lead.xml;
@@ -1155,7 +1161,7 @@ async function manifestTests() {
                 expect(lattr).excluding(excludes).to.be.deep.equal(rattr);
             })
 
-        it("psarcjs: generate vocals json", async function () {
+        it("generate vocals json", async function () {
             //@ts-ignore
             this.timeout(15000);
             const left = vocals.json;
@@ -1199,7 +1205,7 @@ async function manifestTests() {
             expect(lattr).excluding(['MasterID_RDV']).to.be.deep.equal(rattr);
         })
 
-        it("psarcjs: generate hsan", async () => {
+        it("generate hsan", async () => {
             expect(arrangements.length).to.be.greaterThan(0);
             const hsan = await MANIFEST.generateHSAN("/tmp", "psarcjs_test", arrangements);
             const hsanObj = JSON.parse(await promises.readFile(hsan));
@@ -1233,6 +1239,7 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function testMain() {
+    /*
     await psarcTests();
     await sngTests();
     await song2014Tests();
@@ -1249,6 +1256,7 @@ async function testMain() {
     }
 
     await manifestTests();
+    */
     await psarcGenerateTests();
 }
 

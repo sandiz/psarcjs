@@ -36,6 +36,7 @@ export class SNG {
 
     constructor(file: string, platform: Platform | undefined = undefined) {
         this.sngFile = file;
+        console.log("sngFile", this.sngFile);
         if (platform)
             this.platform = platform;
         else
@@ -94,9 +95,11 @@ export class SNG {
             try {
                 const pData = p.parse(this.rawData);
                 if (pData.magic == 0x4A) {
+                    console.log("packed sng", this.sngFile);
                     this.unpackedData = await PSARCParser.ENTRYDecrypt(this.rawData, this.platform == Platform.Mac ? PSARCParser.MAC_KEY : PSARCParser.WIN_KEY);
                 }
                 else {
+                    console.trace("unpacked sng", this.sngFile);
                     this.unpackedData = this.rawData;
                 }
             }
