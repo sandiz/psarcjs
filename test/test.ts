@@ -880,7 +880,6 @@ async function psarcGenerateTests() {
     const dir = "/tmp/";
     const tag = "bwab1anthem";
     describe("psarcjs: PSARC: generate tests ", async () => {
-        /*
         it("psarcjs: generate directory", async () => {
             const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
             const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
@@ -941,7 +940,7 @@ async function psarcGenerateTests() {
                 Platform.Mac,
             );
         }).timeout(30000);
-        */
+
         it("psarcjs: pack directory", async () => {
             const out = `/tmp/${tag}_psarcjs_m.psarc`;
             await PSARC.packDirectory(outDir, out);
