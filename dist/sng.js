@@ -45,7 +45,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var binary_parser_1 = require("binary-parser");
 var fs_1 = require("fs");
-var os = __importStar(require("os"));
 var PSARCParser = __importStar(require("./parser"));
 var SNGParser = __importStar(require("./sngparser"));
 var common_1 = require("./types/common");
@@ -64,17 +63,13 @@ var packedParser = function (len) { return new binary_parser_1.Parser()
 }); };
 var SNG = /** @class */ (function () {
     function SNG(file, platform) {
-        if (platform === void 0) { platform = undefined; }
         this.rawData = null; /* sng file data, can be encrypted or decrypted */
         this.packedData = null; /* encrypted sng  */
         this.unpackedData = null; /* decrypted sng */
         this.sng = null;
         this.packedSNG = null;
         this.sngFile = file;
-        if (platform)
-            this.platform = platform;
-        else
-            this.platform = os.platform() == "win32" ? common_1.Platform.Windows : common_1.Platform.Mac;
+        this.platform = platform;
     }
     SNG.prototype.parse = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -156,7 +151,7 @@ var SNG = /** @class */ (function () {
                         pData = p.parse(this.rawData);
                         if (!(pData.magic == 0x4A)) return [3 /*break*/, 3];
                         _a = this;
-                        return [4 /*yield*/, PSARCParser.ENTRYDecrypt(this.rawData, this.platform == common_1.Platform.Mac ? PSARCParser.MAC_KEY : PSARCParser.WIN_KEY)];
+                        return [4 /*yield*/, PSARCParser.ENTRYDecrypt(this.rawData, this.platform == common_1.Platform.Windows ? PSARCParser.WIN_KEY : PSARCParser.MAC_KEY)];
                     case 2:
                         _a.unpackedData = _b.sent();
                         return [3 /*break*/, 4];

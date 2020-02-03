@@ -1,7 +1,7 @@
 import { promises } from "fs";
 import * as xml2js from 'xml2js';
 import { join } from "path";
-import { ToolkitInfo } from "./types/common";
+import { ToolkitInfo, Platform } from "./types/common";
 import * as SNGTypes from './types/sng';
 import * as SNGParser from './sngparser';
 import { SNG } from "./sng";
@@ -131,7 +131,7 @@ export class Song2014 {
         return file;
     }
 
-    async generateSNG(dir: string, tag: string) {
+    async generateSNG(dir: string, tag: string, platform: Platform) {
         const fileName = `${tag}_${this.song.arrangement}.sng`;
 
         const toneObj = {
@@ -193,7 +193,7 @@ export class Song2014 {
         const path = join(dir, fileName);
         //await promises.writeFile(path, (SNGParser.SNGDATA as any).encode(sngFormat))
         const buf = (SNGParser.SNGDATA as any).encode(sngFormat);
-        const sng = new SNG(path);
+        const sng = new SNG(path, platform);
         sng.rawData = buf;
         sng.unpackedData = buf;
         await sng.pack();

@@ -219,7 +219,7 @@ var Song2014 = /** @class */ (function () {
             });
         });
     };
-    Song2014.prototype.generateSNG = function (dir, tag) {
+    Song2014.prototype.generateSNG = function (dir, tag, platform) {
         return __awaiter(this, void 0, void 0, function () {
             var fileName, toneObj, dnas, chordTemplates, phraseIterations, levels, chordNotes, sngFormat, _validate2, path, buf, sng;
             return __generator(this, function (_a) {
@@ -279,7 +279,7 @@ var Song2014 = /** @class */ (function () {
                         _validate2(SNGParser.SNGDATA, sngFormat);
                         path = path_1.join(dir, fileName);
                         buf = SNGParser.SNGDATA.encode(sngFormat);
-                        sng = new sng_1.SNG(path);
+                        sng = new sng_1.SNG(path, platform);
                         sng.rawData = buf;
                         sng.unpackedData = buf;
                         return [4 /*yield*/, sng.pack()];

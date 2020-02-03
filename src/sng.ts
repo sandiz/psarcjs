@@ -34,12 +34,9 @@ export class SNG {
     public packedSNG: SNGTypes.PackedSNG | null = null;
     private platform: Platform;
 
-    constructor(file: string, platform: Platform | undefined = undefined) {
+    constructor(file: string, platform: Platform) {
         this.sngFile = file;
-        if (platform)
-            this.platform = platform;
-        else
-            this.platform = os.platform() == "win32" ? Platform.Windows : Platform.Mac;
+        this.platform = platform;
     }
 
     public async parse(): Promise<void> {
@@ -94,7 +91,7 @@ export class SNG {
             try {
                 const pData = p.parse(this.rawData);
                 if (pData.magic == 0x4A) {
-                    this.unpackedData = await PSARCParser.ENTRYDecrypt(this.rawData, this.platform == Platform.Mac ? PSARCParser.MAC_KEY : PSARCParser.WIN_KEY);
+                    this.unpackedData = await PSARCParser.ENTRYDecrypt(this.rawData, this.platform == Platform.Windows ? PSARCParser.WIN_KEY : PSARCParser.MAC_KEY);
                 }
                 else {
                     this.unpackedData = this.rawData;

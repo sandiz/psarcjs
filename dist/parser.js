@@ -134,7 +134,7 @@ function ENTRYEncrypt(data, platform) {
     return __awaiter(this, void 0, void 0, function () {
         var key, iv, ctr, uintAkey, quanta, aesCtr, buf;
         return __generator(this, function (_a) {
-            key = platform == common_1.Platform.Mac ? exports.MAC_KEY : exports.WIN_KEY;
+            key = platform == common_1.Platform.Windows ? exports.WIN_KEY : exports.MAC_KEY;
             iv = Buffer.alloc(16, 0);
             ctr = Buffer.from(iv).readUInt32BE(0);
             uintAkey = aesjs.utils.hex.toBytes(key);

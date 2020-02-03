@@ -78,7 +78,7 @@ export async function ENTRYDecrypt(data: Buffer, key: string) {
 }
 
 export async function ENTRYEncrypt(data: Buffer, platform: Platform): Promise<{ buf: Buffer, iv: Buffer }> {
-    const key = platform == Platform.Mac ? MAC_KEY : WIN_KEY;
+    const key = platform == Platform.Windows ? WIN_KEY : MAC_KEY;
     const iv = Buffer.alloc(16, 0);
 
     const ctr = Buffer.from(iv).readUInt32BE(0);

@@ -346,7 +346,7 @@ async function sngTests() {
         });
 }
 async function getSNG(file: string) {
-    const sng = new SNG(file);
+    const sng = new SNG(file, Platform.Mac);
     await sng.parse();
     return sng;
 }
@@ -586,8 +586,8 @@ async function vocalsTest() {
 
             it("generate vocals sng", async () => {
                 const parsed: Vocals[] = await Vocals.fromXML(file);
-                const sngFile = await Vocals.generateSNG("/tmp/", "psarcJSGenerateTest", parsed);
-                const sng = new SNG(sngFile);
+                const sngFile = await Vocals.generateSNG("/tmp/", "psarcJSGenerateTest", parsed, Platform.Mac);
+                const sng = new SNG(sngFile, Platform.Mac);
                 await sng.parse();
             })
         })
@@ -710,9 +710,9 @@ async function song2014Tests() {
         })
         it("generate SNG from Song2014", async () => {
             var s = new Song2014(song2014);
-            const f = await s.generateSNG("/tmp/", "psarcJSTest");
+            const f = await s.generateSNG("/tmp/", "psarcJSTest", Platform.Mac);
 
-            const sng = new SNG(f);
+            const sng = new SNG(f, Platform.Mac);
             await sng.parse();
         })
     })
@@ -731,9 +731,9 @@ async function song2014Tests() {
             it("create SNG from xml", async () => {
                 const xFile = `${xmls}${xml}`;
                 const parsedXml = await Song2014.fromXML(xFile);
-                const f = await parsedXml.generateSNG("/tmp/", "psarcJSTest");
+                const f = await parsedXml.generateSNG("/tmp/", "psarcJSTest", Platform.Mac);
 
-                sng = new SNG(f);
+                sng = new SNG(f, Platform.Mac);
                 await sng.parse();
 
                 const xmlPathParse = path.parse(xml);
@@ -743,7 +743,7 @@ async function song2014Tests() {
                     ['test/xml/xml2sng2014/sng2014.exe', '--xml2sng', '-i', xFile])
 
                 //console.log(out.toString());
-                const idealSNG = new SNG(leftSNG);
+                const idealSNG = new SNG(leftSNG, Platform.Mac);
                 await idealSNG.parse();
 
                 const lsng = sng.sng;
@@ -869,7 +869,7 @@ async function song2014Tests() {
                     const path = join("/tmp/", fileName);
                     await promises.writeFile(path, sng.packedData);
 
-                    const sng2 = new SNG(path);
+                    const sng2 = new SNG(path, Platform.Mac);
                     await sng2.parse();
                     expect(path).to.be.length.greaterThan(0);
                     expect(sng2.sng?.metadata?.maxScores).to.be.greaterThan(10);
@@ -879,161 +879,166 @@ async function song2014Tests() {
 }
 
 async function psarcGenerateTests() {
-    let outDir = "/tmp/bwab1anthem_m";
-    const dir = "/tmp/";
-    const tag = "bwab1anthem";
     describe("psarcjs: PSARC: generate tests ", async () => {
-        it("generate directory", async () => {
-            const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
-            const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
-            const rhythmXMLs = ["test/blinktest/bwab1anthem_rhythm.xml"];
-            const rhythmTones = ["test/blinktest/bwab1anthem_rhythm_tones.json"];
-            const bassXMLs = ["test/blinktest/bwab1anthem_bass.xml"];
-            const bassTones = ["test/blinktest/bwab1anthem_bass_tones.json"];
-            const slightXMLs = ["test/blinktest/bwab1anthem_showlights.xml"];
-            const vocalXMLs = ["test/blinktest/bwab1anthem_vocals.xml"];
-            const info: ArrangementInfo = {
-                songName: "Anthem",
-                albumName: "Enema of the State",
-                year: 1999,
-                currentPartition: 0,
-                scrollSpeed: 13,
-                volume: -9.2,
-                previewVolume: -8.3
-            }
-            const dds = {
-                '256': 'test/dds/album_poster_256.dds',
-                '128': 'test/dds/album_poster_128.dds',
-                '64': 'test/dds/album_poster_64.dds',
-            }
-            const wem = {
-                main: { wem: 'test/blinktest/1224431012.wem', bnk: 'test/blinktest/song_bwab1anthem.bnk' },
-                preview: { wem: 'test/blinktest/376327087.wem', bnk: 'test/blinktest/song_bwab1anthem_preview.bnk' }
-            }
-            const toolkit: Toolkit = {
-                author: 'psarcjs_author',
-                comment: 'psarcjs_comment',
-                version: '1',
-                tk: {
-                    name: 'application_using_psarcjs',
-                    version: "0.0.1"
+        [Platform.Mac, Platform.Windows].forEach(pt => {
+            let outDir = "";
+            const dir = "/tmp/";
+            const tag = "bwab1anthem";
+            it(`generate directory: ${pt == Platform.Windows ? "windows" : "macos"} `, async () => {
+                const leadXMLs = ["test/blinktest/bwab1anthem_lead.xml"];
+                const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
+                const rhythmXMLs = ["test/blinktest/bwab1anthem_rhythm.xml"];
+                const rhythmTones = ["test/blinktest/bwab1anthem_rhythm_tones.json"];
+                const bassXMLs = ["test/blinktest/bwab1anthem_bass.xml"];
+                const bassTones = ["test/blinktest/bwab1anthem_bass_tones.json"];
+                const slightXMLs = ["test/blinktest/bwab1anthem_showlights.xml"];
+                const vocalXMLs = ["test/blinktest/bwab1anthem_vocals.xml"];
+                const info: ArrangementInfo = {
+                    songName: "Anthem",
+                    albumName: "Enema of the State",
+                    year: 1999,
+                    currentPartition: 0,
+                    scrollSpeed: 13,
+                    volume: -9.2,
+                    previewVolume: -8.3
                 }
-            }
-
-            outDir = await PSARC.generateDirectory(
-                dir,
-                tag, {
-                xml: {
-                    [ArrangementType.LEAD]: leadXMLs,
-                    [ArrangementType.RHYTHM]: rhythmXMLs,
-                    [ArrangementType.BASS]: bassXMLs,
-                    [ArrangementType.SHOWLIGHTS]: slightXMLs,
-                    [ArrangementType.VOCALS]: vocalXMLs,
-                },
-                tones: {
-                    [ArrangementType.LEAD]: leadTones,
-                    [ArrangementType.RHYTHM]: rhythmTones,
-                    [ArrangementType.BASS]: bassTones,
-                },
-                dds,
-                wem,
-            },
-                info,
-                toolkit,
-                Platform.Mac,
-            );
-        }).timeout(30000);
-
-        it("pack directory", async () => {
-            const out = `/tmp/${tag}_psarcjs_m.psarc`;
-            await PSARC.packDirectory(outDir, out);
-
-            const psarc = new PSARC(out);
-            await psarc.parse();
-            const files = psarc.getFiles();
-            const meter = files.length
-            const extractedDir = "/tmp/extracted_psarc/psarcjs/";
-            await remove(extractedDir);
-            await mkdirp(extractedDir);
-            for (let i = 0; i < meter; i += 1) {
-                const outfile = join(extractedDir, basename(files[i]));
-                //console.log("extracting psarcjs psarc file", outfile);
-                await psarc.extractFile(i, outfile);
-            }
-            const cwd = process.cwd();
-            process.chdir("/tmp/");
-            const { stdout, stderr } = await exec(`pyrocksmith --pack ${outDir}`);
-            expect(stderr).to.be.empty;
-
-            const t = "/tmp/bwab1anthem_m.psarc";
-            const psarc2 = new PSARC(t);
-            await psarc2.parse();
-            const files2 = psarc2.getFiles();
-            const extractedDir2 = "/tmp/extracted_psarc/rstk/";
-            await remove(extractedDir2);
-            await mkdirp(extractedDir2);
-            for (let i = 0; i < files.length; i += 1) {
-                const outfile = join(extractedDir2, basename(files2[i]));
-                //console.log("extracting pyrocksmith psarc file", outfile);
-                await psarc2.extractFile(i, outfile);
-            }
-
-            for (let i = 0; i < meter; i += 1) {
-                const f = files[i];
-                const parsed = parse(f);
-                const lf = join(extractedDir, basename(f));
-                const rf = join(extractedDir2, basename(f));
-                const ld = await promises.readFile(lf);
-                const rd = await promises.readFile(rf);
-
-                switch (parsed.ext) {
-                    case ".appid":
-                        expect(ld).to.be.deep.equal(rd);
-                        break;
-                    case ".wem":
-                        await WEM.parse(lf);
-                        await WEM.parse(rf);
-                        expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
-                        break;
-                    case ".bnk":
-                        await BNK.parse(lf);
-                        await BNK.parse(rf);
-                        expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
-                        break;
-                    case ".version":
-                    case ".nt":
-                        break;
-                    case ".xblock":
-                    case ".xml":
-                        await xml2js.parseStringPromise(ld);
-                        await xml2js.parseStringPromise(rd);
-                        break;
-                    case ".dds":
-                        await new DDS(lf).parse();
-                        await new DDS(rf).parse();
-                        expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
-                        break;
-                    case ".json":
-                    case ".hsan":
-                        JSON.parse(ld);
-                        JSON.parse(rd);
-                        break;
-                    case ".sng":
-                        const lsng = new SNG(lf);
-                        const rsng = new SNG(rf);
-                        await lsng.parse();
-                        await rsng.parse();
-                        if (lsng.sng && rsng.sng)
-                            expect(lsng.sng).to.be.deep.equal(rsng.sng);
-                        break;
-                    case ".flat":
-                        expect(ld.toString()).to.be.equal(rd.toString());
-                        break;
-                    default:
-                        break;
+                const dds = {
+                    '256': 'test/dds/album_poster_256.dds',
+                    '128': 'test/dds/album_poster_128.dds',
+                    '64': 'test/dds/album_poster_64.dds',
                 }
-            }
-        }).timeout(30000);
+                const wem = {
+                    main: { wem: 'test/blinktest/1224431012.wem', bnk: 'test/blinktest/song_bwab1anthem.bnk' },
+                    preview: { wem: 'test/blinktest/376327087.wem', bnk: 'test/blinktest/song_bwab1anthem_preview.bnk' }
+                }
+                const toolkit: Toolkit = {
+                    author: 'psarcjs_author',
+                    comment: 'psarcjs_comment',
+                    version: '1',
+                    tk: {
+                        name: 'application_using_psarcjs',
+                        version: "0.0.1"
+                    }
+                }
+
+                outDir = await PSARC.generateDirectory(
+                    dir,
+                    tag, {
+                    xml: {
+                        [ArrangementType.LEAD]: leadXMLs,
+                        [ArrangementType.RHYTHM]: rhythmXMLs,
+                        [ArrangementType.BASS]: bassXMLs,
+                        [ArrangementType.SHOWLIGHTS]: slightXMLs,
+                        [ArrangementType.VOCALS]: vocalXMLs,
+                    },
+                    tones: {
+                        [ArrangementType.LEAD]: leadTones,
+                        [ArrangementType.RHYTHM]: rhythmTones,
+                        [ArrangementType.BASS]: bassTones,
+                    },
+                    dds,
+                    wem,
+                },
+                    info,
+                    toolkit,
+                    pt,
+                );
+            }).timeout(30000);
+            it(`pack directory: ${pt == Platform.Windows ? "windows" : "macos"} `, async () => {
+                const out = await PSARC.packDirectory(outDir, "/tmp/", tag, "_psarcjs", pt);
+                if (out == null) {
+                    expect(out).to.be.not.null;
+                    return;
+                }
+
+                const psarc = new PSARC(out);
+                await psarc.parse();
+                const files = psarc.getFiles();
+                const meter = files.length
+                const extractedDir = "/tmp/extracted_psarc/psarcjs/";
+                await remove(extractedDir);
+                await mkdirp(extractedDir);
+                for (let i = 0; i < meter; i += 1) {
+                    const outfile = join(extractedDir, basename(files[i]));
+                    //console.log("extracting psarcjs psarc file", outfile);
+                    await psarc.extractFile(i, outfile);
+                }
+                const cwd = process.cwd();
+                process.chdir("/tmp/");
+                const { stdout, stderr } = await exec(`pyrocksmith --pack ${outDir}`);
+                expect(stderr).to.be.empty;
+                process.chdir(cwd);
+
+                const t = `/tmp/${tag}${pt == Platform.Windows ? "_p" : "_m"}.psarc`;
+                const psarc2 = new PSARC(t);
+                await psarc2.parse();
+                const files2 = psarc2.getFiles();
+                const extractedDir2 = "/tmp/extracted_psarc/rstk/";
+                await remove(extractedDir2);
+                await mkdirp(extractedDir2);
+                for (let i = 0; i < files.length; i += 1) {
+                    const outfile = join(extractedDir2, basename(files2[i]));
+                    //console.log("extracting pyrocksmith psarc file", outfile);
+                    await psarc2.extractFile(i, outfile);
+                }
+
+                for (let i = 0; i < meter; i += 1) {
+                    const f = files[i];
+                    const parsed = parse(f);
+                    const lf = join(extractedDir, basename(f));
+                    const rf = join(extractedDir2, basename(f));
+                    const ld = await promises.readFile(lf);
+                    const rd = await promises.readFile(rf);
+
+                    switch (parsed.ext) {
+                        case ".appid":
+                            expect(ld).to.be.deep.equal(rd);
+                            break;
+                        case ".wem":
+                            await WEM.parse(lf);
+                            await WEM.parse(rf);
+                            expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
+                            break;
+                        case ".bnk":
+                            await BNK.parse(lf);
+                            await BNK.parse(rf);
+                            expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
+                            break;
+                        case ".version":
+                        case ".nt":
+                            break;
+                        case ".xblock":
+                        case ".xml":
+                            await xml2js.parseStringPromise(ld);
+                            await xml2js.parseStringPromise(rd);
+                            break;
+                        case ".dds":
+                            await new DDS(lf).parse();
+                            await new DDS(rf).parse();
+                            expect(crypto.createHash("sha256").update(ld).digest("hex")).to.be.equal(crypto.createHash("sha256").update(rd).digest("hex"));
+                            break;
+                        case ".json":
+                        case ".hsan":
+                            JSON.parse(ld);
+                            JSON.parse(rd);
+                            break;
+                        case ".sng":
+                            const lsng = new SNG(lf, pt);
+                            const rsng = new SNG(rf, pt);
+                            await lsng.parse();
+                            await rsng.parse();
+                            if (lsng.sng && rsng.sng)
+                                expect(lsng.sng).to.be.deep.equal(rsng.sng);
+                            break;
+                        case ".flat":
+                            expect(ld.toString()).to.be.equal(rd.toString());
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }).timeout(30000);
+        });
     })
 }
 
@@ -1110,8 +1115,8 @@ async function manifestTests() {
                 const tones = lead.tones;
                 const pid = lead.pid;
                 const parsed: Song2014 = await Song2014.fromXML(xml);
-                const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest");
-                const sng = new SNG(sngFile);
+                const sngFile = await parsed.generateSNG("/tmp/", "psarcJSGenerateTest", Platform.Mac);
+                const sng = new SNG(sngFile, Platform.Mac);
                 await sng.parse();
                 const tonesObj: ManifestTone[] = JSON.parse(await promises.readFile(tones), ManifestToneReviver);
                 const arr = new Arrangement(parsed.song, sng, {
@@ -1239,7 +1244,6 @@ const wems = "test/wem/";
 const bnks = "test/bnk/";
 const xmls = "test/xml/";
 async function testMain() {
-    /*
     await psarcTests();
     await sngTests();
     await song2014Tests();
@@ -1256,7 +1260,6 @@ async function testMain() {
     }
 
     await manifestTests();
-    */
     await psarcGenerateTests();
 }
 

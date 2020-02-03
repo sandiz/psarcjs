@@ -304,10 +304,10 @@ var PSARC = /** @class */ (function () {
                                     case 0: return [4 /*yield*/, song2014_1.Song2014.fromXML(xml)];
                                     case 1:
                                         parsed = _c.sent();
-                                        return [4 /*yield*/, parsed.generateSNG("/tmp/", tag)];
+                                        return [4 /*yield*/, parsed.generateSNG("/tmp/", tag, platform)];
                                     case 2:
                                         sngFile = _c.sent();
-                                        sng = new sng_1.SNG(sngFile);
+                                        sng = new sng_1.SNG(sngFile, platform);
                                         return [4 /*yield*/, sng.parse()];
                                     case 3:
                                         _c.sent();
@@ -348,7 +348,7 @@ var PSARC = /** @class */ (function () {
                                     case 0: return [4 /*yield*/, common_1.Vocals.fromXML(xml)];
                                     case 1:
                                         parsed = _a.sent();
-                                        return [4 /*yield*/, common_1.Vocals.generateSNG("/tmp/", tag, parsed)];
+                                        return [4 /*yield*/, common_1.Vocals.generateSNG("/tmp/", tag, parsed, platform)];
                                     case 2:
                                         sngFile = _a.sent();
                                         arr = new common_1.VocalArrangement({
@@ -429,7 +429,7 @@ var PSARC = /** @class */ (function () {
                                 arrangements: allArrs,
                             }
                         };
-                        name = "" + options.tag + (options.platform == common_1.Platform.Mac ? '_m' : '_p');
+                        name = "" + options.tag + (options.platform == common_1.Platform.Windows ? '_p' : '_m');
                         root = path_1.join(dir, name);
                         return [4 /*yield*/, PSARC.existsAsync(root)];
                     case 11:
@@ -481,7 +481,7 @@ var PSARC = /** @class */ (function () {
                         return [4 /*yield*/, fs_1.promises.copyFile(options.dds[64], path_1.join(gfxassets, "album_" + options.tag + "_64.dds"))];
                     case 27:
                         _e.sent();
-                        audio = path_1.join(root, "audio", options.platform === common_1.Platform.Mac ? "mac" : "windows");
+                        audio = path_1.join(root, "audio", options.platform === common_1.Platform.Windows ? "windows" : "mac");
                         return [4 /*yield*/, PSARC.existsAsync(audio)];
                     case 28:
                         exists = _e.sent();
@@ -537,7 +537,7 @@ var PSARC = /** @class */ (function () {
                         i += 1;
                         return [3 /*break*/, 38];
                     case 43:
-                        songsbin = path_1.join(root, "songs/bin", options.platform == common_1.Platform.Mac ? "macos" : "generic");
+                        songsbin = path_1.join(root, "songs/bin", options.platform == common_1.Platform.Windows ? "generic" : "macos");
                         return [4 /*yield*/, PSARC.existsAsync(songsbin)];
                     case 44:
                         exists = _e.sent();
@@ -634,15 +634,17 @@ var PSARC = /** @class */ (function () {
             });
         });
     };
-    PSARC.packDirectory = function (dir, psarcFilename) {
+    PSARC.packDirectory = function (packDir, outDir, tag, extra, platform) {
         return __awaiter(this, void 0, void 0, function () {
-            var listingFileName, files, entries, zLengths, prevOffset, _loop_1, this_1, s, i, state_1, bNum, headerSize, bom, bomBuffer, bomEncrypted, header, result, ph, i, entry, j;
+            var plat, psarcFilename, listingFileName, files, entries, zLengths, prevOffset, _loop_1, this_1, s, i, state_1, bNum, headerSize, bom, bomBuffer, bomEncrypted, header, result, ph, i, entry, j;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        plat = platform == common_1.Platform.Windows ? "p" : "m";
+                        psarcFilename = path_1.join(outDir, "" + tag + extra + "_" + plat + ".psarc");
                         listingFileName = "NamesBlock.bin";
-                        return [4 /*yield*/, this.getFiles(dir)];
+                        return [4 /*yield*/, this.getFiles(packDir)];
                     case 1:
                         files = _a.sent();
                         entries = [];
@@ -659,11 +661,11 @@ var PSARC = /** @class */ (function () {
                                         _b.label = 1;
                                     case 1:
                                         _b.trys.push([1, 10, , 11]);
-                                        name_1 = f.replace(dir + "/", "");
+                                        name_1 = f.replace(packDir + "/", "");
                                         if (!(name_1 === listingFileName)) return [3 /*break*/, 2];
                                         _a = Buffer.from(files
                                             .slice(1, files.length)
-                                            .map(function (i) { return i.replace(dir + "/", ""); })
+                                            .map(function (i) { return i.replace(packDir + "/", ""); })
                                             .join("\n"));
                                         return [3 /*break*/, 4];
                                     case 2: return [4 /*yield*/, fs_1.promises.readFile(f)];
@@ -679,7 +681,7 @@ var PSARC = /** @class */ (function () {
                                         return [3 /*break*/, 8];
                                     case 5:
                                         //console.log("packdir", "unpacked sng", f);
-                                        s = new sng_1.SNG(f);
+                                        s = new sng_1.SNG(f, platform);
                                         return [4 /*yield*/, s.parse()];
                                     case 6:
                                         _b.sent();
@@ -737,7 +739,7 @@ var PSARC = /** @class */ (function () {
                                         e_1 = _b.sent();
                                         console.log("failed to pack entry", f);
                                         console.log(e_1);
-                                        return [2 /*return*/, { value: void 0 }];
+                                        return [2 /*return*/, { value: null }];
                                     case 11: return [2 /*return*/];
                                 }
                             });
@@ -803,7 +805,7 @@ var PSARC = /** @class */ (function () {
                         return [4 /*yield*/, fs_1.promises.writeFile(psarcFilename, result)];
                     case 6:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [2 /*return*/, psarcFilename];
                 }
             });
         });

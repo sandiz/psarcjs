@@ -234,7 +234,7 @@ function addSNG(tag, details, platform) {
                 var arr = type;
                 var sng = new GraphItemLLID();
                 sng.name = tag + "_" + arr + (j > 1 ? j : "");
-                sng.canonical = "/songs/bin/" + (platform === common_1.Platform.Mac ? "macos" : "generic");
+                sng.canonical = "/songs/bin/" + (platform === common_1.Platform.Windows ? "generic" : "macos");
                 sng.tags = [TagValue.Application, TagValue.MusicgameSong];
                 sng.relpath = sng.canonical + "/" + sng.name + ".sng";
                 sng.logpath = sng.canonical + "/" + sng.name + ".sng";
@@ -268,8 +268,8 @@ function addBNK(tag, platform) {
         var bnk = new GraphItemLLID();
         var extra = i === 1 ? "_preview" : "";
         bnk.name = "song_" + tag + extra;
-        bnk.canonical = "/audio/" + (platform === common_1.Platform.Mac ? "mac" : "windows");
-        bnk.tags = [TagValue.Audio, TagValue.WwiseSoundBank, platform === common_1.Platform.Mac ? TagValue.MacOS : TagValue.DX9];
+        bnk.canonical = "/audio/" + (platform === common_1.Platform.Windows ? "windows" : "mac");
+        bnk.tags = [TagValue.Audio, TagValue.WwiseSoundBank, platform === common_1.Platform.Windows ? TagValue.DX9 : TagValue.MacOS];
         bnk.relpath = bnk.canonical + "/" + bnk.name + ".bnk";
         bnk.logpath = bnk.canonical + "/" + bnk.name + ".bnk";
         bnk.llid = exports.getUuid().split("").map(function (v, index) { return (index > 8 && v != '-') ? 0 : v; }).join("");

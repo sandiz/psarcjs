@@ -221,8 +221,8 @@ export class PSARC {
 
         const _getFiles = async (xml: string, tones: string, index: number): Promise<{ sng: string, manifest: string, arrangement: Arrangement }> => {
             const parsed: Song2014 = await Song2014.fromXML(xml);
-            const sngFile = await parsed.generateSNG("/tmp/", tag);
-            const sng = new SNG(sngFile);
+            const sngFile = await parsed.generateSNG("/tmp/", tag, platform);
+            const sng = new SNG(sngFile, platform);
             await sng.parse();
             await sng.pack();
             const tonesObj: ManifestTone[] = JSON.parse(await (await promises.readFile(tones)).toString(), ManifestToneReviver);
@@ -249,7 +249,7 @@ export class PSARC {
 
         const _getVocalSNG = async (xml: string, index: number): Promise<{ sng: string, manifest: string, arrangement: VocalArrangement }> => {
             const parsed: Vocals[] = await Vocals.fromXML(xml);
-            const sngFile = await Vocals.generateSNG("/tmp/", tag, parsed);
+            const sngFile = await Vocals.generateSNG("/tmp/", tag, parsed, platform);
             const arr = new VocalArrangement({
                 tag: tag,
                 sortOrder: index,
@@ -334,7 +334,7 @@ export class PSARC {
             manifests -> songs_dlc_tag -> songs_dlc_tag.hsan, tag_arrangement.json
             gamexblocks -> nsongs -> tag.xblock
         */
-        const name = `${options.tag}${options.platform == Platform.Mac ? '_m' : '_p'}`;
+        const name = `${options.tag}${options.platform == Platform.Windows ? '_p' : '_m'}`;
         const root = join(dir, name);
         let exists = await PSARC.existsAsync(root);
         if (!exists) await promises.mkdir(root);
@@ -359,7 +359,7 @@ export class PSARC {
         await promises.copyFile(options.dds[64], join(gfxassets, `album_${options.tag}_64.dds`));
 
 
-        const audio = join(root, "audio", options.platform === Platform.Mac ? "mac" : "windows");
+        const audio = join(root, "audio", options.platform === Platform.Windows ? "windows" : "mac");
         exists = await PSARC.existsAsync(audio);
         if (!exists) await mkdirp(audio);
 
@@ -383,7 +383,7 @@ export class PSARC {
             }
         }
 
-        const songsbin = join(root, "songs/bin", options.platform == Platform.Mac ? "macos" : "generic");
+        const songsbin = join(root, "songs/bin", options.platform == Platform.Windows ? "generic" : "macos");
         exists = await PSARC.existsAsync(songsbin);
         if (!exists) await mkdirp(songsbin);
         const binKeys = Object.keys(options.songs.sngs);
@@ -429,9 +429,11 @@ export class PSARC {
         return root;
     }
 
-    static async packDirectory(dir: string, psarcFilename: string) {
+    static async packDirectory(packDir: string, outDir: string, tag: string, extra: string, platform: Platform): Promise<string | null> {
+        const plat = platform == Platform.Windows ? "p" : "m";
+        const psarcFilename = join(outDir, `${tag}${extra}_${plat}.psarc`);
         const listingFileName = "NamesBlock.bin";
-        let files: string[] = await this.getFiles(dir);
+        let files: string[] = await this.getFiles(packDir);
         const entries: {
             name: string,
             zippedBlocks: Buffer[],
@@ -449,12 +451,12 @@ export class PSARC {
             const f = files[i];
             const isSNG = f.endsWith(".sng");
             try {
-                const name = f.replace(dir + "/", "");
+                const name = f.replace(packDir + "/", "");
                 let rawData = name === listingFileName
                     ? Buffer.from(
                         files
                             .slice(1, files.length)
-                            .map(i => i.replace(dir + "/", ""))
+                            .map(i => i.replace(packDir + "/", ""))
                             .join("\n")
                     )
                     : await promises.readFile(f);
@@ -466,7 +468,7 @@ export class PSARC {
                     }
                     else {
                         //console.log("packdir", "unpacked sng", f);
-                        var s = new SNG(f);
+                        var s = new SNG(f, platform);
                         await s.parse();
                         await s.pack();
                         if (s.packedData) {
@@ -511,7 +513,7 @@ export class PSARC {
             catch (e) {
                 console.log("failed to pack entry", f);
                 console.log(e);
-                return;
+                return null;
             }
         }
 
@@ -577,6 +579,7 @@ export class PSARC {
             }
         }
         await promises.writeFile(psarcFilename, result);
+        return psarcFilename;
     }
 
     static async  getFiles(dir: string) {

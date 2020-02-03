@@ -178,7 +178,7 @@ function addSNG(tag: string, details: ArrangementDetails, platform: Platform): s
                 const arr = type;
                 var sng = new GraphItemLLID();
                 sng.name = `${tag}_${arr}${j > 1 ? j : ""}`;
-                sng.canonical = `/songs/bin/${platform === Platform.Mac ? "macos" : "generic"}`;
+                sng.canonical = `/songs/bin/${platform === Platform.Windows ? "generic" : "macos"}`;
                 sng.tags = [TagValue.Application, TagValue.MusicgameSong];
                 sng.relpath = `${sng.canonical}/${sng.name}.sng`;
                 sng.logpath = `${sng.canonical}/${sng.name}.sng`;
@@ -213,8 +213,8 @@ function addBNK(tag: string, platform: Platform): string {
         const extra = i === 1 ? "_preview" : "";
 
         bnk.name = `song_${tag}${extra}`;
-        bnk.canonical = `/audio/${platform === Platform.Mac ? "mac" : "windows"}`;
-        bnk.tags = [TagValue.Audio, TagValue.WwiseSoundBank, platform === Platform.Mac ? TagValue.MacOS : TagValue.DX9];
+        bnk.canonical = `/audio/${platform === Platform.Windows ? "windows" : "mac"}`;
+        bnk.tags = [TagValue.Audio, TagValue.WwiseSoundBank, platform === Platform.Windows ? TagValue.DX9 : TagValue.MacOS];
         bnk.relpath = `${bnk.canonical}/${bnk.name}.bnk`;
         bnk.logpath = `${bnk.canonical}/${bnk.name}.bnk`;
         bnk.llid = getUuid().split("").map((v, index) => (index > 8 && v != '-') ? 0 : v).join("");

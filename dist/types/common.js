@@ -1004,7 +1004,7 @@ var Vocals = /** @class */ (function () {
         var xml = builder.buildObject(e);
         return xml;
     };
-    Vocals.generateSNG = function (dir, tag, vocals) {
+    Vocals.generateSNG = function (dir, tag, vocals, platform) {
         return __awaiter(this, void 0, void 0, function () {
             var fileName, sngFormat, path, buf, sng;
             return __generator(this, function (_a) {
@@ -1051,7 +1051,7 @@ var Vocals = /** @class */ (function () {
                         sngparser_1.SNGDATA.parse(sngparser_1.SNGDATA.encode(sngFormat));
                         path = path_1.join(dir, fileName);
                         buf = sngparser_1.SNGDATA.encode(sngFormat);
-                        sng = new sng_1.SNG(path);
+                        sng = new sng_1.SNG(path, platform);
                         sng.rawData = buf;
                         sng.unpackedData = buf;
                         return [4 /*yield*/, sng.pack()];

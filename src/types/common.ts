@@ -1095,7 +1095,7 @@ export class Vocals {
         return xml;
     }
 
-    static async generateSNG(dir: string, tag: string, vocals: Vocals[]) {
+    static async generateSNG(dir: string, tag: string, vocals: Vocals[], platform: Platform) {
         const fileName = `${tag}_vocals.sng`;
         const sngFormat: SNGFORMAT = {
             beats_length: 0,
@@ -1138,7 +1138,7 @@ export class Vocals {
 
         const path = join(dir, fileName);
         const buf = (SNGDATA as any).encode(sngFormat);
-        const sng = new SNG(path);
+        const sng = new SNG(path, platform);
         sng.rawData = buf;
         sng.unpackedData = buf;
         await sng.pack();
