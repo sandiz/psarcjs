@@ -7,3 +7,9 @@ export const objectMap = (object: { [key: string]: any }, mapFn: (item: any) => 
         return result
     }, {})
 }
+
+export const DEFAULT_VALUES = {
+    SCROLL_SPEED: 13,
+    VOLUME: -7.0,
+    PREVIEW_VOLUME: -7.0,
+}

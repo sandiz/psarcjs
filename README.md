@@ -5,7 +5,7 @@
 </p>
 
 # psarcjs
-node.js v12 module to read and extract Rocksmith PSARC files
+node.js v12 module to read/write Rocksmith PSARC and other related files
 
 ## Installation
     npm install @sandiz/psarcjs (github registry)
@@ -172,7 +172,83 @@ node.js v12 module to read and extract Rocksmith PSARC files
     fn();
 ```
 
+```JavaScript
+    const { PSARC, Song2014 } = require("psarcjs");
+    async function fn () {
+        const tag = "cdlcTag";
+        const toolkit: Toolkit = {
+            author: 'author',
+            comment: 'comment',
+            version: '1',
+            tk: {
+                name: 'application_using_psarcjs',
+                version: "0.0.1"
+            }
+        }
+        
+        const leadXMLs = [Song2014LeadObj.generateXML("/tmp/", tag, toolkit.tk)];
+        const leadTones = ["test/blinktest/bwab1anthem_lead_tones.json"];
+        
+        const rhythmXMLs = [Song2014RhythmObj.generateXML("/tmp/", tag, toolkit.tk)];
+        const rhythmTones = ["test/blinktest/bwab1anthem_rhythm_tones.json"];
+        
+        const bassXMLs = [Song2014BassObj.generateXML("/tmp/", tag, toolkit.tk)];
+        const bassTones = ["test/blinktest/bwab1anthem_bass_tones.json"];
+        
+        const slightXMLs = [ShowLights.toXML(showlightsArray)];
+        const vocalXMLs = [Vocals.toXML(vocalsArray)];
+        
+        const info: ArrangementInfo = {
+            songName: "SONG_NAME",
+            albumName: "ALBUM_NAME",
+            year: 1999,
+            currentPartition: 0,
+            scrollSpeed: DEFAULT_VALUES.SCROLL_SPEED,
+            volume: DEFAULT_VALUES.VOLUME,
+            previewVolume: DEFAULT_VALUES.PREVIEW_VOLUME,
+        }
+        const dds = {
+            '256': 'test/dds/album_poster_256.dds',
+            '128': 'test/dds/album_poster_128.dds',
+            '64': 'test/dds/album_poster_64.dds',
+        }   
+        const wem = {
+            main: { wem: 'test/blinktest/1224431012.wem', bnk: 'test/blinktest/song_bwab1anthem.bnk' },
+            preview: { wem: 'test/blinktest/376327087.wem', bnk: 'test/blinktest/song_bwab1anthem_preview.bnk' }
+        }
+        
+        
+        const outDir = await PSARC.generateDirectory(
+            dir,
+            tag, {
+                xml: {
+                    [ArrangementType.LEAD]: leadXMLs,
+                    [ArrangementType.RHYTHM]: rhythmXMLs,
+                    [ArrangementType.BASS]: bassXMLs,
+                    [ArrangementType.SHOWLIGHTS]: slightXMLs,
+                    [ArrangementType.VOCALS]: vocalXMLs,
+                },
+                tones: {
+                    [ArrangementType.LEAD]: leadTones,
+                    [ArrangementType.RHYTHM]: rhythmTones,
+                    [ArrangementType.BASS]: bassTones,
+                },
+                dds,
+                wem,
+            },
+            info,
+            toolkit,
+            pt,
+            );
+        const out = await PSARC.packDirectory(outDir, "/tmp/", tag, "", pt);
+        console.log(out); 
+        /* /tmp/cdlcTag_m.psarc */
+    }
+    fn();
+```
+
 ## Features
+- [X] PSARC read/write support
 - [x] SNG read/write support
 - [x] DDS read/write support
 - [x] WEM read/write support (requires WWise to be installed)
@@ -182,8 +258,9 @@ node.js v12 module to read and extract Rocksmith PSARC files
 - [x] VOCALS SNG support
 - [x] MANIFEST read/write support (json, hsan)
 - [X] GENERIC write support (aggregrategraph, xblock)
-- [X] PSARC read/write support
 
+## TODO
+ - [ ] Tones Generator
 ## Tests
   `npm test`
 

@@ -32,6 +32,7 @@ import { BNK } from '../src/bnk';
 import { GENERIC } from '../src/generic';
 import { MANIFEST } from '../src/manifest';
 import { WAAPI } from '../src/waapi';
+import { DEFAULT_VALUES } from '../src/common';
 
 
 use(Chaifs);
@@ -898,7 +899,7 @@ async function psarcGenerateTests() {
                     albumName: "Enema of the State",
                     year: 1999,
                     currentPartition: 0,
-                    scrollSpeed: 13,
+                    scrollSpeed: DEFAULT_VALUES.SCROLL_SPEED,
                     volume: -9.2,
                     previewVolume: -8.3
                 }

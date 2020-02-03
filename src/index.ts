@@ -9,6 +9,7 @@ import { PSARC } from './psarc';
 import {
     SongEbeat, SongNote, Song2014
 } from './song2014';
+import { DEFAULT_VALUES } from './common';
 
 module.exports = {
     PSARC,
@@ -22,4 +23,5 @@ module.exports = {
     SongEbeat,
     SongNote,
     MANIFEST,
+    DEFAULT_VALUES,
 }
