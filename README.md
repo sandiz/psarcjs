@@ -217,7 +217,7 @@ node.js v12 module to read/write Rocksmith PSARC and other related files
             preview: { wem: 'test/blinktest/376327087.wem', bnk: 'test/blinktest/song_bwab1anthem_preview.bnk' }
         }
         
-        
+        const pt = Platform.Mac;
         const outDir = await PSARC.generateDirectory(
             dir,
             tag, {
@@ -239,7 +239,7 @@ node.js v12 module to read/write Rocksmith PSARC and other related files
             info,
             toolkit,
             pt,
-            );
+        );
         const out = await PSARC.packDirectory(outDir, "/tmp/", tag, "", pt);
         console.log(out); 
         /* /tmp/cdlcTag_m.psarc */
