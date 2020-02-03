@@ -69,11 +69,10 @@ export async function ENTRYDecrypt(data: Buffer, key: string) {
     const aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
     const decrypted = aesCtr.decrypt(pad(quanta));
     const length = new Uint32Array(decrypted.slice(0, 4))
-    const lbe = Buffer.from(length).readUInt32BE(0);
     const lle = Buffer.from(length).readUInt32LE(0);
 
     let payload = decrypted.slice(4, data.length)
-    console.log(magic, payload.length, length, lbe, lle);
+    console.log(magic, payload.length, length, lle);
     let buf: Buffer = await unzip(Buffer.from(payload))
     console.log("entrydecrypt finish", buf.length);
 

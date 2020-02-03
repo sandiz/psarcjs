@@ -122,7 +122,7 @@ function ENTRYDecrypt(data, key) {
                     lbe = Buffer.from(length).readUInt32BE(0);
                     lle = Buffer.from(length).readUInt32LE(0);
                     payload = decrypted.slice(4, data.length);
-                    console.log(payload.length, length, lbe, lle);
+                    console.log(magic, payload.length, length, lbe, lle);
                     return [4 /*yield*/, exports.unzip(Buffer.from(payload))];
                 case 1:
                     buf = _a.sent();

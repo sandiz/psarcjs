@@ -40,7 +40,7 @@ export class SNG {
         if (platform)
             this.platform = platform;
         else
-            this.platform = os.platform() == "darwin" ? Platform.Mac : Platform.Windows;
+            this.platform = os.platform() == "win32" ? Platform.Windows : Platform.Mac;
     }
 
     public async parse(): Promise<void> {
