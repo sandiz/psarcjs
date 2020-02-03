@@ -462,10 +462,10 @@ export class PSARC {
                     let magic = Buffer.from(rawData.slice(0, 4)).readInt32LE(0)
                     let ph = Buffer.from(rawData.slice(4, 8)).readInt32LE(0)
                     if (magic == 0x4A && ph == 3) {
-                        console.log("packdir", "packed sng", f)
+                        //console.log("packdir", "packed sng", f)
                     }
                     else {
-                        console.log("packdir", "unpacked sng", f);
+                        //console.log("packdir", "unpacked sng", f);
                         var s = new SNG(f);
                         await s.parse();
                         await s.pack();

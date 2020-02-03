@@ -676,10 +676,9 @@ var PSARC = /** @class */ (function () {
                                         magic = Buffer.from(rawData.slice(0, 4)).readInt32LE(0);
                                         ph_1 = Buffer.from(rawData.slice(4, 8)).readInt32LE(0);
                                         if (!(magic == 0x4A && ph_1 == 3)) return [3 /*break*/, 5];
-                                        console.log("packdir", "packed sng", f);
                                         return [3 /*break*/, 8];
                                     case 5:
-                                        console.log("packdir", "unpacked sng", f);
+                                        //console.log("packdir", "unpacked sng", f);
                                         s = new sng_1.SNG(f);
                                         return [4 /*yield*/, s.parse()];
                                     case 6:

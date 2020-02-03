@@ -107,7 +107,7 @@ function BOMEncrypt(buffer) {
 exports.BOMEncrypt = BOMEncrypt;
 function ENTRYDecrypt(data, key) {
     return __awaiter(this, void 0, void 0, function () {
-        var magic, iv, ctr, uintAkey, quanta, aesCtr, decrypted, length, lbe, lle, payload, buf;
+        var magic, iv, ctr, uintAkey, quanta, aesCtr, decrypted, length, lle, payload, buf;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -119,14 +119,11 @@ function ENTRYDecrypt(data, key) {
                     aesCtr = new aesjs.ModeOfOperation.ctr(uintAkey, new aesjs.Counter(ctr));
                     decrypted = aesCtr.decrypt(pad(quanta));
                     length = new Uint32Array(decrypted.slice(0, 4));
-                    lbe = Buffer.from(length).readUInt32BE(0);
                     lle = Buffer.from(length).readUInt32LE(0);
                     payload = decrypted.slice(4, data.length);
-                    console.log(magic, payload.length, length, lbe, lle);
                     return [4 /*yield*/, exports.unzip(Buffer.from(payload))];
                 case 1:
                     buf = _a.sent();
-                    console.log("entrydecrypt finish", buf.length);
                     return [2 /*return*/, buf];
             }
         });

@@ -72,9 +72,7 @@ export async function ENTRYDecrypt(data: Buffer, key: string) {
     const lle = Buffer.from(length).readUInt32LE(0);
 
     let payload = decrypted.slice(4, data.length)
-    console.log(magic, payload.length, length, lle);
     let buf: Buffer = await unzip(Buffer.from(payload))
-    console.log("entrydecrypt finish", buf.length);
 
     return buf;
 }
